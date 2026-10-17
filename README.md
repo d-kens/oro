@@ -1,6 +1,6 @@
-# Open Path
+# Paipa
 
-Your path to mastery. A static site of free, structured paths that take you from the first step to real expertise, with each step building on the last.
+Skills you can deploy. Hands-on cloud and DevOps notes and labs: you take one app from a commit to a monitored production deployment, and learn the skills teams hire for on the way.
 
 Live at <https://d-kens.github.io/open-path/>.
 
@@ -19,13 +19,12 @@ Run `node build.js` again after each change.
 
 | Path | What it is |
 | --- | --- |
-| `curriculum.js` | The phases, the modules, and which modules have published notes |
+| `curriculum.js` | The phases, the modules, which modules have published notes |
 | `notes/<slug>.md` | The notes for one module, in Markdown |
 | `src/pages/` | The body of the home, search and 404 pages |
-| `build.js` | Wraps every page in the shared layout, renders the notes and the path page, and writes the search index and sitemap |
-| `styles.css`, `theme.js`, `search.js`, `notes.js` | Copied to the site as they are |
+| `build.js` | Wraps every page in the shared layout, renders the notes and the curriculum page, and writes the search index and sitemap |
+| `styles.css`, `nav.js`, `search.js`, `notes.js` | Copied to the site as they are |
 | `vendor/` | marked and highlight.js, used by the build only |
-| `brand/` | Profile images and social banners. Not part of the site |
 
 ## Publish a module's notes
 
@@ -36,7 +35,7 @@ Run `node build.js` again after each change.
 
 The build stops with an error if a published module has no notes file, or if a notes file or a `NOTES` entry doesn't match a module.
 
-Old links like `notes.html?m=linux` redirect to `notes/linux.html`.
+Old links like `notes.html?m=linux` redirect to `notes/linux.html`, and `paths.html` redirects to `curriculum.html`.
 
 ## Search engines
 

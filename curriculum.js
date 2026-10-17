@@ -1,4 +1,4 @@
-/* Open Path curriculum: read by build.js to make the path page, the notes pages and the search index. */
+/* Paipa curriculum: read by build.js to make the home page, the curriculum page, the notes pages and the search index. */
 (function () {
   /* ---------- publishing status ----------
      When you publish notes for a module:
@@ -27,7 +27,7 @@
       mod('continuous-integration', 'Continuous integration', ['Fast feedback', 'Stages, caching, matrices', 'GitHub Actions workflows', 'Reusable workflows and runners', 'The test pyramid'], 'Lab', 'Build a GitHub Actions pipeline that lints, tests, builds and publishes your Module 7 image.'),
       mod('continuous-delivery', 'Continuous delivery and release strategies', ['Delivery vs deployment', 'Environment promotion', 'Blue-green and canary', 'Feature flags and rollbacks', 'Database migrations'], null, null) ] },
     { name: 'Infrastructure', blurb: 'Build the platform your software runs on, from code.', security: 'IAM least privilege, Kubernetes Secrets and RBAC.', modules: [
-      mod('cloud-aws', 'Cloud fundamentals on AWS', ['Regions and zones', 'Shared responsibility', 'EC2, Lambda, S3', 'VPCs and security groups', 'IAM and least privilege', 'RDS, SQS, Route 53'], 'Lab', 'Hand-build a VPC with public and private subnets, then tear it down.'),
+      mod('cloud-fundamentals', 'Cloud fundamentals', ['Regions and zones', 'Shared responsibility', 'AWS first, with GCP and Azure equivalents', 'Compute, functions, storage', 'VPCs and security groups', 'IAM and least privilege', 'Managed databases, queues and DNS'], 'Lab', 'Hand-build a VPC with public and private subnets, then tear it down.'),
       mod('infrastructure-as-code', 'Infrastructure as code', ['Idempotency and drift', 'Terraform modules', 'Remote state and locking', 'Ansible'], 'Lab', 'Rebuild the Module 10 VPC in Terraform, with modules and remote state.'),
       mod('kubernetes-core', 'Kubernetes core', ['Control plane and nodes', 'Pods, Deployments, Services', 'Ingress', 'ConfigMaps and Secrets', 'kubectl'], 'Lab', 'Deploy your containerised app to a local cluster with kind or minikube.'),
       mod('kubernetes-production', 'Kubernetes in production', ['Requests, limits, HPA', 'Health probes', 'StatefulSets and Jobs', 'Helm and RBAC', 'NetworkPolicies', 'Managed clusters and upgrades'], null, null),
@@ -52,6 +52,7 @@
       MODULES.push(m);
     });
   });
+
 
   module.exports = { NOTES: NOTES, PHASES: PHASES, MODULES: MODULES };
 })();
