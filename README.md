@@ -2,7 +2,7 @@
 
 Skills you can deploy. Hands-on cloud and DevOps notes and labs: you take one app from a commit to a monitored production deployment, and learn the skills teams hire for on the way.
 
-Live at <https://d-kens.github.io/open-path/>.
+Live at <https://d-kens.github.io/paipa/>.
 
 ## Run it locally
 
@@ -39,4 +39,4 @@ Old links like `notes.html?m=linux` redirect to `notes/linux.html`, and `paths.h
 
 ## Search engines
 
-The build writes `sitemap.xml`. Submit `https://d-kens.github.io/open-path/sitemap.xml` in Google Search Console. A project site can't serve its own `robots.txt`, so the sitemap has to be submitted by hand.
+The build writes `sitemap.xml`. Submit `https://d-kens.github.io/paipa/sitemap.xml` in Google Search Console. A project site can't serve its own `robots.txt`, so the sitemap has to be submitted by hand.

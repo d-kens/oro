@@ -8,8 +8,8 @@ const { marked } = require('./vendor/marked.min.js');
 const hljs = require('./vendor/highlight.min.js');
 const { NOTES, PHASES, MODULES } = require('./curriculum.js');
 
-const SITE = 'https://d-kens.github.io/open-path';       /* the live address, without a trailing slash */
-const BASE = new URL(SITE).pathname + '/';              /* '/open-path/': the 404 page needs absolute links */
+const SITE = 'https://d-kens.github.io/paipa';       /* the live address, without a trailing slash */
+const BASE = new URL(SITE).pathname + '/';              /* '/paipa/': the 404 page needs absolute links */
 const NAME = 'Paipa';
 const HOME_DESC = 'Skills you can deploy. Hands-on cloud and DevOps notes, from the basics to running real systems.';
 const ASSETS = ['styles.css', 'nav.js', 'search.js', 'notes.js', 'favicon.svg', 'og-image.png'];
