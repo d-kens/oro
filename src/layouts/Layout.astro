@@ -1,0 +1,62 @@
+---
+/* The shared layout: every page has the same head, nav and scripts.
+   url: the page's path on the live site, for canonical links. scripts: files in public/ to load after nav.js. */
+import { SITE, NAME, href } from '../lib/site.js';
+
+const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [] } = Astro.props;
+const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · DevOps roadmap and notes';
+/* the nav links; the current page's link is marked, and a notes page counts as part of Topics */
+const here = Astro.url.pathname;
+const links = [['roadmap.html', 'Roadmap'], ['topics.html', 'Topics'], ['labs.html', 'Labs'], ['about.html', 'About']]
+  .map(([path, label]) => ({ path, label, current: here.endsWith('/' + path) || (path === 'topics.html' && here.includes('/notes/')) }));
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+{description && <meta name="description" content={description}>}
+<meta name="theme-color" content="#f5f5f4">
+<link rel="icon" href={href('favicon.svg')} type="image/svg+xml">
+{noindex ? <meta name="robots" content="noindex"> : <>
+<link rel="canonical" href={`${SITE}/${url}`}>
+<meta property="og:type" content={ogType}>
+<meta property="og:site_name" content={NAME}>
+<meta property="og:title" content={title}>
+<meta property="og:description" content={description}>
+<meta property="og:url" content={`${SITE}/${url}`}>
+<meta property="og:image" content={`${SITE}/og-image.png`}>
+<meta name="twitter:card" content="summary_large_image">
+</>}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..600&family=Hanken+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap">
+<link rel="stylesheet" href={href('styles.css')}>
+<script is:inline>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<div class="wrap">
+  <nav aria-label="Site">
+    <a class="logo" href={href('index.html')} aria-label={NAME}>{/* the wordmark is drawn in the same rounded line as the favicon's "p" */}<svg class="logo-mark" viewBox="0 4 144 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 52V30a11 11 0 1 1 11 11h-3"/><circle cx="49" cy="30" r="11"/><path d="M60 19V41"/><path d="M72 21V41"/><circle cx="72" cy="9.5" r="4.2" fill="currentColor" stroke="none"/><path d="M84 52V30a11 11 0 1 1 11 11h-3"/><circle cx="129" cy="30" r="11"/><path d="M140 19V41"/></g></svg></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-links" aria-label="Open menu"><span></span></button>
+    <ul id="site-links">
+      {links.map((l) => <li><a href={href(l.path)} aria-current={l.current ? 'page' : undefined}>{l.label}</a></li>)}
+      <li class="search-link"><a href={href('search.html')} aria-current={here.endsWith('/search.html') ? 'page' : undefined} aria-keyshortcuts="/">Search<kbd aria-hidden="true">/</kbd></a></li>
+    </ul>
+  </nav>
+  <slot />
+  <footer class="site-foot">
+    <ul>
+      <li><a href={href('roadmap.html')}>Roadmap</a></li>
+      <li><a href={href('topics.html')}>Topics</a></li>
+      <li><a href={href('labs.html')}>Labs</a></li>
+      <li><a href={href('about.html')}>About</a></li>
+    </ul>
+  </footer>
+</div>
+<script is:inline src={href('nav.js')}></script>
+{scripts.map((s) => <script is:inline src={href(s)}></script>)}
+</body>
+</html>

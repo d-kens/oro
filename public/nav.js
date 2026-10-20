@@ -16,4 +16,15 @@
     if (e.key === 'Escape' && nav.classList.contains('open')) { set(false); btn.focus(); }
   });
   phone.addEventListener('change', function () { if (!phone.matches) set(false); });
+
+  /* "/" opens search from any page, or jumps to the box on the search page, unless you are typing somewhere */
+  var search = nav.querySelector('[aria-keyshortcuts="/"]');
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || !search) return;
+    var t = e.target;
+    if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    e.preventDefault();
+    var box = document.getElementById('q');
+    if (box) box.focus(); else location.href = search.href;
+  });
 })();

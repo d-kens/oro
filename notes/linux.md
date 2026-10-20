@@ -1,8 +1,8 @@
-**Linux is an operating system: the base software that runs a computer, like Windows on a laptop or iOS on an iPhone. Almost every server on the internet runs Linux, so it is the first tool every DevOps engineer needs.**
+**Linux is an operating system: the base software that runs a computer, like Windows on a laptop or iOS on an iPhone. Most servers on the internet run Linux, so it is the first tool every DevOps engineer needs.**
 
-**By the end of this module you will have a small website running on your own Linux machine. It will start by itself, restart itself if it crashes, and you will know how to find and fix the three most common reasons it breaks.**
+**By the end of this topic you will have a small website running on your own Linux machine. It will start by itself, restart itself if it crashes, and you will know how to find and fix the three most common reasons it breaks.**
 
-The module answers eight questions, in order. Most of them build up to the final lab:
+This topic answers eight questions, in order. Most of them build up to the final lab:
 
 1. How do I move around and work with files?
 2. Who is allowed to do what?
@@ -30,7 +30,7 @@ WSL lets you run Linux inside Windows.
 3. Restart your computer when it asks.
 4. Open **Ubuntu** from the Start menu. The first time, it asks you to choose a username and a password. Remember the password.
 
-Check that it is ready for this module:
+Check that it is ready for this topic:
 
 ```bash
 ps -p 1 -o comm=
@@ -48,7 +48,7 @@ echo -e "[boot]\nsystemd=true" | sudo tee /etc/wsl.conf
 
 Multipass runs a small Linux computer inside your Mac, called a **virtual machine**.
 
-1. Download Multipass from [multipass.run](https://multipass.run) and install it.
+1. Download Multipass from [canonical.com/multipass](https://canonical.com/multipass) and install it.
 2. Open the **Terminal** app and type:
 
 ```bash
@@ -202,11 +202,11 @@ So `rw-r--r--` means: the owner can read and change it, and everyone else can on
 | Number | Means | Use it for |
 | --- | --- | --- |
 | `644` | Owner reads and writes, everyone else reads | Normal files |
-| `755` | Owner does everything, everyone else reads and enters | Folders and programs |
+| `755` | Owner does everything, everyone else reads and enters (a folder) or runs (a program) | Folders and programs |
 | `600` | Only the owner can read and write | Secrets, such as keys and passwords |
 | `700` | Only the owner can do anything | Private folders |
 
-Try it. `nobody` is a built-in user with no access to anything, which makes it handy for testing:
+Try it. `nobody` is a built-in user that owns nothing and has no special rights, which makes it handy for testing:
 
 ```bash
 echo "my secret" > /tmp/secret.txt     # make a file (> writes text into a file)
@@ -300,7 +300,7 @@ kill 4321 4322            # use your two PIDs; kill accepts several at once
 
 Linux installs software with a **package manager**: a tool that downloads programs from a trusted online store, along with anything else they need to run. On Ubuntu it is called `apt`.
 
-Install the tools the rest of this module uses:
+Install the tools the rest of this topic uses:
 
 ```bash
 sudo apt update                          # get the latest list of available software; always do this first
@@ -374,7 +374,7 @@ A `*` means "every". Some examples:
 
 Two rules that prevent most cron problems:
 
-1. **Use full paths** to programs and files, such as `/home/ubuntu/backup.sh`, not `backup.sh`. cron does not start in your folder.
+1. **Use full paths** to programs and files, such as `/home/ubuntu/backup.sh`, not `backup.sh`. cron runs jobs from your home folder, not wherever you happen to be, and only looks for programs in a few standard places.
 2. **Send the output to a file**, as above. Otherwise you never see what happened.
 
 **Your turn:** change the job to run every 2 minutes. Then remove it, so it does not keep running.
@@ -539,6 +539,8 @@ journalctl -u hello -n 20             # only the last 20 lines
 journalctl -u hello --since "10 min ago"
 ```
 
+If it says you are not allowed to see the messages, put `sudo` in front.
+
 The most useful one is **follow** mode, which shows new lines as they arrive. Run it in your first terminal:
 
 ```bash
@@ -606,13 +608,13 @@ sudo ss -tlnp | grep 8080             # what is listening on port 8080?
 sudo lsof -i :8080                    # the same, with the user it runs as
 ```
 
-`grep 8080` keeps only the lines about port 8080. The last two commands show `python3`, running as user `hello`. That is your website. (`lsof` shows port 8080 by its standard nickname, `http-alt`.)
+`grep 8080` keeps only the lines about port 8080. Both commands show `python3`, and `lsof` also shows it runs as user `hello`. That is your website. (`lsof` shows port 8080 by its standard nickname, `http-alt`.)
 
 ## 9. Lab: break the website and fix it
 
 Real problems rarely announce themselves. This lab builds the most important habit in operations: **when something breaks, look at the evidence before you change anything.**
 
-You will break your website in three common ways. For each one: notice the symptom, use the tools from this module to find the cause, then fix it. Your exact messages may look slightly different, so look for lines similar to the ones shown.
+You will break your website in three common ways. For each one: notice the symptom, use the tools from this topic to find the cause, then fix it. Your exact messages may look slightly different, so look for lines similar to the ones shown.
 
 Before you start, check that the website works:
 
@@ -735,7 +737,7 @@ For each break, write three lines in your own notes:
 2. **Evidence:** the exact log line or command output that explained it.
 3. **Fix:** what you changed, and how you checked it worked.
 
-Real teams use the same format to write up problems in production (Module 16).
+Real teams use the same format to write up problems in production (see SRE practice and incident management, later in the roadmap).
 
 ### Clean up
 
@@ -749,7 +751,9 @@ sudo rm -f /tmp/secret.txt /tmp/cron-test.txt   # -f: no error if a file is alre
 rm -r ~/practice
 ```
 
-## Module summary
+If you did not remove the cron job earlier, run `crontab -e` and delete its line too.
+
+## Summary
 
 You can now:
 
@@ -764,10 +768,10 @@ You can now:
 
 Most of all: **when something breaks, read the evidence first, then change one thing at a time.**
 
-**Next:** Module 3 covers Git, a tool that keeps a history of every change you make to your files.
+**Next:** Git and branching strategies. Git keeps a history of every change you make to your files.
 
 ## Further reading
 
 - [The Linux Command Line](https://linuxcommand.org/tlcl.php) by William Shotts: a free book for complete beginners.
-- [Linux Journey](https://linuxjourney.com): short, free lessons on each topic in this module.
+- [Linux Journey](https://labex.io/linuxjourney): short, free lessons on each part of this topic.
 - [Ubuntu's command line tutorial for beginners](https://ubuntu.com/tutorials/command-line-for-beginners): a guided first hour in the terminal.

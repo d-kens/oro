@@ -1,0 +1,15 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { MODULES } from '../data/curriculum.js';
+import { href } from '../lib/site.js';
+---
+<Layout url="about.html" title="About" description="Paipa breaks DevOps into topics, puts them in the order they build on each other, and covers each one in depth.">
+<main class="about">
+<h1>About</h1>
+<p>Paipa breaks DevOps into {MODULES.length} topics, puts them in the order they build on each other, and covers each one in depth: Linux and Git, containers and CI/CD, cloud and Kubernetes, then keeping systems running in production.</p>
+<p>The name comes from the pipeline: the path every change takes from a commit to production, and the path the roadmap follows.</p>
+
+<h2>How to use it</h2>
+<p>Start at the top of the <a href={href('roadmap.html')}>roadmap</a> and work down. Each topic explains why it matters, the core ideas and the commands to run, then ends with a lab. The labs build on each other, so one app goes all the way from a commit to a secured, monitored deployment.</p>
+<p>Notes are added one topic at a time. A topic becomes a link on the roadmap once its notes are ready.</p></main>
+</Layout>

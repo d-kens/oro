@@ -1,9 +1,9 @@
 <!--
-  Template for a module's notes. Copy this file to notes/<slug>.md
-  (the slug is in curriculum.js, e.g. notes/linux.md), then add the
-  module to the NOTES list at the top of curriculum.js.
+  Template for a topic's notes. Copy this file to notes/<slug>.md
+  (the slug is in src/data/curriculum.js, e.g. notes/linux.md), then add the
+  topic to the NOTES list (with a name and summary) at the top of src/data/curriculum.js.
 
-  The page already shows the module title, tags and lab,
+  The page already shows the topic's title, summary and lab,
   so start straight with the sections below. Keep examples generic:
   no real company systems, hostnames, logs or credentials.
 -->
@@ -42,7 +42,7 @@ hello
 
 ## Lab
 
-A worked answer or write-up for this module's lab.
+A worked answer or write-up for this topic's lab. Keep "Lab" in the heading: the Labs page links to it.
 
 ## Further reading
 

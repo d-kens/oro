@@ -4,9 +4,8 @@
   input.focus();
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-  function pad(x) { return String(x).padStart(2, '0'); }
 
-  /* built by build.js: one entry per module, plus one per section of its published notes */
+  /* built by src/pages/search-index.json.js: one entry per topic, plus one per section of its published notes */
   var INDEX = null;
 
   /* ---------- search ---------- */
@@ -29,7 +28,7 @@
     history.replaceState(null, '', q ? 'search.html?q=' + encodeURIComponent(q) : 'search.html');
     if (!ws.length) {
       var sections = INDEX.filter(function (e) { return e.heading; }).length;
-      list.innerHTML = ''; status.textContent = 'Search ' + sections + ' note sections and ' + (INDEX.length - sections) + ' modules.'; return;
+      list.innerHTML = ''; status.textContent = 'Search ' + sections + ' note sections and ' + (INDEX.length - sections) + ' topics.'; return;
     }
 
     var hits = [];
@@ -40,7 +39,7 @@
         if (!inTitle && !inBody) return;
         score += (inTitle ? 5 : 0) + (inBody ? 1 + Math.min(body.split(ws[i]).length - 2, 4) : 0);
       }
-      if (e.heading) score += 2;            /* prefer a section of real notes over a module summary */
+      if (e.heading) score += 2;            /* prefer a section of real notes over a topic summary */
       hits.push({ e: e, score: score });
     });
     hits.sort(function (a, b) { return b.score - a.score || a.e.num - b.e.num; });
@@ -48,7 +47,7 @@
     status.textContent = hits.length ? hits.length + (hits.length === 1 ? ' result' : ' results') : 'No results. Try a shorter or different word.';
     list.innerHTML = hits.slice(0, 40).map(function (h) {
       var e = h.e;
-      return '<li><a href="' + esc(e.url) + '"><span class="mono">Module ' + pad(e.num) + ' · ' + esc(e.module) + (e.heading ? '' : ' · ' + (e.live ? 'Overview' : 'Notes coming')) + '</span>' +
+      return '<li><a href="' + esc(e.url) + '"><span class="mono">' + esc(e.module) + (e.heading ? '' : ' · ' + (e.live ? 'Overview' : 'Not written yet')) + '</span>' +
         '<b>' + esc(e.heading || e.module) + '</b><p>' + snippet(e.text, ws) + '</p></a></li>';
     }).join('');
   }

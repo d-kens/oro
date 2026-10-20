@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { href, niceDate, published } from '../lib/site.js';
+
+const topics = [...published].sort((a, b) => a.name.localeCompare(b.name));
+---
+<Layout url="topics.html" title="Topics" description="Every DevOps topic on Paipa that has notes, A to Z.">
+<main class="topics">
+<header>
+  <h1>Topics</h1>
+  <p>Every topic with notes, A to Z. The <a href={href('roadmap.html')}>roadmap</a> shows the order to learn them in.</p>
+</header>
+<ul class="topic-list">
+  {topics.map((m) => (
+    <li>
+      <a href={href(`notes/${m.slug}.html`)}>{m.name}</a>
+      <p>{m.summary}</p>
+      <time datetime={m.updated}>{niceDate(m.updated)}</time>
+    </li>
+  ))}
+</ul>
+</main>
+</Layout>

@@ -1,4 +1,4 @@
-This module answers five questions, in order:
+This topic answers five questions, in order:
 
 1. What is DevOps?
 2. How does work move through a DevOps team?
@@ -16,7 +16,7 @@ Then it gives you a quick checklist for any team, and three related names you wi
 
 It is not a tool you install or a job title. It is how a team works.
 
-So why do job adverts ask for **DevOps engineers**? People with that title usually build the automation that lets a team work the DevOps way: the automated build, test and deploy steps, servers set up from code, and monitoring. That is what the rest of this path teaches.
+So why do job adverts ask for **DevOps engineers**? People with that title usually build the automation that lets a team work the DevOps way: the automated build, test and deploy steps, servers set up from code, and monitoring. That is what the rest of the roadmap teaches.
 
 ## 2. How does work move? The DevOps loop
 
@@ -25,9 +25,9 @@ Every change to a piece of software goes through the same eight stages. DevOps d
 <figure class="loop"><svg viewBox="-110 10 940 290" role="img" aria-label="The DevOps loop: an infinity sign. The Dev side has Plan, Code, Build and Test. The Ops side has Release, Deploy, Operate and Monitor, which leads back to Plan." style="width:100%;height:auto;font:600 19px var(--f-body);fill:var(--fg)">
 <path d="M360,150 C 300,40 60,40 60,150 C 60,260 300,260 360,150 C 420,40 660,40 660,150 C 660,260 420,260 360,150" fill="none" stroke="var(--muted)" stroke-width="4" opacity=".6"/>
 <path d="M-9,-8 L9,0 L-9,8 z" fill="var(--muted)" transform="translate(306 97) rotate(-150)"/><path d="M-9,-8 L9,0 L-9,8 z" fill="var(--muted)" transform="translate(306 203) rotate(-30)"/><path d="M-9,-8 L9,0 L-9,8 z" fill="var(--muted)" transform="translate(414 97) rotate(-30)"/><path d="M-9,-8 L9,0 L-9,8 z" fill="var(--muted)" transform="translate(414 203) rotate(-150)"/>
-<text x="180" y="162" text-anchor="middle" style="font:800 34px var(--f-display);fill:var(--red)">Dev</text>
-<text x="540" y="162" text-anchor="middle" style="font:800 34px var(--f-display)">Ops</text>
-<circle cx="208" cy="68" r="7" fill="var(--red)"/><text x="218" y="46" text-anchor="middle">Plan</text><circle cx="67" cy="120" r="7" fill="var(--red)"/><text x="53" y="126" text-anchor="end">Code</text><circle cx="67" cy="180" r="7" fill="var(--red)"/><text x="53" y="186" text-anchor="end">Build</text><circle cx="208" cy="232" r="7" fill="var(--red)"/><text x="218" y="266" text-anchor="middle">Test</text><circle cx="512" cy="68" r="7" fill="var(--fg)"/><text x="502" y="46" text-anchor="middle">Release</text><circle cx="653" cy="120" r="7" fill="var(--fg)"/><text x="667" y="126" text-anchor="start">Deploy</text><circle cx="653" cy="180" r="7" fill="var(--fg)"/><text x="667" y="186" text-anchor="start">Operate</text><circle cx="512" cy="232" r="7" fill="var(--fg)"/><text x="502" y="266" text-anchor="middle">Monitor</text>
+<text x="180" y="162" text-anchor="middle" style="font:600 34px var(--f-display);fill:var(--accent)">Dev</text>
+<text x="540" y="162" text-anchor="middle" style="font:600 34px var(--f-display)">Ops</text>
+<circle cx="208" cy="68" r="7" fill="var(--accent)"/><text x="218" y="46" text-anchor="middle">Plan</text><circle cx="67" cy="120" r="7" fill="var(--accent)"/><text x="53" y="126" text-anchor="end">Code</text><circle cx="67" cy="180" r="7" fill="var(--accent)"/><text x="53" y="186" text-anchor="end">Build</text><circle cx="208" cy="232" r="7" fill="var(--accent)"/><text x="218" y="266" text-anchor="middle">Test</text><circle cx="512" cy="68" r="7" fill="var(--fg)"/><text x="502" y="46" text-anchor="middle">Release</text><circle cx="653" cy="120" r="7" fill="var(--fg)"/><text x="667" y="126" text-anchor="start">Deploy</text><circle cx="653" cy="180" r="7" fill="var(--fg)"/><text x="667" y="186" text-anchor="start">Operate</text><circle cx="512" cy="232" r="7" fill="var(--fg)"/><text x="502" y="266" text-anchor="middle">Monitor</text>
 </svg></figure>
 
 | Stage | What happens |
@@ -60,7 +60,7 @@ The problems fed each other. Releases kept breaking, so teams released less ofte
 
 ## 4. How do you do DevOps well? The Three Ways
 
-The Three Ways are three principles, one for each problem above. Every DevOps practice in the rest of this path is one of them in action. They were set out by Gene Kim in *The DevOps Handbook*.
+The Three Ways are three principles, one for each problem above. Every DevOps practice on the rest of the roadmap is one of them in action. Gene Kim first described them, and *The DevOps Handbook* (Gene Kim, Jez Humble, Patrick Debois and John Willis) sets them out in full.
 
 | Way | Fixes | What it means | How teams do it |
 | --- | --- | --- | --- |
@@ -74,14 +74,17 @@ Put simply: flow makes the loop fast, feedback makes it safe, and learning makes
 
 The Three Ways tell you what to do. The DORA metrics tell you whether it is working.
 
-DORA (DevOps Research and Assessment) is a research programme, now part of Google, that has studied thousands of teams. It found four numbers that show how well a team delivers software. The first two measure speed, which shows whether you have flow. The last two measure stability, which shows whether feedback is catching problems.
+DORA (DevOps Research and Assessment) is a research programme, now part of Google Cloud, that has studied thousands of teams. It measures how well a team delivers software with five numbers. Three measure **throughput**, how fast changes get through, which shows whether you have flow. Two measure **instability**, how often changes go wrong, which shows whether feedback is catching problems before users do.
 
 | Metric | What it measures | What improves it |
 | --- | --- | --- |
-| **Deployment frequency** | How often you deploy (more often is better) | Small changes and automated deploys |
-| **Lead time for changes** | How long a change takes to reach users (shorter is better) | Fast automated tests and less waiting for approvals |
-| **Change failure rate** | Out of all deploys, what share cause a problem (lower is better) | Better tests and smaller changes |
-| **Time to restore service** | When a deploy causes a problem, how long until it works again (shorter is better) | Good monitoring and a quick way to undo a deploy |
+| **Deployment frequency** (throughput) | How often you deploy (more often is better) | Small changes and automated deploys |
+| **Change lead time** (throughput) | How long a change takes from commit to production (shorter is better) | Fast automated tests and less waiting for approvals |
+| **Failed deployment recovery time** (throughput) | When a deploy fails, how long until things work again (shorter is better) | Good monitoring and a quick way to undo a deploy |
+| **Change fail rate** (instability) | Out of all deploys, what share need fixing straight away (lower is better) | Better tests and smaller changes |
+| **Deployment rework rate** (instability) | Out of all deploys, what share are unplanned fixes for problems in production (lower is better) | Catching problems before they reach users |
+
+You will still see the original **four keys** in many articles: the same list without rework rate, with recovery time called *time to restore service* or *MTTR*.
 
 DORA's key finding: **the best teams are both fast and stable.** You do not have to choose. Small, frequent changes are easier to test and easier to undo.
 
@@ -102,16 +105,16 @@ DORA measures results. CALMS checks the habits behind them. Ask these five quest
 You will often hear these three names alongside DevOps:
 
 - **Agile** is about how a team plans and builds software in short steps. DevOps carries the same idea on through releasing and running it.
-- **SRE** (Site Reliability Engineering) is Google's way of doing DevOps, focused on keeping systems reliable. Module 16 covers it.
-- **Platform Engineering** builds shared tools so every team can follow the loop without building everything themselves. Module 20 covers it.
+- **SRE** (Site Reliability Engineering) is Google's way of doing DevOps, focused on keeping systems reliable. It has its own topic later in the roadmap.
+- **Platform Engineering** builds shared tools so every team can follow the loop without building everything themselves. It comes near the end of the roadmap.
 
-## Module summary
+## Summary
 
 - **DevOps** is a way of working where Dev and Ops work as one team and automate the steps in between, so changes reach users quickly and safely.
 - Every change goes round the **DevOps loop**: Plan, Code, Build, Test, Release, Deploy, Operate, Monitor, then back to Plan.
 - DevOps appeared because splitting the loop between two teams, "throwing it over the wall", caused big releases, problems found late, and blame.
 - The **Three Ways** fix those three problems: **flow** (small changes that move quickly), **feedback** (find problems early) and **continuous learning** (fix causes, not people).
-- The four **DORA metrics** show whether it is working. Deployment frequency and lead time measure speed. Change failure rate and time to restore service measure stability. The best teams are fast and stable.
+- The five **DORA metrics** show whether it is working. Deployment frequency, change lead time and failed deployment recovery time measure throughput. Change fail rate and deployment rework rate measure instability. The best teams are fast and stable.
 - **CALMS** (Culture, Automation, Lean, Measurement, Sharing) is a quick check on a team's habits.
 - **Agile** covers planning and building in short steps. **SRE** and **Platform Engineering** are ways of putting DevOps into practice.
 

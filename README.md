@@ -1,41 +1,86 @@
 # Paipa
 
-Skills you can deploy. Hands-on cloud and DevOps notes and labs: you take one app from a commit to a monitored production deployment, and learn the skills teams hire for on the way.
+A DevOps roadmap and notes: 20 topics in 8 stages, from Linux to Kubernetes and running systems in production, with hands-on labs along the way. The name comes from the pipeline every change travels, from a commit to production.
 
 Live at <https://d-kens.github.io/paipa/>.
 
 ## Run it locally
 
-You need Node 18 or later. There is nothing to install.
+### 1. Install Node
+
+The site is built with [Astro](https://astro.build), which needs **Node 22.22 or later**. The repo pins Node 24 in `.nvmrc`.
+
+If you use [nvm](https://github.com/nvm-sh/nvm):
 
 ```bash
-node build.js                          # builds the site into _site/
-python3 -m http.server -d _site 8000   # then open http://localhost:8000
+nvm install    # installs the version in .nvmrc, the first time only
+nvm use        # switches this terminal to it
+node -v        # should print v24.x
 ```
 
-Run `node build.js` again after each change.
+Without nvm, install Node 24 from [nodejs.org](https://nodejs.org).
+
+### 2. Get the code and install the dependencies
+
+```bash
+git clone https://github.com/d-kens/paipa.git
+cd paipa
+npm install
+```
+
+### 3. Start the dev server
+
+```bash
+npm run dev
+```
+
+Open <http://localhost:4321/paipa/>. The page reloads by itself when you save a change to a page, a style or a notes file.
+
+Note the `/paipa/` at the end: the site lives under that path on GitHub Pages, so it does locally too. `http://localhost:4321/` on its own shows a 404.
+
+### 4. Build and preview the real site
+
+```bash
+npm run build     # builds the site into dist/, and checks the curriculum (see below)
+npm run preview   # serves dist/ at http://localhost:4321/paipa/
+```
+
+Run this before you push, to see exactly what GitHub Pages will publish.
+
+### If something goes wrong
+
+| Problem | Fix |
+| --- | --- |
+| `Node.js v22.x is not supported by Astro` | Your Node is too old. Run `nvm use`, or install Node 24. |
+| `Dev server already running at http://localhost:4321` | One is already running, perhaps in another terminal. Use it, or stop it with `npx astro dev stop` and start again. |
+| The page is blank or a 404 | Check the address ends in `/paipa/`. |
+| The build stops with `error: notes/... ` | The notes and `src/data/curriculum.js` don't match. The message says which file to fix. |
+| The old favicon still shows | Browsers cache favicons. Hard-refresh (Cmd+Shift+R or Ctrl+Shift+R). |
 
 ## How it fits together
 
 | Path | What it is |
 | --- | --- |
-| `curriculum.js` | The phases, the modules, which modules have published notes |
-| `notes/<slug>.md` | The notes for one module, in Markdown |
-| `src/pages/` | The body of the home, search and 404 pages |
-| `build.js` | Wraps every page in the shared layout, renders the notes and the curriculum page, and writes the search index and sitemap |
-| `styles.css`, `nav.js`, `search.js`, `notes.js` | Copied to the site as they are |
-| `vendor/` | marked and highlight.js, used by the build only |
+| `src/data/curriculum.js` | The stages, the topics, their labs, and which topics have published notes |
+| `notes/<slug>.md` | The notes for one topic, in Markdown, loaded as the `notes` content collection (`src/content.config.js`) |
+| `src/layouts/Layout.astro` | The shared head, nav, footer and scripts every page uses, including the drawn wordmark |
+| `src/pages/` | The home, roadmap, topics, labs, about, search and 404 pages, one page per topic's notes, the search index and the sitemap |
+| `src/pages/index.astro` | The home page, including the list of tools in the moving "Tools along the pipeline" row |
+| `src/lib/` | Shared settings and helpers, and the curriculum check |
+| `public/` | `styles.css`, `nav.js`, `search.js`, `notes.js` and `favicon.svg`, copied to the site as they are |
+| `astro.config.mjs` | The `/paipa/` base, `.html` URLs, and highlight.js for code blocks |
 
-## Publish a module's notes
+All colours are set once, at the top of `public/styles.css`.
 
-1. Copy `notes/_template.md` to `notes/<slug>.md`. The slug is in `curriculum.js`.
-2. Add the module to `NOTES` at the top of `curriculum.js`, with `status: 'published'` and today's date as `updated`.
-3. Run `node build.js` and check the page locally.
-4. Push to `master`. GitHub Actions builds the site and deploys it to GitHub Pages.
+## Publish a topic's notes
 
-The build stops with an error if a published module has no notes file, or if a notes file or a `NOTES` entry doesn't match a module.
+1. Copy `notes/_template.md` to `notes/<slug>.md`. The slug is in `src/data/curriculum.js`.
+2. Add the topic to `NOTES` at the top of `src/data/curriculum.js`, with `status: 'published'`, today's date as `updated`, and a short `name` and one-line `summary` for the Topics page.
+3. If the topic has a lab, keep the word "Lab" in that section's heading, so the Labs page links to it.
+4. Run `npm run dev` and check the page, then `npm run build`.
+5. Push to `master`. GitHub Actions builds the site and deploys it to GitHub Pages.
 
-Old links like `notes.html?m=linux` redirect to `notes/linux.html`, and `paths.html` redirects to `curriculum.html`.
+The build stops with an error if a published topic has no notes file, name or summary, or if a notes file or a `NOTES` entry doesn't match a topic. The roadmap, Topics, Labs and the home page's tools row all update from the same data.
 
 ## Search engines
 

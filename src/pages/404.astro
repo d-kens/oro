@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { href } from '../lib/site.js';
+---
+<Layout title="Page not found" noindex>
+  <main class="notes">
+    <header class="notes-head">
+      <p class="mono">404</p>
+      <h1>This page never made it to production.</h1>
+      <p class="lead">The link may be old, or the page may have moved.</p>
+      <p><a class="link" href={href('roadmap.html')}>See the roadmap</a></p>
+    </header>
+  </main>
+</Layout>

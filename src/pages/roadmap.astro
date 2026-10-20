@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PHASES, MODULES } from '../data/curriculum.js';
+import { href, pad } from '../lib/site.js';
+
+const description = `A DevOps learning roadmap in ${PHASES.length} stages, from Linux to containers, CI/CD, Terraform, Kubernetes and observability.`;
+---
+<Layout url="roadmap.html" title="Roadmap" description={description}>
+<main class="roadmap">
+<header>
+  <h1>Roadmap</h1>
+  <p>{MODULES.length} topics in {PHASES.length} stages, in the order to learn them. Linked topics have notes.</p>
+</header>
+<ol class="stages">
+{PHASES.map((ph, pi) => (
+  <li id={`phase-${pi}`}>
+    <h2><span>{pad(pi + 1)}</span>{ph.name}</h2>
+    <ul>
+      {ph.modules.map((m) => (
+        <li id={m.slug}>{m.status === 'published' ? <a href={href(`notes/${m.slug}.html`)}>{m.title}</a> : m.title}</li>
+      ))}
+    </ul>
+  </li>
+))}
+</ol>
+</main>
+</Layout>
