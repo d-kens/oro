@@ -7,20 +7,19 @@ import { href, published } from '../lib/site.js';
 const first = MODULES[0];
 
 /* the tools row: each tool and the topic that teaches it. A tool is dark, and links to its notes, once that topic is published. */
-const TOOLS = [['Linux', 'linux'], ['Git', 'git'], ['Bash', 'scripting'], ['Python', 'scripting'], ['Docker', 'containers'],
-  ['GitHub Actions', 'continuous-integration'], ['AWS', 'cloud-fundamentals'], ['Terraform', 'infrastructure-as-code'],
-  ['Ansible', 'infrastructure-as-code'], ['Kubernetes', 'kubernetes-core'], ['Helm', 'kubernetes-production'], ['Argo CD', 'gitops'],
-  ['Prometheus', 'observability'], ['Grafana', 'observability'], ['OpenTelemetry', 'observability'], ['Trivy', 'devsecops'], ['Vault', 'devsecops']];
+const TOOLS = [['Linux', 'linux'], ['EC2', 'compute'], ['S3', 'storage'], ['VPC', 'vpc'], ['IAM', 'iam'], ['RDS', 'databases'],
+  ['Lambda', 'serverless'], ['CloudWatch', 'observability'], ['Terraform', 'infrastructure-as-code'], ['Docker', 'containers'],
+  ['Kubernetes', 'eks'], ['GitHub Actions', 'ci-cd'], ['Grafana', 'observability']];
 const tools = TOOLS.map(([name, slug]) => {
   const m = MODULES.find((x) => x.slug === slug);
   if (!m) throw new Error(`The tools row names '${slug}' for ${name}, but no topic has that slug`);
   return { name, live: m.status === 'published', link: href(`notes/${m.slug}.html`) };
 });
 ---
-<Layout description="Learn DevOps one topic at a time, from Linux to Kubernetes and running systems in production.">
+<Layout description="From Linux to designing, securing and running systems on AWS.">
 <main class="home">
-  <h1>Learn DevOps one topic at a time.</h1>
-  <p class="lead">{MODULES.length} topics in {PHASES.length} stages, from Linux to Kubernetes and running systems in production.</p>
+  <h1>Learn cloud engineering one topic at a time.</h1>
+  <p class="lead">{MODULES.length} topics in {PHASES.length} stages, from Linux to designing, securing and running systems on AWS.</p>
   <p class="actions">
     <a class="cta" href={href('roadmap.html')}>See the roadmap</a>
     <a class="cta quiet" href={href('topics.html')}>Browse topics</a>

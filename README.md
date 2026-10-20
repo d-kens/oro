@@ -1,6 +1,6 @@
 # Paipa
 
-A DevOps roadmap and notes: 20 topics in 8 stages, from Linux to Kubernetes and running systems in production, with hands-on labs along the way. The name comes from the pipeline every change travels, from a commit to production.
+A cloud engineering roadmap and notes: 27 topics in 8 stages, from Linux to designing, securing and running systems on AWS, with hands-on labs along the way. The name comes from the pipeline every change travels, from a commit to production.
 
 Live at <https://d-kens.github.io/paipa/>.
 

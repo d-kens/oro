@@ -3,13 +3,14 @@ import Layout from '../layouts/Layout.astro';
 import { MODULES } from '../data/curriculum.js';
 import { href } from '../lib/site.js';
 ---
-<Layout url="about.html" title="About" description="Paipa breaks DevOps into topics, puts them in the order they build on each other, and covers each one in depth.">
+<Layout url="about.html" title="About" description="Paipa breaks cloud engineering into topics, puts them in the order they build on each other, and covers each one in depth.">
 <main class="about">
 <h1>About</h1>
-<p>Paipa breaks DevOps into {MODULES.length} topics, puts them in the order they build on each other, and covers each one in depth: Linux and Git, containers and CI/CD, cloud and Kubernetes, then keeping systems running in production.</p>
+<p>Paipa teaches cloud engineering: how to design, build, secure and run systems on the cloud. It breaks the subject into {MODULES.length} topics, puts them in the order they build on each other, and covers each one in depth: Linux and networking first, then the core AWS services, networking and security on AWS, automation, running systems at scale, and designing whole systems.</p>
+<p>It uses one cloud provider, AWS, so every example fits together. The ideas carry over to other clouds, under different names.</p>
 <p>The name comes from the pipeline: the path every change takes from a commit to production, and the path the roadmap follows.</p>
 
 <h2>How to use it</h2>
-<p>Start at the top of the <a href={href('roadmap.html')}>roadmap</a> and work down. Each topic explains why it matters, the core ideas and the commands to run, then ends with a lab. The labs build on each other, so one app goes all the way from a commit to a secured, monitored deployment.</p>
+<p>Start at the top of the <a href={href('roadmap.html')}>roadmap</a> and work down. Each topic explains why it matters, the core ideas and the commands to run. Some end with a <a href={href('labs.html')}>lab</a> you can do on your own computer.</p>
 <p>Notes are added one topic at a time. A topic becomes a link on the roadmap once its notes are ready.</p></main>
 </Layout>

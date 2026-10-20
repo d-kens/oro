@@ -105,8 +105,8 @@ DORA measures results. CALMS checks the habits behind them. Ask these five quest
 You will often hear these three names alongside DevOps:
 
 - **Agile** is about how a team plans and builds software in short steps. DevOps carries the same idea on through releasing and running it.
-- **SRE** (Site Reliability Engineering) is Google's way of doing DevOps, focused on keeping systems reliable. It has its own topic later in the roadmap.
-- **Platform Engineering** builds shared tools so every team can follow the loop without building everything themselves. It comes near the end of the roadmap.
+- **SRE** (Site Reliability Engineering) is Google's way of doing DevOps, focused on keeping systems reliable. It comes up again in the optional extras at the end of the roadmap.
+- **Platform Engineering** builds shared tools so every team can follow the loop without building everything themselves. It is in the optional extras at the end of the roadmap too.
 
 ## Summary
 

@@ -17,7 +17,7 @@ const minutes = Math.max(1, Math.round(entry.body.split(/\s+/).filter(Boolean).l
 const neighbours = [[-1, 'Previous'], [1, 'Next']].map(([step, label]) => ({ x: MODULES[m.num - 1 + step], label }));
 ---
 <Layout url={`notes/${m.slug}.html`} title={m.title} ogType="article" scripts={['notes.js']}
-  description={`${m.title}: ${m.summary}`}>
+  description={`${m.name}: ${m.summary}`}>
 <div class="progress-line" aria-hidden="true"></div>
 <main class:list={['notes', { 'has-toc': sections.length >= 3 }]}>
 <header class="notes-head">

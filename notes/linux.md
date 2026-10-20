@@ -1,4 +1,4 @@
-**Linux is an operating system: the base software that runs a computer, like Windows on a laptop or iOS on an iPhone. Most servers on the internet run Linux, so it is the first tool every DevOps engineer needs.**
+**Linux is an operating system: the base software that runs a computer, like Windows on a laptop or iOS on an iPhone. Most servers on the internet run Linux, so it is the first tool every cloud engineer needs.**
 
 **By the end of this topic you will have a small website running on your own Linux machine. It will start by itself, restart itself if it crashes, and you will know how to find and fix the three most common reasons it breaks.**
 
@@ -768,7 +768,7 @@ You can now:
 
 Most of all: **when something breaks, read the evidence first, then change one thing at a time.**
 
-**Next:** Git and branching strategies. Git keeps a history of every change you make to your files.
+**Next:** Networking basics. Every cloud service is reached over a network, so it helps to know how computers find and talk to each other.
 
 ## Further reading
 

@@ -4,7 +4,7 @@
 import { SITE, NAME, href } from '../lib/site.js';
 
 const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [] } = Astro.props;
-const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · DevOps roadmap and notes';
+const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Cloud engineering roadmap and notes';
 /* the nav links; the current page's link is marked, and a notes page counts as part of Topics */
 const here = Astro.url.pathname;
 const links = [['roadmap.html', 'Roadmap'], ['topics.html', 'Topics'], ['labs.html', 'Labs'], ['about.html', 'About']]

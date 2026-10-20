@@ -13,11 +13,11 @@ const labs = await Promise.all(MODULES.filter((m) => m.kind).map(async (m) => {
   return { m, link: href(`notes/${m.slug}.html${lab ? '#' + lab.slug : ''}`) };
 }));
 ---
-<Layout url="labs.html" title="Labs" description="Every hands-on lab on the Paipa DevOps roadmap, in order: one app taken from a commit to a secured, monitored deployment.">
+<Layout url="labs.html" title="Labs" description="Every hands-on lab on the Paipa cloud engineering roadmap, in order. Each one runs on your own computer.">
 <main class="labs">
 <header>
   <h1>Labs</h1>
-  <p>{labs.length} hands-on labs, in the order they come up. They build on each other, so one app goes from a commit to a secured, monitored deployment.</p>
+  <p>{labs.length} hands-on labs, in the order they come up. Each one runs on your own computer, so none of them needs an AWS account.</p>
 </header>
 <ol class="lab-list">
   {labs.map(({ m, link }, i) => (
@@ -25,7 +25,7 @@ const labs = await Promise.all(MODULES.filter((m) => m.kind).map(async (m) => {
       <span class="n">{pad(i + 1)}</span>
       <div>
         <p class="task">{link ? <a href={link}>{m.task}</a> : m.task}</p>
-        <p class="topic">{m.kind === 'Project' ? 'Final project' : m.title}{!link && <span> · not written yet</span>}</p>
+        <p class="topic">{m.kind === 'Project' ? 'Final project' : m.title}{!link && <span> · coming soon</span>}</p>
       </div>
     </li>
   ))}
