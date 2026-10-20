@@ -244,7 +244,7 @@ ls -l ~/practice/notes.txt     # starts with -rw-------
 
 ### Logging in to real servers: SSH
 
-You will not need this until you work with real servers, but it belongs with permissions. On a real job, servers are in a data centre, not in front of you. You connect to them with **SSH**, which gives you a terminal on the remote machine. Instead of a password, you usually use an **SSH key**: a pair of files that prove who you are.
+You will not need this until you work with real servers, but it belongs with permissions. On a real job, servers are in the cloud or a data centre, not in front of you. You connect to them with **SSH**, which gives you a terminal on the remote machine. Instead of a password, you usually use an **SSH key**: a pair of files that prove who you are. Linux servers on AWS (EC2) usually work the same way, which the Compute topic covers.
 
 ```bash
 ssh-keygen -t ed25519      # make a key pair; press Enter to accept the defaults
@@ -737,7 +737,7 @@ For each break, write three lines in your own notes:
 2. **Evidence:** the exact log line or command output that explained it.
 3. **Fix:** what you changed, and how you checked it worked.
 
-Real teams use the same format to write up problems in production (see SRE practice and incident management, later in the roadmap).
+Real teams use the same format to write up problems in production (see SRE, in the optional extras at the end of the roadmap).
 
 ### Clean up
 
