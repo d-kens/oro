@@ -9,6 +9,8 @@
 var NOTES = {
   'what-is-cloud-engineering': { status: 'published', updated: '2026-10-20', name: 'What is cloud engineering',
     summary: 'What the cloud is, what a cloud engineer does, how it differs from DevOps and SRE, and the main kinds of cloud service.' },
+  'how-the-cloud-works': { status: 'published', updated: '2026-10-21', name: 'How the cloud works',
+    summary: 'Regions and Availability Zones, choosing a Region, IaaS, PaaS and SaaS, the shared responsibility model, and the console, CLI and SDKs.' },
   'linux': { status: 'published', updated: '2026-10-04', name: 'Linux',
     summary: 'Files, permissions, processes, packages, cron, systemd and logs, and how to fix a broken service.' },
   'devops-mindset': { status: 'published', updated: '2026-10-04', name: 'DevOps mindset',
