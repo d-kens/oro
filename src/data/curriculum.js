@@ -20,7 +20,7 @@ function mod(slug, title, tags, kind, task, note) { return { slug: slug, title: 
 var PHASES = [
   { name: 'Orientation', blurb: 'What cloud engineering is, and how the cloud is put together.', modules: [
     mod('what-is-cloud-engineering', 'What is cloud engineering', ['What the cloud is', 'A cloud engineer\'s day', 'Cloud engineering, DevOps and SRE', 'Core service categories', 'Where to start'], null, null),
-    mod('how-the-cloud-works', 'How the cloud works', ['Regions and Availability Zones', 'IaaS, PaaS and SaaS', 'The shared responsibility model'], null, null) ] },
+    mod('how-the-cloud-works', 'How the cloud works', ['Regions and Availability Zones', 'IaaS, PaaS and SaaS', 'The shared responsibility model', 'The console, CLI and SDKs'], null, null) ] },
   { name: 'Foundations', blurb: 'The everyday tools everything after this depends on.', modules: [
     mod('linux', 'Linux', ['Filesystem and permissions', 'Users and groups', 'Processes and signals', 'systemd, journald, cron', 'top, ss, lsof'], 'Lab', 'Run a service under systemd, break it, and fix it using only logs.'),
     mod('networking', 'Networking basics', ['IP addresses, CIDR and subnets', 'DNS, HTTP and TLS', 'Ports and firewalls', 'NAT', 'dig and curl'], null, null),
@@ -30,27 +30,28 @@ var PHASES = [
     mod('compute', 'Compute: EC2 and auto scaling', ['Instances and instance types', 'AMIs', 'Key pairs and SSH', 'Auto Scaling groups'], null, null),
     mod('storage', 'Storage: S3 and EBS', ['Buckets and objects', 'Storage classes', 'EBS volumes and snapshots', 'Which storage when'], null, null),
     mod('databases', 'Managed databases: RDS and DynamoDB', ['Managed vs self-run databases', 'RDS', 'DynamoDB', 'Backups and read replicas', 'SQL or NoSQL?'], null, null),
-    mod('serverless', 'Serverless: Lambda', ['Functions and events', 'Triggers', 'Limits and cold starts', 'When serverless fits'], null, null) ] },
+    mod('serverless', 'Serverless: Lambda', ['Functions and events', 'Triggers', 'Limits and cold starts', 'When serverless fits'], null, null),
+    mod('messaging', 'Messaging and events: SQS, SNS and EventBridge', ['Why decouple services', 'Queues with SQS', 'Fan-out with SNS', 'Events with EventBridge', 'Retries and dead-letter queues'], null, null) ] },
   { name: 'Cloud networking', blurb: 'Connect services privately, and let users reach them safely.', modules: [
     mod('vpc', 'VPCs, subnets, routing and security groups', ['VPCs and CIDR blocks', 'Public and private subnets', 'Route tables and gateways', 'Security groups and network ACLs'], null, null),
     mod('dns-load-balancing-cdn', 'DNS, load balancers and CDN (Route 53, ELB, CloudFront)', ['Route 53', 'Elastic Load Balancing', 'CloudFront', 'Health checks', 'HTTPS certificates'], null, null) ] },
   { name: 'Identity and security', blurb: 'Decide who can do what, and keep data safe.', modules: [
     mod('iam', 'IAM and least privilege', ['Users, groups and roles', 'Policies', 'Least privilege', 'MFA', 'Temporary credentials'], null, null),
-    mod('secrets-encryption', 'Secrets and encryption', ['Keeping secrets out of code', 'Secrets Manager', 'KMS', 'Encryption at rest and in transit'], null, null) ] },
+    mod('secrets-encryption', 'Secrets and encryption', ['Keeping secrets out of code', 'Secrets Manager', 'KMS', 'Encryption at rest and in transit'], null, null),
+    mod('audit-accounts', 'Auditing and multiple accounts: CloudTrail and Organizations', ['Who did what: CloudTrail', 'Why use several accounts', 'AWS Organizations', 'Guardrails with SCPs'], null, null) ] },
   { name: 'Automate', blurb: 'Build and change everything from code.', modules: [
     mod('infrastructure-as-code', 'Infrastructure as code with Terraform', ['Why infrastructure as code', 'Providers and resources', 'Plan and apply', 'State and locking', 'Modules'], null, null),
     mod('containers', 'Containers and Docker', ['Containers vs VMs', 'Images and Dockerfiles', 'Multi-stage builds', 'Docker Compose', 'Registries and tags'], 'Lab', 'Containerise a Spring Boot app and its database with Compose, and keep the image under 200 MB.'),
     mod('ci-cd', 'CI/CD with GitHub Actions', ['Continuous integration', 'Continuous delivery', 'Workflows, jobs and steps', 'Caching and matrices', 'Rollbacks'], 'Lab', 'Build a GitHub Actions pipeline that lints, tests, builds and publishes your Docker image.'),
     mod('devops-mindset', 'How cloud teams ship: the DevOps mindset', ['CALMS', 'The Three Ways', 'DORA metrics', 'DevOps, SRE and Platform Engineering'], null, null) ] },
   { name: 'Run at scale', blurb: 'Keep systems healthy, recoverable and affordable.', modules: [
-    mod('eks', 'Kubernetes on AWS (EKS)', ['Pods, Deployments and Services', 'kubectl', 'EKS clusters and node groups', 'Scaling'], null, null),
+    mod('containers-on-aws', 'Containers on AWS: ECS, Fargate and EKS', ['Storing images in ECR', 'ECS tasks and services', 'Fargate: no servers to manage', 'Kubernetes and EKS', 'ECS or EKS?'], null, null),
     mod('observability', 'Observability: CloudWatch, Prometheus and Grafana', ['Metrics, logs and traces', 'CloudWatch', 'Prometheus and Grafana', 'Dashboards', 'Actionable alerts'], 'Lab', 'Run Prometheus and Grafana on your own computer, then build a dashboard for an app and one meaningful alert.'),
-    mod('reliability', 'Reliability and disaster recovery', ['Failure is normal', 'Backups, RPO and RTO', 'Multi-AZ and multi-Region', 'Testing recovery'], null, null),
+    mod('reliability', 'Reliability, high availability and disaster recovery', ['Failure is normal', 'Single points of failure', 'Stateless services and graceful failure', 'Multi-AZ and multi-Region', 'Backups, RPO and RTO', 'Testing recovery'], null, null),
     mod('cost-management', 'Cost management', ['How cloud pricing works', 'Budgets and alerts', 'Tagging', 'Right-sizing', 'Cutting waste'], null, null) ] },
   { name: 'Architect', blurb: 'Design whole systems, then prove it end to end.', modules: [
     mod('well-architected', 'The AWS Well-Architected Framework', ['The pillars', 'Trade-offs', 'Reviewing a design'], null, null),
-    mod('high-availability', 'Designing for high availability', ['Single points of failure', 'Spreading across Availability Zones', 'Stateless services', 'Graceful failure'], null, null),
-    mod('capstone', 'Capstone: design and deploy a production-ready app on AWS', ['Design', 'Network and security', 'Infrastructure as code', 'CI/CD', 'Monitoring and cost'], null, null),
+    mod('capstone', 'Capstone: design a production-ready app on AWS and write it as code', ['Design', 'Network and security', 'Infrastructure as code', 'CI/CD', 'Monitoring and cost', 'Checking it with terraform plan'], null, null),
     mod('certification', 'Optional: certification guide (AWS Solutions Architect Associate)', ['What the exam covers', 'How to prepare'], null, null),
     mod('extras', 'Optional extras: SRE, platform engineering, GitOps, supply chain security', ['SRE', 'Platform engineering', 'GitOps', 'Supply chain security'], null, null) ] }
 ];

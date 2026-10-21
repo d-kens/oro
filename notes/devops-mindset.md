@@ -16,7 +16,7 @@ Then it gives you a quick checklist for any team, and three related names you wi
 
 It is not a tool you install or a job title. It is how a team works.
 
-So why do job adverts ask for **DevOps engineers**? People with that title usually build the automation that lets a team work the DevOps way: the automated build, test and deploy steps, servers set up from code, and monitoring. That is what the rest of the roadmap teaches.
+So why do job adverts ask for **DevOps engineers**? People with that title usually build the automation that lets a team work the DevOps way: the automated build, test and deploy steps, servers set up from code, and monitoring. The Automate stage of the roadmap teaches that work.
 
 ## 2. How does work move? The DevOps loop
 

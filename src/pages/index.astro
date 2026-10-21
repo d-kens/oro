@@ -8,8 +8,8 @@ const first = MODULES[0];
 
 /* the tools row: each tool and the topic that teaches it. A tool is dark, and links to its notes, once that topic is published. */
 const TOOLS = [['Linux', 'linux'], ['EC2', 'compute'], ['S3', 'storage'], ['VPC', 'vpc'], ['IAM', 'iam'], ['RDS', 'databases'],
-  ['Lambda', 'serverless'], ['CloudWatch', 'observability'], ['Terraform', 'infrastructure-as-code'], ['Docker', 'containers'],
-  ['Kubernetes', 'eks'], ['GitHub Actions', 'ci-cd'], ['Grafana', 'observability']];
+  ['Lambda', 'serverless'], ['SQS', 'messaging'], ['CloudWatch', 'observability'], ['Terraform', 'infrastructure-as-code'], ['Docker', 'containers'],
+  ['ECS', 'containers-on-aws'], ['Kubernetes', 'containers-on-aws'], ['GitHub Actions', 'ci-cd'], ['Grafana', 'observability']];
 const tools = TOOLS.map(([name, slug]) => {
   const m = MODULES.find((x) => x.slug === slug);
   if (!m) throw new Error(`The tools row names '${slug}' for ${name}, but no topic has that slug`);
