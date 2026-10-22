@@ -64,7 +64,7 @@ Run this before you push, to see exactly what GitHub Pages will publish.
 | `src/data/curriculum.js` | The stages, the topics, their labs, and which topics have published notes |
 | `notes/<slug>.md` | The notes for one topic, in Markdown, loaded as the `notes` content collection (`src/content.config.js`) |
 | `src/layouts/Layout.astro` | The shared head, nav, footer and scripts every page uses, including the drawn wordmark |
-| `src/pages/` | The home, roadmap, topics, labs, about, search and 404 pages, one page per topic's notes, the search index and the sitemap |
+| `src/pages/` | The home, roadmap, topics, labs, search and 404 pages, one page per topic's notes, the search index and the sitemap |
 | `src/pages/index.astro` | The home page, including the list of tools in the moving "Tools along the pipeline" row |
 | `src/lib/` | Shared settings and helpers, and the curriculum check |
 | `public/` | `styles.css`, `nav.js`, `search.js`, `notes.js` and `favicon.svg`, copied to the site as they are |

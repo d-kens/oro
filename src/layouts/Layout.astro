@@ -4,10 +4,10 @@
 import { SITE, NAME, href } from '../lib/site.js';
 
 const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [] } = Astro.props;
-const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Cloud engineering roadmap and notes';
+const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · DevOps and cloud roadmap and notes';
 /* the nav links; the current page's link is marked, and a notes page counts as part of Topics */
 const here = Astro.url.pathname;
-const links = [['roadmap.html', 'Roadmap'], ['topics.html', 'Topics'], ['labs.html', 'Labs'], ['about.html', 'About']]
+const links = [['roadmap.html', 'Roadmap'], ['topics.html', 'Topics'], ['labs.html', 'Labs']]
   .map(([path, label]) => ({ path, label, current: here.endsWith('/' + path) || (path === 'topics.html' && here.includes('/notes/')) }));
 ---
 <!doctype html>
@@ -52,7 +52,6 @@ const links = [['roadmap.html', 'Roadmap'], ['topics.html', 'Topics'], ['labs.ht
       <li><a href={href('roadmap.html')}>Roadmap</a></li>
       <li><a href={href('topics.html')}>Topics</a></li>
       <li><a href={href('labs.html')}>Labs</a></li>
-      <li><a href={href('about.html')}>About</a></li>
     </ul>
   </footer>
 </div>

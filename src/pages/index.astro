@@ -1,45 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { PHASES, MODULES } from '../data/curriculum.js';
-import { href, published } from '../lib/site.js';
-
-/* the first topic on the roadmap, linked once its notes are written */
-const first = MODULES[0];
-
-/* the tools row: each tool and the topic that teaches it. A tool is dark, and links to its notes, once that topic is published. */
-const TOOLS = [['Linux', 'linux'], ['EC2', 'compute'], ['S3', 'storage'], ['VPC', 'vpc'], ['IAM', 'iam'], ['RDS', 'databases'],
-  ['Lambda', 'serverless'], ['SQS', 'messaging'], ['CloudWatch', 'observability'], ['Terraform', 'infrastructure-as-code'], ['Docker', 'containers'],
-  ['ECS', 'containers-on-aws'], ['Kubernetes', 'containers-on-aws'], ['GitHub Actions', 'ci-cd'], ['Grafana', 'observability']];
-const tools = TOOLS.map(([name, slug]) => {
-  const m = MODULES.find((x) => x.slug === slug);
-  if (!m) throw new Error(`The tools row names '${slug}' for ${name}, but no topic has that slug`);
-  return { name, live: m.status === 'published', link: href(`notes/${m.slug}.html`) };
-});
 ---
-<Layout description="From Linux to designing, securing and running systems on AWS.">
+<Layout description="Learn DevOps and cloud.">
 <main class="home">
-  <h1>Learn cloud engineering one topic at a time.</h1>
-  <p class="lead">{MODULES.length} topics in {PHASES.length} stages, from Linux to designing, securing and running systems on AWS.</p>
-  <p class="actions">
-    <a class="cta" href={href('roadmap.html')}>See the roadmap</a>
-    <a class="cta quiet" href={href('topics.html')}>Browse topics</a>
-  </p>
-  <p class="start">
-    {first.status === 'published'
-      ? <>New here? Start with <a href={href(`notes/${first.slug}.html`)}>{first.name}</a>.</>
-      : <>{published.length} of {MODULES.length} topics have notes so far.</>}
-  </p>
-
-  <section class="tools" aria-labelledby="tools-head">
-    <h2 id="tools-head">Tools along the pipeline</h2>
-    {/* the list is drawn twice so the row can loop without a gap; the copy is hidden from screen readers */}
-    <div class="belt">
-      {[false, true].map((copy) => (
-        <ul aria-hidden={copy ? 'true' : undefined}>
-          {tools.map((t) => <li>{t.live ? <a href={t.link} tabindex={copy ? -1 : undefined}>{t.name}</a> : t.name}</li>)}
-        </ul>
-      ))}
-    </div>
-  </section>
+  <h1>Learn DevOps and cloud.</h1>
 </main>
 </Layout>
