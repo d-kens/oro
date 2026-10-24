@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { SKILLS } from '../data/skills.js';
+import { href } from '../lib/site.js';
+---
+<Layout url="skills.html" title="Skills" description="The skills a cloud engineer needs, each one a set of topics learned in order.">
+<main class="skills">
+<header>
+  <h1>Skills</h1>
+  <p>The skills a cloud engineer needs. Each one is a set of topics, learned in order, that ends in projects you build on your own computer.</p>
+</header>
+<ul class="skill-list">
+  {SKILLS.map((s) => (
+    <li>
+      <a href={href(`skills/${s.slug}.html`)}>{s.name}</a>
+      <p>{s.summary}</p>
+      <span class="facts">{s.level} · {s.topics.length} topics · {s.projects.length} projects</span>
+    </li>
+  ))}
+</ul>
+</main>
+</Layout>

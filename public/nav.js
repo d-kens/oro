@@ -1,9 +1,9 @@
-/* Phone menu: the button under 560px wide opens the nav links as a full-screen panel.
-   Escape closes it, and so does widening the window past the phone layout. */
+/* Phone menu: the button under 900px wide drops the nav links down as a sheet.
+   Escape or a tap on the dimmed page closes it, and so does widening the window past the phone layout. */
 (function () {
   var nav = document.querySelector('.wrap > nav'), btn = nav && nav.querySelector('.menu-btn');
   if (!btn) return;
-  var phone = window.matchMedia('(max-width: 560px)');
+  var phone = window.matchMedia('(max-width: 900px)');
   function set(open) {
     if (open) nav.style.setProperty('--nav-h', nav.getBoundingClientRect().bottom + 'px');
     nav.classList.toggle('open', open);
@@ -12,6 +12,7 @@
     btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   }
   btn.addEventListener('click', function () { set(!nav.classList.contains('open')); });
+  nav.addEventListener('click', function (e) { if (e.target === nav && nav.classList.contains('open')) set(false); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && nav.classList.contains('open')) { set(false); btn.focus(); }
   });

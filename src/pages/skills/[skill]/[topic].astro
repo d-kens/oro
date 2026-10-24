@@ -1,0 +1,40 @@
+---
+/* one topic or project of a skill: its lesson, with the contents list beside it on wide screens, and the topics either side */
+import { getEntry, render } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+import { href, lessons } from '../../../lib/site.js';
+
+export const getStaticPaths = () => lessons.map((l) => ({ params: { skill: l.skill.slug, topic: l.slug }, props: { l } }));
+
+const { l } = Astro.props;
+const s = l.skill, all = lessons.filter((x) => x.skill === s);
+const entry = await getEntry('lessons', `${s.slug}/${l.slug}`);
+const { Content, headings } = await render(entry);
+const sections = headings.filter((h) => h.depth === 2);
+const minutes = Math.max(1, Math.round(entry.body.split(/\s+/).filter(Boolean).length / 220));
+const neighbours = [[all[l.n - 2], 'Previous'], [all[l.n], 'Next']];
+---
+<Layout url={l.url} title={`${l.title} · ${s.name}`} ogType="article" scripts={['notes.js']} description={`${s.name}: ${l.line}`}>
+<div class="progress-line" aria-hidden="true"></div>
+<main class:list={['notes', { 'has-toc': sections.length >= 3 }]}>
+<header class="notes-head">
+  <p class="crumbs"><a href={href('skills.html')}>Skills</a><span aria-hidden="true">/</span><a href={href(`skills/${s.slug}.html`)}>{s.name}</a></p>
+  <h1>{l.title}</h1>
+  <p class="lead">{l.line}</p>
+  <p class="meta"><span>{l.project ? 'Project' : 'Topic'} {l.n} of {all.length}</span><span>{minutes} min read</span></p>
+</header>
+{sections.length >= 3 && (
+  <nav class="toc" aria-label="On this page"><details open><summary>On this page</summary><ul>
+    {sections.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+  </ul></details></nav>
+)}
+<div class="notes-body">
+<article class="md"><Content /></article>
+<nav class="pn" aria-label={`${s.name} topics`}>
+  {neighbours.map(([x, label]) => x
+    ? <a href={href(x.url)}><span class="label">{label}</span><b>{x.title}</b></a>
+    : <a href={href(`skills/${s.slug}.html`)}><span class="label">Back to</span><b>{s.name}</b></a>)}
+</nav>
+</div>
+</main>
+</Layout>
