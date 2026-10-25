@@ -1,11 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout url="search.html" title="Search" description="Search the Paipa cloud engineering notes." scripts={['search.js']}>
+<Layout url="search.html" title="Search" description="Search every Paipa lesson." scripts={['search.js']}>
   <main class="search">
     <form class="search-box" role="search" action="search.html">
-      <label for="q" class="sr">Search the notes and the roadmap</label>
-      <input id="q" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search the notes" aria-describedby="status" aria-controls="results">
+      <label for="q" class="sr">Search the lessons</label>
+      <input id="q" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search the lessons" aria-describedby="status" aria-controls="results">
     </form>
     <p class="search-status" id="status" aria-live="polite"></p>
     <ol class="results" id="results"></ol>

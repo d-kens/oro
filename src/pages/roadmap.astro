@@ -1,27 +1,35 @@
 ---
+/* the roadmaps: each one the skills for a role, in order. Written skills link to their page; the rest are planned. */
 import Layout from '../layouts/Layout.astro';
-import { PHASES, MODULES } from '../data/curriculum.js';
+import { ROADMAPS } from '../data/roadmaps.js';
+import { SKILLS } from '../data/skills.js';
 import { href, pad } from '../lib/site.js';
 
-const description = `A cloud engineering roadmap in ${PHASES.length} stages, from Linux to designing, securing and running systems on AWS.`;
+const skill = (slug) => SKILLS.find((s) => s.slug === slug);
 ---
-<Layout url="roadmap.html" title="Roadmap" description={description}>
+<Layout url="roadmap.html" title="Roadmaps" description="The DevOps engineer roadmap: the skills to learn, in order.">
 <main class="roadmap">
 <header>
-  <h1>Roadmap</h1>
-  <p>{MODULES.length} topics in {PHASES.length} stages, in the order to learn them. Linked topics have notes.</p>
+  <h1>Roadmaps</h1>
+  <p>The skills for a role, in the order to learn them. Linked skills are written; the rest are planned.</p>
 </header>
-<ol class="stages">
-{PHASES.map((ph, pi) => (
-  <li id={`phase-${pi}`}>
-    <h2><span>{pad(pi + 1)}</span>{ph.name}</h2>
-    <ul>
-      {ph.modules.map((m) => (
-        <li id={m.slug}>{m.status === 'published' ? <a href={href(`notes/${m.slug}.html`)}>{m.title}</a> : m.title}</li>
-      ))}
-    </ul>
-  </li>
+{ROADMAPS.map((r) => (
+  <section class="path" id={r.slug}>
+    <h2>{r.name}</h2>
+    <p>{r.summary}</p>
+    <ol>
+      {r.steps.map(([slug, name], i) => {
+        const s = skill(slug);
+        return (
+          <li class:list={{ live: s }}>
+            <span class="n">{pad(i + 1)}</span>
+            {s ? <a href={href(`skills/${s.slug}.html`)}>{s.name}</a> : <span>{name}</span>}
+            <span class="facts">{s ? `${s.topics.length} topics · ${s.projects.length} projects` : 'Planned'}</span>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
 ))}
-</ol>
 </main>
 </Layout>

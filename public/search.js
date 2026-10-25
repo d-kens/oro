@@ -5,7 +5,7 @@
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
-  /* built by src/pages/search-index.json.js: one entry per topic, plus one per section of its published notes */
+  /* built by src/pages/search-index.json.js: one entry per section of each lesson */
   var INDEX = null;
 
   /* ---------- search ---------- */
@@ -52,7 +52,6 @@
         if (!inTitle && !inBody) return;
         score += (inTitle ? 5 : 0) + (inBody ? Math.min(inBody, 5) : 0);
       }
-      if (e.heading) score += 2;            /* prefer a section of real notes over a topic summary */
       hits.push({ e: e, score: score });
     });
     hits.sort(function (a, b) { return b.score - a.score || a.e.num - b.e.num; });
@@ -61,8 +60,8 @@
     active = -1;
     list.innerHTML = hits.slice(0, 40).map(function (h) {
       var e = h.e;
-      return '<li><a href="' + esc(e.url) + '"><b>' + esc(e.heading || e.module) + '</b>' +
-        '<span class="where">' + (e.heading ? 'in ' + esc(e.module) : e.live ? 'Topic overview' : 'On the roadmap, not written yet') + '</span>' +
+      return '<li><a href="' + esc(e.url) + '"><b>' + esc(e.heading) + '</b>' +
+        '<span class="where">in ' + esc(e.module) + '</span>' +
         '<p>' + snippet(e.text, ws) + '</p></a></li>';
     }).join('');
   }

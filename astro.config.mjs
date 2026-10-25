@@ -1,17 +1,17 @@
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import rehypeHighlight from 'rehype-highlight';
-import { checkCurriculum } from './src/lib/check.js';
+import { checkLessons } from './src/lib/check.js';
 
 /* runs before every dev server and build */
-const curriculumCheck = {
-  name: 'paipa-curriculum-check',
+const lessonsCheck = {
+  name: 'paipa-lessons-check',
   hooks: {
     'astro:config:setup': () => {
-      const problems = checkCurriculum(new URL('./notes/', import.meta.url));
+      const problems = checkLessons(new URL('./lessons/', import.meta.url));
       if (!problems.length) return;
       problems.forEach((p) => console.error((process.env.GITHUB_ACTIONS ? '::error::' : 'error: ') + p));
-      throw new Error('The curriculum does not match the notes. See the errors above.');
+      throw new Error('The skills do not match the lessons. See the errors above.');
     }
   }
 };
@@ -21,7 +21,7 @@ export default defineConfig({
   base: '/paipa/',
   /* notes/linux.html, not notes/linux/: the URLs the site has always had */
   build: { format: 'file' },
-  integrations: [curriculumCheck],
+  integrations: [lessonsCheck],
   markdown: {
     /* highlight.js classes, which public/styles.css colours; detect picks a language for unlabelled blocks */
     syntaxHighlight: false,

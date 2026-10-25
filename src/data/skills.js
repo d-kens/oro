@@ -32,5 +32,69 @@ export const SKILLS = [
       ['project-read-the-logs', 'Read the logs', 'Take a web server log and answer questions with a pipeline: the busiest hour, the most common errors, the top visitors.'],
       ['project-automate-a-backup', 'Automate a backup', 'Write a script that archives a directory, keeps the last seven copies, runs every night and logs what it did.']
     ]
+  },
+  {
+    slug: 'networking', name: 'Networking', level: 'Beginner',
+    summary: 'How machines find and talk to each other, from IP addresses and ports to DNS, HTTP, TLS, routing and firewalls, and how to find out why they cannot.',
+    topics: [
+      ['what-a-network-is', 'What a network is', 'Hosts, links, packets, switches and routers. Building a small network of your own to practise on.'],
+      ['ip-addresses', 'IP addresses', 'IPv4 and IPv6 addresses, private and public ranges, and finding a machine\'s addresses.'],
+      ['interfaces', 'Interfaces', 'Network interfaces, the loopback, bringing an interface up and down, and adding an address.'],
+      ['subnets-and-cidr', 'Subnets and CIDR', 'Network masks, CIDR notation, and working out which addresses are on the same network.'],
+      ['mac-addresses-and-arp', 'MAC addresses and ARP', 'Hardware addresses, and how a machine finds the one behind an IP address on its own network.'],
+      ['the-layers-model', 'The layers model', 'The layers a packet passes through, what each one adds, and which tools work at which layer.'],
+      ['ports-and-sockets', 'Ports and sockets', 'How one machine runs many services, well-known ports, and seeing what is listening.'],
+      ['tcp', 'TCP', 'Connections, the three-way handshake, connection states, and what reliable delivery costs.'],
+      ['udp', 'UDP', 'Sending without a connection, where that is the right choice, and what can go missing.'],
+      ['netcat', 'Netcat', 'Opening raw TCP and UDP connections by hand to test a port or talk to a service.'],
+      ['dns-basics', 'DNS basics', 'How a name becomes an address, resolvers, caching, /etc/hosts and following a lookup with dig.'],
+      ['dns-record-types', 'DNS record types', 'A, AAAA, CNAME, MX, TXT and NS records, TTLs, and reading what a domain publishes.'],
+      ['run-your-own-dns', 'Run your own DNS', 'A small DNS server for your lab network, and pointing machines at it.'],
+      ['http', 'HTTP', 'Requests and responses, methods, status codes, and watching a request with curl.'],
+      ['http-headers-redirects-and-json', 'HTTP headers, redirects and JSON', 'The headers that matter, following redirects, and sending and reading JSON.'],
+      ['serve-a-website-with-nginx', 'Serve a website with nginx', 'Installing nginx, serving a site, server blocks, and reading its logs.'],
+      ['tls-and-https', 'TLS and HTTPS', 'What TLS protects, certificates and the chain of trust, and inspecting a site\'s certificate.'],
+      ['make-your-own-certificates', 'Make your own certificates', 'A certificate authority of your own, signing a certificate, and serving HTTPS with it.'],
+      ['routing-and-gateways', 'Routing and gateways', 'The routing table, the default gateway, and following a packet\'s path with traceroute.'],
+      ['nat', 'NAT', 'How private addresses reach the internet, and forwarding a port from outside to a machine inside.'],
+      ['dhcp', 'DHCP', 'How a machine gets its address, gateway and DNS server automatically when it joins a network.'],
+      ['firewall-basics', 'Firewall basics', 'Packet filtering, rules and chains, default policies, and allowing only what you need.'],
+      ['firewall-practice', 'Firewall practice', 'Locking down a server step by step without locking yourself out.'],
+      ['tcpdump', 'tcpdump', 'Capturing packets, filtering them, and reading what was actually sent.'],
+      ['ssh-and-tunnels', 'SSH and tunnels', 'Keys, the SSH config file, jump hosts, and forwarding ports through SSH.'],
+      ['reverse-proxy-and-load-balancing', 'Reverse proxy and load balancing', 'Putting nginx in front of applications and spreading requests across several of them.'],
+      ['scanning-with-nmap', 'Scanning with nmap', 'Finding hosts and open ports on a network you are allowed to scan.'],
+      ['the-debugging-playbook', 'The debugging playbook', 'A layer-by-layer method for working out why a service cannot be reached.'],
+      ['latency-and-bandwidth', 'Latency and bandwidth', 'Measuring delay and throughput, and adding delay on purpose to see what it does.']
+    ],
+    projects: [
+      ['project-fix-the-broken-server', 'Fix the broken server', 'A lab network where a web service cannot be reached. Find each fault, layer by layer, and fix it.'],
+      ['project-build-a-small-web-stack', 'Build a small web stack', 'Two application servers behind an nginx load balancer with HTTPS and a DNS name of its own.'],
+      ['project-diagnose-traffic-with-tcpdump', 'Diagnose traffic with tcpdump', 'Capture a request from start to finish and explain every packet: DNS, the handshake, TLS and HTTP.']
+    ]
+  },
+  {
+    slug: 'shell-scripting', name: 'Shell scripting', level: 'Intermediate',
+    summary: 'Turning the commands from the Linux skill into Bash scripts that run unattended, handle bad input and fail safely.',
+    topics: [
+      ['shell-scripting-basics', 'Shell scripting basics', 'What a script is, the shebang line, making a script executable, and running it.'],
+      ['shell-variables', 'Shell variables', 'Setting and reading variables, quoting, command substitution, and environment variables in scripts.'],
+      ['conditionals', 'Conditionals', 'if, test and [[ ]], comparing strings, numbers and files, and case statements.'],
+      ['loops', 'Loops', 'for, while and until loops, reading a file line by line, and break and continue.'],
+      ['parameter-expansion', 'Parameter expansion', 'Default values, trimming and replacing parts of a value, and lengths, without calling other programs.'],
+      ['arguments-and-input', 'Arguments and input', 'Positional arguments, shift, options with getopts, reading input, and a usage message.'],
+      ['functions', 'Functions', 'Defining functions, arguments and return values, local variables, and splitting a script into parts.'],
+      ['arrays', 'Arrays', 'Indexed and associative arrays, looping over them, and keeping file names with spaces intact.'],
+      ['arithmetic-and-strings', 'Arithmetic and strings', 'Integer maths with $(( )), comparing and formatting numbers and text, and printf.'],
+      ['exit-codes-and-errors', 'Exit codes and errors', 'Exit statuses, checking them, && and ||, writing errors to stderr, and exiting with the right code.'],
+      ['robust-scripts', 'Robust scripts', 'set -euo pipefail, traps and clean-up, temporary files, lock files, and scripts that are safe to run twice.'],
+      ['debugging', 'Debugging', 'Tracing a script with set -x, ShellCheck, and finding the line where it goes wrong.'],
+      ['real-world-scripts', 'Real-world scripts', 'Patterns from scripts that run in production: logging, configuration files, dry runs, and running from cron.']
+    ],
+    projects: [
+      ['project-health-check', 'Health check', 'A script that checks disk, memory, load and services, writes a report, and exits with a status a monitor can act on.'],
+      ['project-bulk-users-from-a-file', 'Bulk users from a file', 'Create and update user accounts from a CSV file, with validation, a dry-run mode and a summary, safe to run again.'],
+      ['project-deploy-script', 'Deploy script', 'Release a new version of a site into a timestamped directory, switch to it with a symlink, check it, and roll back on failure.']
+    ]
   }
 ];

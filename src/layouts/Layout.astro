@@ -4,10 +4,10 @@
 import { SITE, NAME, WHATSAPP, href } from '../lib/site.js';
 
 const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [] } = Astro.props;
-const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · DevOps and cloud roadmap and notes';
-/* the nav links; the current page's link is marked, and a skill's page counts as part of Skills. The footer adds Topics, which is not in the nav. */
+const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Learn DevOps and cloud';
+/* the nav links; the current page's link is marked, and a skill's page counts as part of Skills. */
 const here = Astro.url.pathname;
-const links = [['skills.html', 'Skills'], ['roadmap.html', 'Roadmaps'], ['labs.html', 'Labs'], ['interview.html', 'Interview & QA']]
+const links = [['skills.html', 'Skills'], ['roadmap.html', 'Roadmaps']]
   .map(([path, label]) => ({ path, label, current: here.endsWith('/' + path) || (path === 'skills.html' && here.includes('/skills/')) }));
 ---
 <!doctype html>
@@ -51,7 +51,6 @@ const links = [['skills.html', 'Skills'], ['roadmap.html', 'Roadmaps'], ['labs.h
   <footer class="site-foot">
     <ul>
       {links.map((l) => <li><a href={href(l.path)}>{l.label}</a></li>)}
-      <li><a href={href('topics.html')}>Topics</a></li>
       <li><a href={WHATSAPP} target="_blank" rel="noopener">WhatsApp group</a></li>
     </ul>
   </footer>

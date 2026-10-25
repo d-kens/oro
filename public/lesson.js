@@ -1,4 +1,4 @@
-/* Notes pages are rendered by Astro at build time. This adds a Copy button to each code block, folds the contents
+/* Lesson pages are rendered by Astro at build time. This adds a Copy button to each code block, folds the contents
    list on phones so the reading starts on the first screen, marks the section being read in the contents list,
    and fills the thin progress line at the top as you scroll. */
 (function () {
