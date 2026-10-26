@@ -1,4 +1,4 @@
-The most useful thing the cloud gives you is not a cheaper server. It is the ability to have more servers when you need them and fewer when you do not, without buying or selling anything. Using that well takes a different way of thinking about servers.
+In the cloud you can have more servers when you need them and fewer when you do not. Using that well changes how applications are built.
 
 This topic covers scaling up and out, elasticity, and why cloud applications are designed for servers that fail and disappear. By the end you can choose between the two kinds of scaling, and you will have scaled a small service on your own computer.
 
@@ -38,11 +38,9 @@ Then a new copy can start and take requests straight away, and a copy can be rem
 
 ## Cattle, not pets
 
-Before the cloud, servers were often treated like **pets**: each had a name, was set up by hand, and when it got sick someone nursed it back to health. Losing one was a crisis.
+Before the cloud, each server was usually set up by hand, given a name and repaired when it broke. In the cloud, servers are identical, created from the same image or code, and replaced rather than repaired: if one misbehaves, you delete it and a fresh one starts. Engineers call this treating servers as **cattle, not pets**.
 
-In the cloud, servers are treated like **cattle**: identical, numbered, created from the same image or code, and replaced rather than repaired. If one misbehaves, you delete it and the auto scaling group starts a fresh one.
-
-This works only if creating a server is fully automatic, which is why the later skills on the roadmap, Docker, Terraform and Kubernetes, matter so much. And it changes how you plan: you assume any single server can disappear at any moment, and design so that it does not matter.
+This needs server creation to be fully automatic, which is what Docker, Terraform and Kubernetes later on the roadmap provide. It also means you plan for any single server disappearing at any time.
 
 ## Try it: scale out on your own computer
 

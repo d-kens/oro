@@ -1,4 +1,4 @@
-The cloud is not magic and it is not in the sky. It is very large buildings full of ordinary servers, plus a great deal of software that lets many customers share them safely and lets each one create what they need in seconds.
+A cloud is large buildings full of ordinary servers, plus software that lets many customers share them safely and create what they need in seconds.
 
 This topic looks behind the website: the data centres, how one physical machine becomes many virtual ones, and the APIs that make self-service possible. By the end you can explain what happens when you click "create server".
 

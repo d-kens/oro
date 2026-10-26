@@ -9,8 +9,6 @@ Providers describe the split in two phrases:
 - **The provider is responsible for the security *of* the cloud**: the buildings, the hardware, the network between data centres, the hypervisors, and the software that runs their services.
 - **You are responsible for security *in* the cloud**: what you put there and how you set it up. Your data, who can reach it, your accounts and passwords, your network rules, and, depending on the service, your operating systems and applications.
 
-A comparison: a bank builds the vault, guards the building and checks who comes through the door. If you give your safe-deposit key to a stranger, that is not the bank's failure.
-
 ## The line moves with the service model
 
 The more the provider runs, the more it secures. This follows the table in the *Service models* topic:

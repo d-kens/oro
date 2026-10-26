@@ -1,4 +1,4 @@
-"The cloud" sounds like it is nowhere in particular, but every server you rent is in a real building in a real place. Where that place is decides how fast your application feels to users, which laws apply to your data, and whether your service stays up when something goes wrong.
+Every server you rent is in a real building in a real place. Where that place is decides how fast your application feels to users, which laws apply to your data, and whether your service stays up when something goes wrong.
 
 This topic covers how providers arrange their data centres into regions and availability zones, why that design keeps services running, and how to choose where to run. By the end you can explain the difference between a region and a zone, and why serious applications run in more than one zone.
 
@@ -35,7 +35,7 @@ Zones in a region are a few kilometres to tens of kilometres apart: far enough t
 
 ## Why this design matters
 
-Buildings fail. Power supplies, cooling systems and network links break, and sooner or later a whole data centre goes offline. The provider does not stop that from happening; it makes sure one failure takes out only one zone.
+Power supplies, cooling systems and network links break, and sometimes a whole data centre goes offline. Zones are arranged so that one such failure takes out only one zone.
 
 Your part is to use that. If your application runs on one server in one zone, it goes down when that zone does. If it runs on servers in two or three zones, with a load balancer sending users to whichever are healthy, the loss of one zone barely shows.
 

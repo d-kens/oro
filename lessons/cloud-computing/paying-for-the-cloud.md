@@ -1,4 +1,4 @@
-In the cloud, every resource has a price and a meter, and the bill arrives every month. That is what makes the cloud flexible, and also what lets a forgotten test server or a busy download link turn into a bill nobody expected.
+In the cloud, every resource is measured and billed monthly. A forgotten test server or a busy download link shows up on that bill.
 
 This topic covers how cloud pricing works, the main ways to pay less, the costs people forget, and the habits that keep a bill under control. The prices here are made-up round numbers to show how pricing works. Real prices differ by provider and region, and change over time. By the end you can estimate what something will cost and spot the usual causes of a surprise bill.
 
@@ -15,7 +15,7 @@ Cloud pricing is **pay-as-you-go**: each resource is measured, and you pay a rat
 | A managed database | Hour it runs, by size, plus storage | $0.10 an hour |
 | A serverless function | Number of calls and time each one runs | Fractions of a cent per call |
 
-A server at $0.04 an hour costs about $0.04 × 730 hours = **$29 a month** if it runs all the time. 730 is roughly the number of hours in a month, a number worth remembering.
+A server at $0.04 an hour costs about $0.04 × 730 hours = **$29 a month** if it runs all the time. 730 is roughly the number of hours in a month.
 
 ## Paying less for steady use
 
@@ -58,7 +58,7 @@ Using the example rates above, estimate one month for: two small servers running
 - Disks: 2 × 100 × $0.08 = **$16.00**
 - Data out: 500 × $0.09 = **$45.00**
 
-Total about **$119** a month. Data sent out is more than a third of the bill, which surprises most people the first time.
+Total about **$119** a month. Data sent out is more than a third of the bill.
 
 </details>
 

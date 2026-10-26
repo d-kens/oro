@@ -1,4 +1,4 @@
-"Should we move to the cloud?" is usually a question about money first. In this project you take a small online shop, cost it on its own servers and in the cloud over three years, and then cut the cloud bill with the savings from the *Paying for the cloud* topic.
+In this project you take a small online shop, cost it on its own servers and in the cloud over three years, and then cut the cloud bill with the savings from the *Paying for the cloud* topic.
 
 It draws on *Before the cloud*, *Scaling and elasticity* and *Paying for the cloud*. All the prices are made-up round numbers so the sums are easy to check. Real prices differ by provider, region and year, but the method is the same.
 

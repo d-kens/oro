@@ -27,7 +27,7 @@ Amazon Web Services started renting servers and storage to anyone in 2006. Other
 | Your staff handle hardware | The provider handles hardware |
 | Expanding to a new country means a new building | Pick another region from a list |
 
-The biggest change was not price. It was speed: a team could try an idea in an afternoon, and if it failed, delete everything and pay for the afternoon.
+The biggest change was speed: a team could try an idea in an afternoon and, if it failed, delete everything and pay for the afternoon.
 
 ## When owning still makes sense
 

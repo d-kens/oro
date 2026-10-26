@@ -1,4 +1,4 @@
-Every application you use runs on a computer somewhere. A banking app, a video service, the site you are reading now: each one needs machines to run its code, disks to keep its data, and a network to reach its users. Cloud computing is a way of getting those machines without owning them.
+Every application needs machines to run its code, disks to keep its data, and a network to reach its users. Cloud computing is a way of getting those without owning them.
 
 This topic explains what cloud computing is, and the five things that make a service a cloud rather than just someone else's server. By the end you can explain the cloud in one sentence and tell whether a service you meet counts as one.
 
@@ -6,9 +6,7 @@ This topic explains what cloud computing is, and the five things that make a ser
 
 **Cloud computing** is renting computing over the internet instead of buying it. You ask a provider for a server, some storage or a database, you get it within minutes, and you pay only for the time you use it. When you no longer need it, you give it back and the charges stop.
 
-A good comparison is electricity. A hundred years ago, many factories ran their own generators. Today almost none do: they plug into the grid, use what they need and pay for what the meter shows. Nobody thinks of that as giving something up. Building and running a power station is not their business, and it is not cheaper to do it yourself.
-
-Computing has gone the same way. A company that sells shoes online needs servers, but running a building full of them is not its business. It rents them from a company whose business *is* running servers, at a scale no shoe shop could reach.
+A company that sells shoes online needs servers, but running a building full of them is not its business. It rents them from a provider that runs servers at a scale no shoe shop could reach.
 
 What you can rent covers almost everything an application needs:
 

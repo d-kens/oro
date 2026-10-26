@@ -1,4 +1,4 @@
-Moving a company to the cloud is not one decision but many: what moves first, what each part runs on, how it survives failure, and who keeps it safe. In this project you take a company's servers and write the one-page plan an engineer would bring to a first meeting about the move.
+In this project you take a company's servers and write a one-page plan for moving them to the cloud: what moves first, what each part runs on, how it survives failure, and who keeps it safe.
 
 It draws on every topic in this skill, especially *Service models*, *Deployment models*, *Regions and zones*, *Scaling and elasticity* and *Shared responsibility*.
 
