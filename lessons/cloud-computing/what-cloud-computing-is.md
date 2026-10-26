@@ -28,9 +28,7 @@ What you can rent covers almost everything an application needs:
 4. **Rapid elasticity.** You can add resources quickly when you need more and remove them when you need less. To you, the supply looks almost unlimited.
 5. **Measured service.** Use is measured, by the second, the gigabyte or the request, and you pay for what was measured.
 
-A simple test: if getting a new server means emailing someone and waiting a week, it is not a cloud, even if the server is in someone else's building. That is just hosting.
-
-The cloud does not remove servers. They still exist and still fail; what changes is that the provider handles the hardware and you work through software: servers, networks and permissions are created by commands and code, which is why so much of the roadmap is about automation.
+The cloud does not remove servers. They still exist and still fail; what changes is that the provider handles the hardware and you work through software: servers, networks and permissions are created by commands and code.
 
 ## Tasks
 
@@ -62,31 +60,13 @@ One possible sentence: *"Instead of buying computers, a company rents them over 
 
 </details>
 
-## Quiz
+### Task 3: Cheap enough to offer
 
-**1. A friend says "the cloud just means someone else's computer". What is right and what is missing?**
-
-<details>
-<summary>Show answer</summary>
-
-It is right that your work runs on a provider's machines. What is missing is how you use them: self-service in minutes, sharing between many customers, adding and removing capacity at will, and paying only for what you use. Someone else's computer that takes a week to set up and a year's contract is hosting, not a cloud.
-
-</details>
-
-**2. Which characteristic makes the cloud cheap enough for the provider to offer?**
+Which characteristic makes the cloud cheap enough for the provider to offer?
 
 <details>
-<summary>Show answer</summary>
+<summary>Check your work</summary>
 
 Resource pooling. Many customers share the same hardware, so machines are kept busy instead of standing idle, and the provider buys and runs them at a scale no single customer could.
-
-</details>
-
-**3. Why does cloud computing push teams towards automation?**
-
-<details>
-<summary>Show answer</summary>
-
-Because everything is created through software, by a website, a command or an API call. Anything you can do with a command can be put in a script or code and repeated exactly, so teams build and change their infrastructure with code instead of by hand.
 
 </details>
