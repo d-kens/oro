@@ -1,6 +1,8 @@
 Moving to the cloud does not hand all of security to the provider. The provider secures some things and you secure others, and most cloud security incidents happen on the customer's side of that line: a storage bucket left open to the world, a password that was too simple, an access key pushed to a public repository.
 
-This topic covers the **shared responsibility model**: what the provider is responsible for, what you are, and how the line moves with the service model. By the end you can say who is responsible for any given security task.
+**Shared responsibility model:** The split of security and operating duties between a cloud provider and its customer. The provider secures the cloud itself; the customer secures what they put in it and how they set it up.
+
+This topic covers what the provider is responsible for, what you are, and how the line moves with the service model. By the end you can say who is responsible for any given security task.
 
 ## Security of the cloud, security in the cloud
 
@@ -39,7 +41,12 @@ None of these is a failure of the provider's security. Each one is a setting the
 
 ## The habits that prevent most of it
 
-Each mistake above has a matching habit: multi-factor authentication for every person; **least privilege**, giving each person and program only the permissions its job needs; keys kept out of code; storage private by default; only the ports you need, open to only the addresses that need them; and patching whatever is on your side of the line. The IAM, Security and DevSecOps skills cover each one in practice.
+Two terms come up in almost every fix:
+
+- **Multi-factor authentication (MFA):** Signing in with two or more separate proofs of identity, such as a password and a code from your phone.
+- **Least privilege:** Giving each person and program only the permissions it needs to do its job, and nothing more.
+
+Each mistake above has a matching habit: MFA for every person; least privilege for every person and program; keys kept out of code; storage private by default; only the ports you need, open to only the addresses that need them; and patching whatever is on your side of the line. The IAM, Security and DevSecOps skills cover each one in practice.
 
 ## Tasks
 

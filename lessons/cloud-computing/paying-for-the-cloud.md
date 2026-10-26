@@ -4,7 +4,7 @@ This topic covers how cloud pricing works, the main ways to pay less, the costs 
 
 ## Pay for what you use
 
-Cloud pricing is **pay-as-you-go**: each resource is measured, and you pay a rate for what was measured.
+**Pay-as-you-go:** A pricing model where you pay only for the resources you use, for as long as you use them, with no up-front payment or long-term contract.
 
 | What | Measured by | Example rate |
 | --- | --- | --- |
@@ -19,18 +19,20 @@ A server at $0.04 an hour costs about $0.04 × 730 hours = **$29 a month** if it
 
 ## Paying less for steady use
 
-Pay-as-you-go, called **on-demand**, is the most flexible and the most expensive way to pay. Providers offer cheaper ways if you can give them something in return:
+Providers sell the same server at different prices, depending on what you agree to:
 
-- **Commit to steady use.** Agree to use a certain amount for one or three years, through *reserved instances*, *savings plans* or *committed-use discounts*. The discount is often 30 to 70 percent. It suits the servers that run all the time.
-- **Use spare capacity.** Rent the provider's unused machines, *spot* or *preemptible* instances, for up to 90 percent off. The catch: the provider can take them back with a short warning. It suits work that can stop and restart, such as batch jobs and tests.
-- **Choose the right size.** Many servers are bigger than their work needs. Moving to a smaller size, *rightsizing*, saves money with no change to the application.
-- **Turn things off.** A development server used during working hours only needs about 50 hours a week, not 168.
+- **On-demand pricing:** Paying the standard rate for a resource by the second or hour, with no commitment. The most flexible and the most expensive.
+- **Reserved pricing (reserved instances, savings plans, committed-use discounts):** A lower rate, often 30 to 70 percent off, in return for agreeing to use a set amount for one or three years. It suits servers that run all the time.
+- **Spot pricing (spot or preemptible instances):** A much lower rate, up to 90 percent off, for the provider's spare capacity, which the provider can take back at short notice. It suits work that can stop and restart, such as batch jobs and tests.
+- **Rightsizing:** Changing a resource to the smallest size that still does its work.
+
+Turning things off saves money too: a development server used during working hours needs about 50 hours a week, not 168.
 
 ## The costs people forget
 
 Most surprise bills come from the same few places:
 
-- **Data leaving the cloud.** Sending data *into* the cloud is usually free. Sending it *out*, to users or to another provider, is charged per GB, and it adds up for video, downloads and backups copied elsewhere. Traffic between zones and regions often costs too.
+- **Data leaving the cloud.** Data sent out of the provider's network is called **egress**, and data sent in is **ingress**. Ingress is usually free. Sending it *out*, to users or to another provider, is charged per GB, and it adds up for video, downloads and backups copied elsewhere. Traffic between zones and regions often costs too.
 - **Things left running.** A test server, a database or a load balancer created for an experiment and never deleted keeps charging, every hour.
 - **Storage that outlives its server.** Deleting a server may leave its disk and its snapshots behind, still billed each month.
 - **Idle extras.** Public IP addresses, NAT gateways and load balancers charge by the hour even when nothing uses them.

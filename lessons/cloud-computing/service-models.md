@@ -8,7 +8,7 @@ Every application stands on the same layers: its data, the application code, the
 
 ## IaaS: infrastructure as a service
 
-With **IaaS** you rent the basic building blocks: virtual machines, disks and networks. The provider runs everything up to and including the virtual machine. You install and manage the operating system and everything above it.
+**Infrastructure as a service (IaaS):** The provider supplies the basic computing resources: servers, storage and networks. You install and run whatever you want on them, including the operating system. You do not manage the hardware underneath, but you control everything from the operating system up.
 
 This is closest to having your own servers, without the hardware. It gives you the most control and the most work. Examples are virtual servers such as AWS EC2, Azure Virtual Machines and Google Compute Engine.
 
@@ -16,7 +16,7 @@ Choose IaaS when you need full control of the machine: special software, an unus
 
 ## PaaS: platform as a service
 
-With **PaaS** you hand over your code and the provider runs it. It looks after the operating system, the runtime, updates and scaling. You manage only your application and its data.
+**Platform as a service (PaaS):** The provider supplies a ready platform, with the operating system, the language runtime and the tools, and you deploy your own application onto it. You control the application and its settings, but not the servers, operating system or storage underneath.
 
 You no longer patch servers or install Python; you deploy code and say how many copies to run. Examples are AWS Elastic Beanstalk, Azure App Service, Google App Engine and Heroku. Managed databases, where the provider installs, patches and backs up the database for you, work the same way.
 
@@ -24,13 +24,15 @@ Choose PaaS when you want to spend your time on the application, not the machine
 
 ## SaaS: software as a service
 
-With **SaaS** you rent a finished application. The provider runs all of it; you just use it, usually in a browser. Email, office suites, chat tools and customer-management systems are mostly SaaS today: Gmail, Microsoft 365, Slack and Salesforce are examples.
+**Software as a service (SaaS):** The provider runs a complete application that you use, usually through a browser or an app. You manage nothing underneath it, only your own data, users and settings.
 
-You still own your data and your settings: who has an account, what they can see, and what you put in. Everything else is the provider's.
+Email, office suites, chat tools and customer-management systems are mostly SaaS today: Gmail, Microsoft 365, Slack and Salesforce are examples.
 
 ## Serverless
 
-**Serverless** is a newer step between PaaS and SaaS. You write small pieces of code, *functions*, and the provider runs each one only when something triggers it: a web request, a file arriving, a message in a queue. When nothing is happening, nothing runs and you pay nothing.
+**Serverless (function as a service, FaaS):** The provider runs your code only when an event triggers it, such as a web request, a file arriving or a message in a queue, and supplies the servers for each run automatically. You never set up or manage servers, and you pay only while your code runs.
+
+Serverless sits between PaaS and SaaS. When nothing is happening, nothing runs and you pay nothing.
 
 There are still servers, but you never see or size them. Examples are AWS Lambda, Azure Functions and Google Cloud Functions. Fully managed services such as storage buckets and queues are often called serverless too, because they have no servers for you to manage.
 

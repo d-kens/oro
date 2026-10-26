@@ -4,13 +4,26 @@ This topic walks through what it takes to run your own servers, the problems tha
 
 ## Running your own servers
 
-Running servers yourself is called **on-premises**, or *on-prem*. To put one new application online, a company had to guess how many servers it would need for the next three to five years, buy them and wait weeks for delivery, find a room with power and cooling, set them up, keep them running, and replace them when they got old. From deciding to build something to having it running often took two or three months.
+**On-premises (on-prem):** Computing resources that an organisation buys, owns and runs itself, in its own building or in space it rents in a data centre.
+
+To put one new application online, a company had to guess how many servers it would need for the next three to five years, buy them and wait weeks for delivery, find a room with power and cooling, set them up, keep them running, and replace them when they got old. From deciding to build something to having it running often took two or three months.
 
 ## The problems with owning
 
-**Guessing capacity is hard.** If you buy too few servers, the site slows down or falls over when customers arrive. If you buy too many, you paid for machines that sit idle. Most companies bought for their busiest day, so most of the year their servers were mostly idle. Utilisation of 10 to 20 percent was common: a shop that sells most in one week of the year paid for that week's servers all year.
+**Capacity planning:** Estimating how much computing power, storage and network a system will need in the future, so it is bought in time.
 
-**Money goes out up front.** Servers are bought before they earn anything. That kind of spending, on things that last years, is **capital expenditure** (*capex*). A large purchase needs approval, and a small team or a new company may simply not have the money.
+**Guessing capacity is hard.** If you buy too few servers, the site slows down or falls over when customers arrive. If you buy too many, you paid for machines that sit idle. Most companies bought for their busiest day, so most of the year their servers were mostly idle.
+
+**Utilisation:** The share of a resource's capacity that is actually in use.
+
+Utilisation of 10 to 20 percent was common: a shop that sells most in one week of the year paid for that week's servers all year.
+
+**Money goes out up front.** Servers are bought before they earn anything, which accountants call capital expenditure:
+
+- **Capital expenditure (capex):** Money spent up front on physical things, such as servers or buildings, that are used for several years.
+- **Operating expenditure (opex):** Ongoing spending on running the business, such as rent, salaries or a monthly cloud bill.
+
+A large capex purchase needs approval, and a small team or a new company may simply not have the money.
 
 **It is slow.** An idea that needs new servers waits for the purchase, the delivery and the setup. Teams stop trying ideas that might not work, because each one costs months.
 
@@ -21,7 +34,7 @@ Amazon Web Services started renting servers and storage to anyone in 2006. Other
 | On-premises | Cloud |
 | --- | --- |
 | Guess capacity years ahead | Add or remove capacity in minutes |
-| Pay up front (capex) | Pay monthly for what you used, an operating cost (*opex*) |
+| Pay up front (capex) | Pay monthly for what you used (opex) |
 | Weeks to get a server | Minutes to get a server |
 | Idle capacity for the busy day | Extra capacity only on the busy day |
 | Your staff handle hardware | The provider handles hardware |

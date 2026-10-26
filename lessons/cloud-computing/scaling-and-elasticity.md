@@ -4,9 +4,13 @@ This topic covers scaling up and out, elasticity, and why cloud applications are
 
 ## Scaling up and scaling out
 
-When an application needs more capacity, there are two ways to give it more.
+**Scalability:** The ability of a system to handle more work by adding resources.
 
-**Scaling up**, or *vertical scaling*, means a bigger machine: more CPUs, more memory. **Scaling out**, or *horizontal scaling*, means more machines of the same size, with a **load balancer** in front that spreads requests across them.
+There are two ways to add them:
+
+- **Scaling up (vertical scaling):** Giving one machine more resources, such as more CPUs or memory.
+- **Scaling out (horizontal scaling):** Adding more machines of the same size and sharing the work between them.
+- **Load balancer:** A service that sits in front of several machines and spreads incoming requests across them.
 
 | | Scaling up | Scaling out |
 | --- | --- | --- |
@@ -20,15 +24,21 @@ Cloud applications mostly scale out. Databases are the common exception, because
 
 ## Elasticity
 
-**Elasticity** is scaling in both directions, automatically. When load rises, servers are added; when it falls, they are removed and stop costing money.
+**Elasticity:** The ability to add and remove resources automatically as demand rises and falls, so capacity matches demand at any moment.
 
-Clouds do this with **auto scaling**: you set a rule such as "keep average CPU use around 60 percent, with at least 2 servers and at most 20", and the cloud adds or removes servers to follow it. A shop can run on two servers overnight, ten at lunch, and forty during a sale, paying for each only while it runs.
+Scalability is about growing; elasticity is about following demand both ways. When load falls, servers are removed and stop costing money.
+
+**Auto scaling:** A cloud feature that adds or removes servers automatically, following rules you set.
+
+A rule might be "keep average CPU use around 60 percent, with at least 2 servers and at most 20", and the cloud adds or removes servers to follow it. A shop can run on two servers overnight, ten at lunch, and forty during a sale, paying for each only while it runs.
 
 Scaling down matters as much as scaling up. Capacity left running "just in case" is the idle capacity the cloud was supposed to remove.
 
 ## Stateless applications
 
-For scaling out to work, any copy must be able to handle any request. So the copies cannot keep anything important to themselves. An application built this way is **stateless**:
+**Stateless application:** An application that keeps no data about users or requests on the server itself, so any copy can handle any request.
+
+Scaling out needs this, because the load balancer can send any request to any copy. In practice:
 
 - User sessions are kept in a shared store or a cookie, not in one server's memory.
 - Uploaded files go to shared storage, not one server's disk.

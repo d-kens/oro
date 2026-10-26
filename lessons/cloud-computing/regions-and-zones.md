@@ -4,7 +4,9 @@ This topic covers how providers arrange their data centres into regions and avai
 
 ## Regions
 
-A **region** is a geographic area where a provider has a group of data centres: a city or part of a country. Large providers have dozens of regions around the world, each with a name and a short code.
+**Region:** A separate geographic area, such as a city or part of a country, where a provider runs a group of data centres.
+
+Large providers have dozens of regions around the world, each with a name and a short code.
 
 Regions are kept **independent** of each other. A problem in one, a power cut, a software fault, a natural disaster, should not spread to another. Your resources live in the region you choose, and nothing moves to another region unless you move it.
 
@@ -17,7 +19,9 @@ When you create almost anything in the cloud, you pick a region first. Four thin
 
 ## Availability zones
 
-Inside each region, the data centres are grouped into **availability zones** (*AZs*), usually three or more. Each zone is one or more data centres with its own power, cooling and network connections.
+**Availability zone (AZ):** One or more data centres inside a region with their own power, cooling and network connections, kept apart from the region's other zones so they rarely fail at the same time.
+
+A region usually has three or more zones.
 
 Zones in a region are a few kilometres to tens of kilometres apart: far enough that a fire, flood or power cut is unlikely to hit two at once, close enough that they are joined by fast private links with only a millisecond or two between them.
 
@@ -50,7 +54,8 @@ Running across several zones is the normal choice for anything that matters, and
 
 ## Edge locations
 
-Providers also run many smaller sites, **edge locations**, in far more cities than they have regions. They do not run your servers. They keep copies of content close to users, through a **content delivery network** (*CDN*), and answer DNS queries, so a user far from your region still gets images and pages quickly.
+- **Edge location:** A small provider site, in many more cities than there are regions, that keeps content and services close to users. Your servers do not run there.
+- **Content delivery network (CDN):** A network of edge locations that keeps copies of content, such as images and pages, near users, so they load quickly even far from your region.
 
 ## Tasks
 

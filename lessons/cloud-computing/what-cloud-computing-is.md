@@ -4,7 +4,9 @@ This topic explains what cloud computing is, and the five things that make a ser
 
 ## Renting instead of buying
 
-**Cloud computing** is renting computing over the internet instead of buying it. You ask a provider for a server, some storage or a database, you get it within minutes, and you pay only for the time you use it. When you no longer need it, you delete it and the charges stop.
+**Cloud computing:** Getting computing resources, such as servers, storage, databases and networks, over the internet from a shared pool run by a provider. You set them up when you need them and release them when you are done, with little effort and no help from the provider, and you pay only for what you use.
+
+In practice, you ask a provider for a server, you get it within minutes, and when you delete it the charges stop.
 
 A company that sells shoes online needs servers, but running a building full of them is not its business. It rents them from a provider that runs servers at a scale no shoe shop could reach.
 
@@ -20,13 +22,13 @@ What you can rent covers almost everything an application needs:
 
 ## The five characteristics
 
-"Cloud" gets stuck on many products that are not really one. A widely used definition, from the US standards body NIST, says a cloud service has five characteristics. They are worth knowing because each one explains something you will meet later.
+The standard definition, from the US standards body NIST, says a service is a cloud only if it has all five of these characteristics:
 
-1. **On-demand self-service.** You get resources yourself, from a website, a command or a script, without asking a person or waiting for a purchase order.
-2. **Broad network access.** You reach and manage everything over the network, from anywhere, using standard tools.
-3. **Resource pooling.** The provider's machines are shared between many customers. Your server is one of many running on the same hardware, kept separate from the others. This sharing is what makes it cheap.
-4. **Rapid elasticity.** You can add resources quickly when you need more and remove them when you need less. To you, the supply looks almost unlimited.
-5. **Measured service.** Use is measured, by the second, the gigabyte or the request, and you pay for what was measured.
+- **On-demand self-service:** You set up computing resources, such as servers and storage, yourself, whenever you need them, through a website, a command or an API, without contacting anyone at the provider.
+- **Broad network access:** Services are available over the network through standard tools, so you can reach them from any kind of device: a laptop, a phone or another server.
+- **Resource pooling:** The provider's hardware is shared by many customers, a *multi-tenant* model. Each customer gets a share that is kept separate from the others, and shares are handed out and taken back as customers need them. You do not choose, or usually know, which physical machine you are on.
+- **Rapid elasticity:** Resources can be added or removed quickly, often automatically, to match demand. To the customer, the supply looks unlimited.
+- **Measured service:** The provider meters what each customer uses, such as hours of server time, gigabytes stored or requests made. Both sides can see exactly what was used, and you are billed for it.
 
 The cloud does not remove servers. They still exist and still fail; what changes is that the provider handles the hardware and you work through software: servers, networks and permissions are created by commands and code.
 

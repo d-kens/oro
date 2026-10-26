@@ -1,22 +1,34 @@
 The service models are about *what* you rent. The deployment models are about *whose* cloud it is and where it runs: a provider's shared cloud, a company's own, or a mix of several.
 
-This topic covers public, private, hybrid and multi-cloud, and the reasons a company picks each. By the end you can describe a company's setup in these terms and explain why it might have ended up that way.
+This topic covers public, private, community, hybrid and multi-cloud, and the reasons a company picks each. By the end you can describe a company's setup in these terms and explain why it might have ended up that way.
 
 ## Public cloud
 
-A **public cloud** is run by a provider and shared by anyone who signs up: AWS, Microsoft Azure, Google Cloud and others. "Public" does not mean your data is public. It means the hardware is shared between many customers, kept apart by the provider's software.
+**Public cloud:** Cloud infrastructure owned and run by a provider and open for anyone to use, from individuals to large companies. It sits in the provider's data centres.
+
+AWS, Microsoft Azure and Google Cloud are public clouds. "Public" does not mean your data is public. It means the hardware is shared between many customers, kept apart by the provider's software.
 
 The public cloud has all five characteristics from the first topic at their fullest: almost unlimited capacity, pay for what you use, and nothing to buy. It is what most people mean by "the cloud", and it is what this roadmap teaches.
 
 ## Private cloud
 
-A **private cloud** is a cloud used by one organisation only. It runs on hardware the organisation owns or rents for itself alone, in its own data centre or a hosting company's, with software that gives its teams self-service: they request VMs, storage and networks from a portal or an API, just as they would in a public cloud. OpenStack and VMware are common ways to build one.
+**Private cloud:** Cloud infrastructure used by one organisation only. The organisation or another company may own and run it, in the organisation's own building or elsewhere.
+
+It runs on hardware set aside for that one organisation, with software that gives its teams self-service: they request VMs, storage and networks from a portal or an API, just as they would in a public cloud. OpenStack and VMware are common ways to build one.
 
 A private cloud gives full control over the hardware and where the data is, which matters for some laws, contracts and security rules. The cost is that the organisation is back to buying hardware and guessing capacity, so its supply is limited to what it owns.
 
+## Community cloud
+
+**Community cloud:** Cloud infrastructure shared by a group of organisations with the same needs, such as government agencies or hospitals that must follow the same rules.
+
+Community clouds are less common than the other models. You meet them mostly in government and regulated industries.
+
 ## Hybrid cloud
 
-A **hybrid cloud** joins a company's own servers or private cloud to a public cloud, so the two work as one setup. They are connected by a private network link or a VPN, and share identities, monitoring and often tooling.
+**Hybrid cloud:** Two or more separate clouds, such as a private and a public cloud, joined so that data and applications can move between them.
+
+In practice, a company joins its own servers or private cloud to a public cloud, so the two work as one setup. They are connected by a private network link or a VPN, and share identities, monitoring and often tooling.
 
 Companies go hybrid for practical reasons:
 
@@ -27,7 +39,7 @@ Companies go hybrid for practical reasons:
 
 ## Multi-cloud
 
-**Multi-cloud** means using more than one public cloud provider, for example AWS for most applications and Google Cloud for data analysis.
+**Multi-cloud:** Using the services of more than one public cloud provider, for example AWS for most applications and Google Cloud for data analysis.
 
 Sometimes this is a plan: using the best service from each provider, or avoiding depending on one company. Often it is an accident: one team chose one provider, another team or a bought company chose another.
 

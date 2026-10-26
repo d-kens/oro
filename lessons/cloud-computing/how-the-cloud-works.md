@@ -4,13 +4,20 @@ This topic looks behind the website: the data centres, how one physical machine 
 
 ## Data centres
 
-A **data centre** is a building designed to hold servers: tens of thousands of them in rows of racks, with backup power, cooling, fast network links and guarded doors that customers never go through. Providers build them in groups around the world, which the *Regions and zones* topic covers.
+**Data centre:** A building that houses servers, storage and network equipment, with the power, cooling, network connections and physical security they need to run without stopping.
+
+A large one holds tens of thousands of servers in rows of racks. Customers never go inside. Providers build data centres in groups around the world, which the *Regions and zones* topic covers.
 
 ## Virtualisation
 
 If every customer got a whole physical server, the cloud would be slow to set up and wasteful: most customers need a small part of a modern server, which can have a hundred CPU cores and over a terabyte of memory.
 
-The answer is **virtualisation**. A program called a **hypervisor** runs on the physical server, the *host*, and divides it into many **virtual machines** (*VMs*). Each VM gets its own share of CPU, memory, disk and network, and runs its own operating system. To the software inside, a VM looks exactly like a real computer.
+The answer is virtualisation:
+
+- **Virtualisation:** Creating software versions of hardware, so one physical computer can run several separate computers at once.
+- **Host:** The physical computer that the virtual machines run on.
+- **Hypervisor:** The software on the host that creates and runs virtual machines, shares out the host's CPU, memory, disk and network between them, and keeps them apart.
+- **Virtual machine (VM):** A computer made in software, with its own operating system and its own share of the host's CPU, memory, disk and network. To the software inside, it looks exactly like a real computer.
 
 ```text
  ┌─────────────────── one physical server ───────────────────┐
@@ -28,11 +35,15 @@ The hypervisor keeps VMs apart: one customer cannot see another customer's memor
 
 Because a VM is software, it can be created, stopped, copied or moved in seconds. A provider can start your server on whichever host has room, and move it if that host needs repair.
 
-**Containers**, which the Docker skill covers, go one step further: they share the host's operating system kernel instead of running their own, so they are smaller and start faster than VMs. Clouds use both.
+**Container:** An application packaged with everything it needs to run, which shares the host's operating system kernel instead of running its own.
+
+Because they do not carry a whole operating system, containers are smaller and start faster than VMs. The Docker skill covers them. Clouds use both.
 
 ## The control plane and APIs
 
-When you click "create server", no person does anything. Your request goes to the provider's **control plane**, the software that runs the cloud. It:
+**Control plane:** The provider's software that receives requests to create, change or delete resources, and carries them out.
+
+When you click "create server", no person does anything. Your request goes to the control plane, which:
 
 1. Checks who you are and whether you are allowed to do this.
 2. Finds a host with enough free capacity.
@@ -40,7 +51,9 @@ When you click "create server", no person does anything. Your request goes to th
 4. Connects it to your network and gives it an address.
 5. Starts measuring use, so it can bill you.
 
-Everything goes through an **API**, an *application programming interface*: a set of requests a program can send over the network, such as "create a server of this size" or "delete this disk". The website, the command-line tool and infrastructure tools such as Terraform are all just different ways of sending the same API requests. That is why anything you can click, you can also script.
+**API (application programming interface):** A defined set of requests that a program can send to a service, such as "create a server of this size" or "delete this disk", and the answers it gets back.
+
+Everything in the cloud goes through the provider's API. The website, the command-line tool and infrastructure tools such as Terraform are all just different ways of sending the same API requests. That is why anything you can click, you can also script.
 
 ## Tasks
 

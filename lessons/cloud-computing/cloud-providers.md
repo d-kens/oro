@@ -2,6 +2,8 @@ There are many cloud providers, but three are much larger than the rest, and all
 
 This topic covers the main providers, how their core services line up, and how to think about choosing one. By the end you can translate a service name from one provider to another, and explain why this roadmap teaches AWS.
 
+**Cloud service provider (CSP):** A company that offers cloud computing services, such as servers, storage and databases, to other organisations and individuals.
+
 ## The big three
 
 - **Amazon Web Services (AWS)** started in 2006, has been the largest provider ever since, and offers the most services. Many companies, from start-ups to governments, run on it.
