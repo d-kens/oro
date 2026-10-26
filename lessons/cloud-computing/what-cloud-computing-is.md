@@ -4,7 +4,7 @@ This topic explains what cloud computing is, and the five things that make a ser
 
 ## Renting instead of buying
 
-**Cloud computing** is renting computing over the internet instead of buying it. You ask a provider for a server, some storage or a database, you get it within minutes, and you pay only for the time you use it. When you no longer need it, you give it back and the charges stop.
+**Cloud computing** is renting computing over the internet instead of buying it. You ask a provider for a server, some storage or a database, you get it within minutes, and you pay only for the time you use it. When you no longer need it, you delete it and the charges stop.
 
 A company that sells shoes online needs servers, but running a building full of them is not its business. It rents them from a provider that runs servers at a scale no shoe shop could reach.
 
