@@ -4,6 +4,26 @@
    Each topic and project has a lesson in lessons/<skill>/<slug>.md; the build stops if one is missing. */
 export const SKILLS = [
   {
+    slug: 'cloud-computing', name: 'Cloud computing', level: 'Beginner',
+    summary: 'What the cloud is, why companies moved to it, and the ideas every provider shares: service models, regions and zones, scaling, paying for use, and who is responsible for what.',
+    topics: [
+      ['what-cloud-computing-is', 'What cloud computing is', 'Renting computers instead of buying them, and the five things that make a service a cloud.'],
+      ['before-the-cloud', 'Before the cloud', 'Buying and running your own servers, what that cost, and why most companies stopped.'],
+      ['how-the-cloud-works', 'How the cloud works', 'Data centres, virtual machines, and the APIs that let you create a server in a minute.'],
+      ['service-models', 'Service models', 'IaaS, PaaS, SaaS and serverless, and what you manage in each.'],
+      ['deployment-models', 'Deployment models', 'Public, private, hybrid and multi-cloud, and why a company picks one.'],
+      ['regions-and-zones', 'Regions and zones', 'Where the computers actually are, and how regions and availability zones keep a service running when a building fails.'],
+      ['scaling-and-elasticity', 'Scaling and elasticity', 'Bigger machines or more machines, scaling down as well as up, and designing for machines that fail.'],
+      ['paying-for-the-cloud', 'Paying for the cloud', 'Pay-as-you-go, reserved and spot prices, the costs people forget, and how bills surprise teams.'],
+      ['shared-responsibility', 'Shared responsibility', 'What the provider secures, what you secure, and how that line moves with the service model.'],
+      ['cloud-providers', 'Cloud providers', 'AWS, Azure, Google Cloud and the rest: the same ideas under different names.']
+    ],
+    projects: [
+      ['project-cost-a-workload', 'Cost a workload', 'Work out what a small web shop costs to run on its own servers and in the cloud, over three years, in a spreadsheet.'],
+      ['project-plan-a-move', 'Plan a move to the cloud', 'Take a company\'s servers and write a one-page plan: what moves, which service model, how many zones, and who secures what.']
+    ]
+  },
+  {
     slug: 'linux', name: 'Linux', level: 'Beginner',
     summary: 'The command line and the operating system almost every server runs. Everything else on the roadmap sits on top of it.',
     topics: [
