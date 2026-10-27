@@ -1,6 +1,34 @@
 ---
+/* the home page: what Paipa is and where to start, then the roadmap drawn as one line of steps */
 import Layout from '../layouts/Layout.astro';
+import { ROADMAPS } from '../data/roadmaps.js';
+import { SKILLS } from '../data/skills.js';
+import { href, pad } from '../lib/site.js';
+
+const road = ROADMAPS[0];
+const skill = (slug) => SKILLS.find((s) => s.slug === slug);
+const first = road.steps.map(([slug]) => skill(slug)).find(Boolean);
 ---
-<Layout description="Learn DevOps and cloud by doing it: skills taught in order, with lessons, hands-on tasks, quizzes and projects that run on your own computer.">
-<main class="home"></main>
+<Layout description="Learn DevOps and cloud in order, one skill at a time, from Linux to Kubernetes, with notes for every topic and labs that run on your own computer.">
+<main class="home">
+<header class="hero">
+  <h1>Learn DevOps and cloud, in order.</h1>
+  <p class="lead">One skill at a time, from Linux to Kubernetes, with notes for every topic and labs that run on your own computer.</p>
+  <p class="actions">
+    <a class="link" href={href(`skills/${first.slug}.html`)}>Start with {first.name}</a>
+    <a href={href('roadmap.html')}>or see the roadmap</a>
+  </p>
+</header>
+
+<section class="line" aria-labelledby="line-head">
+  <h2 id="line-head">The roadmap</h2>
+  {/* every step in order on one wrapping line, joined like a pipeline; written skills link, the rest are muted */}
+  <ol>
+    {road.steps.map(([slug, name], i) => {
+      const s = skill(slug);
+      return <li class:list={{ live: s }}><span class="n">{pad(i + 1)}</span>{s ? <a href={href(`skills/${s.slug}.html`)}>{s.name}</a> : name}</li>;
+    })}
+  </ol>
+</section>
+</main>
 </Layout>
