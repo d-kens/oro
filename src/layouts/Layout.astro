@@ -39,7 +39,7 @@ const links = [['skills.html', 'Skills'], ['roadmap.html', 'Roadmap']]
 
 <div class="wrap">
   <nav aria-label="Site">
-    <a class="logo" href={href('index.html')} aria-label={NAME}>{/* the wordmark is drawn in the same rounded line as the favicon's "p" */}<svg class="logo-mark" viewBox="0 4 144 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 52V30a11 11 0 1 1 11 11h-3"/><circle cx="49" cy="30" r="11"/><path d="M60 19V41"/><path d="M72 21V41"/><circle cx="72" cy="9.5" r="4.2" fill="currentColor" stroke="none"/><path d="M84 52V30a11 11 0 1 1 11 11h-3"/><circle cx="129" cy="30" r="11"/><path d="M140 19V41"/></g></svg></a>
+    <a class="logo" href={href('index.html')}>paipa</a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-links" aria-label="Open menu"><span></span></button>
     <ul id="site-links">
       {links.map((l, i) => <li><a href={href(l.path)} aria-current={l.current ? 'page' : undefined}><span class="n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{l.label}</a></li>)}

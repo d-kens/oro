@@ -25,14 +25,13 @@ button { font-family: inherit; }
 .link { font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; text-decoration-color: var(--accent); }
 
 .wrap > nav { display: flex; align-items: baseline; justify-content: space-between; gap: 16px 28px; flex-wrap: wrap; padding-block: 24px; }
-/* wordmark: "paipa" drawn as an SVG in the favicon's rounded line, coloured by currentColor */
-.logo { display: flex; align-self: center; color: #111; text-decoration: none; }
-.logo-mark { display: block; height: 30px; width: auto; }
+/* wordmark: "paipa" in plain text, in the nav's font, bold */
+.logo { font: 700 24px/1 var(--f-body); letter-spacing: -.02em; color: #111; text-decoration: none; }
 .wrap > nav ul { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0 0 0 auto; padding: 0; font: 500 15px var(--f-body); }
 .wrap > nav ul a { text-decoration: none; color: var(--muted); cursor: pointer; transition: color .2s; }
 .wrap > nav ul a:hover, .wrap > nav ul a[aria-current] { color: var(--fg); }
 .wrap > nav ul .n { display: none; }
-.wrap > nav svg:not(.logo-mark) { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.wrap > nav svg { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .wrap > nav svg .fill { fill: currentColor; stroke: none; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* Search sits a little apart, with its "/" shortcut shown as a key */
@@ -54,8 +53,7 @@ button { font-family: inherit; }
    The sheet only takes over once nav.js can close it again (the "js" class); without JavaScript the links stay as a plain list. */
 @media (max-width: 900px) {
   .wrap > nav { position: sticky; top: 0; z-index: 20; align-items: center; gap: 0 10px; margin-inline: -20px; padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--bg); }
-  .logo { white-space: nowrap; flex-shrink: 0; }
-  .logo-mark { height: 25px; }
+  .logo { white-space: nowrap; flex-shrink: 0; font-size: 22px; }
   .menu-btn { order: 2; margin-left: auto; display: grid; place-items: center; width: 44px; height: 44px; margin-right: -8px; padding: 0; border: 0; background: transparent; color: var(--fg); cursor: pointer; }
   .menu-btn span, .menu-btn span::before, .menu-btn span::after { display: block; height: 2px; background: currentColor; border-radius: 2px; transition: transform .25s, background .2s, width .25s; }
   .menu-btn span { position: relative; width: 20px; }
