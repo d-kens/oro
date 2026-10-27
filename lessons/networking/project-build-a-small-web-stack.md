@@ -1,10 +1,10 @@
 Most web services you will meet in the cloud have the same shape: a few copies of an application, a load balancer in front of them that handles HTTPS, a DNS name that points at the load balancer, and a firewall that lets in only web traffic. In this project you build that shape in your lab, small enough to see every part.
 
-You build two application servers, an nginx proxy that spreads requests across them over HTTPS, a DNS server that gives the stack the name `shop.lab.internal`, and a client that trusts your own certificate authority. It draws on *Reverse proxy and load balancing*, *Make your own certificates*, *Run your own DNS*, *Firewall practice* and *Serve a website with nginx*.
+You build two application servers, an nginx proxy that spreads requests across them over HTTPS under the name `shop.lab.internal`, and a client that trusts your own certificate authority. It draws on *Reverse proxy and load balancing*, *TLS and HTTPS*, *DNS basics*, *Firewall basics* and *Serve a website with nginx*.
 
 ## What you need
 
-The `netlab` image and the `lab` network from the *What a network is* topic. Everything you need is in the image: `python3`, `nginx`, `dnsmasq`, `openssl`, `iptables`, `curl` and `dig`.
+The `netlab` image and the `lab` network from the *What a network is* topic. Everything you need is in the image: `python3`, `nginx`, `openssl`, `iptables`, `curl` and `dig`.
 
 You write the configuration files on your own computer, in a directory that every container mounts at `/stack`. That way the files survive when containers are removed, and you can edit them with your usual editor:
 
@@ -13,13 +13,12 @@ $ mkdir stack
 $ cd stack
 ```
 
-The machines get fixed addresses, so that the DNS record and the firewall rules can name them. If you still have `web` and `client` from *Fix the broken server*, remove them first with `docker rm -f web client`, because the addresses overlap.
+The machines get fixed addresses, so that the name and the checks below can rely on them. If you still have `web` and `client` from *Fix the broken server*, remove them first with `docker rm -f web client`, because the addresses overlap.
 
 | Machine | Address | Role |
 | --- | --- | --- |
 | `proxy` | `10.10.0.10` | nginx, HTTPS and load balancing, firewall |
 | `app1`, `app2` | `10.10.0.21`, `10.10.0.22` | The application, on port 8000 |
-| `dns` | `10.10.0.53` | dnsmasq, answers for `lab.internal` |
 | `client` | `10.10.0.30` | Where you test from |
 
 ## The brief
@@ -28,7 +27,7 @@ The machines get fixed addresses, so that the DNS record and the firewall rules 
 2. You have a certificate authority of your own and a certificate for `shop.lab.internal` signed by it. Check: `openssl verify -CAfile ca.crt shop.crt` prints `shop.crt: OK`.
 3. nginx on `proxy` serves `https://shop.lab.internal/` with that certificate, and passes requests to both apps in turn. Check: four requests in a row alternate between `app1` and `app2`.
 4. A plain HTTP request is redirected to HTTPS. Check: `curl -I http://shop.lab.internal/some/page` shows `301` and `Location: https://shop.lab.internal/some/page`.
-5. The name `shop.lab.internal` resolves to the proxy on the client, through your own DNS server. Check: `dig +short shop.lab.internal` on the client prints `10.10.0.10`.
+5. The name `shop.lab.internal` resolves to the proxy on the client, through the lab's DNS. Check: `dig +short shop.lab.internal` on the client prints `10.10.0.10`.
 6. The client trusts your certificate authority. Check: `curl https://shop.lab.internal/` works without `-k`.
 7. Only ports 80 and 443 on the proxy can be reached. Check: with another service started on port 8080 on the proxy, `nc -zv` from the client to port 443 succeeds and to port 8080 times out.
 
@@ -80,15 +79,15 @@ app1 listening on port 8000
 
 ### Make a certificate authority and a certificate
 
-Start the proxy, which also does this step, and open a shell on it. It needs `--cap-add NET_ADMIN` for the firewall later.
+Start the proxy, which also does this step, and open a shell on it. It needs `--cap-add NET_ADMIN` for the firewall later, and `--network-alias` gives it the stack's name, which the section *Give the stack a name* explains.
 
 ```bash
-$ docker run -d --name proxy --hostname proxy --network lab --ip 10.10.0.10 --cap-add NET_ADMIN -v "$PWD":/stack netlab sleep infinity
+$ docker run -d --name proxy --hostname proxy --network lab --ip 10.10.0.10 --network-alias shop.lab.internal --cap-add NET_ADMIN -v "$PWD":/stack netlab sleep infinity
 $ docker exec -it proxy bash
 root@proxy:/#
 ```
 
-In `/stack/ca`, make a CA key and a self-signed CA certificate, then a key and a certificate signing request for `shop.lab.internal`, and sign the request with the CA. Modern clients ignore the common name and check the **subject alternative name** instead, so the signed certificate must carry `subjectAltName=DNS:shop.lab.internal`. The *Make your own certificates* topic walks through each command.
+In `/stack/ca`, make a CA key and a self-signed CA certificate, then a key and a certificate signing request for `shop.lab.internal`, and sign the request with the CA. Modern clients ignore the common name and check the **subject alternative name** instead, so the signed certificate must carry `subjectAltName=DNS:shop.lab.internal`. The section on a certificate authority of your own in *TLS and HTTPS* walks through each command.
 
 <details>
 <summary>Show a solution</summary>
@@ -171,52 +170,34 @@ LISTEN 0      511          0.0.0.0:443        0.0.0.0:*
 
 The `zone` line matters. nginx starts one worker process per CPU core, and without a shared zone each worker keeps its own place in the round robin. Each new connection tends to land on a different worker, and each worker starts with `app1`, so you see `app1` every time. With `zone`, the workers share one counter and the requests alternate.
 
-`curl --resolve` sends the request to `127.0.0.1` while still using the name `shop.lab.internal` for the TLS handshake and the `Host` header, which lets you test before DNS exists. `-k` skips the certificate check for now.
+`curl --resolve` sends the request to `127.0.0.1` while still using the name `shop.lab.internal` for the TLS handshake and the `Host` header, which lets you test without relying on name lookup. `-k` skips the certificate check for now.
 
 </details>
 
 ### Give the stack a name
 
-Write `dnsmasq.conf` so that dnsmasq answers `shop.lab.internal` with the proxy's address, answers "no such name" for anything else under `lab.internal`, and forwards nothing. Log every query to standard output, so `docker logs dns` shows them. Then start the `dns` container with dnsmasq in the foreground as its command.
+The client needs `shop.lab.internal` to resolve to the proxy. In the cloud, that is an A record or an alias at your DNS provider. In the lab, Docker's DNS helper at `127.0.0.11` already answers container names on the `lab` network, and `--network-alias` adds another name for a container on that network. You gave the proxy its alias when you started it, so every container on `lab` can already look the name up.
 
-Docker gives each container its own DNS helper at `127.0.0.11`, which answers container names. Start the client with `--dns 10.10.0.53`, and the helper sends every name it does not know to your server. Container names keep working, and `shop.lab.internal` comes from dnsmasq.
-
-Use `host-record=` rather than `address=` for the name. With `address=`, dnsmasq replies "no such name" to the IPv6 (AAAA) question for a name that does exist, which is wrong and can confuse clients.
+Check it from one of the apps, which are on the same network. `getent` uses the system resolver, as a program would:
 
 <details>
 <summary>Show a solution</summary>
 
-`dnsmasq.conf`:
-
-```text
-# Answer for the lab's own domain and nothing else.
-no-resolv
-local=/lab.internal/
-host-record=shop.lab.internal,10.10.0.10
-log-queries
-log-facility=-
-```
-
 ```bash
-$ docker run -d --name dns --hostname dns --network lab --ip 10.10.0.53 -v "$PWD":/stack netlab dnsmasq --no-daemon --conf-file=/stack/dnsmasq.conf
-$ docker logs dns
-Oct 25 07:36:59 dnsmasq[1]: started, version 2.91 cachesize 150
-Oct 25 07:36:59 dnsmasq[1]: compile time options: IPv6 GNU-getopt DBus no-UBus i18n IDN2 DHCP DHCPv6 no-Lua TFTP conntrack ipset nftset auth DNSSEC loop-detect inotify dumpfile
-Oct 25 07:36:59 dnsmasq[1]: warning: no upstream servers configured
-Oct 25 07:36:59 dnsmasq[1]: using only locally-known addresses for lab.internal
-Oct 25 07:36:59 dnsmasq[1]: read /etc/hosts - 9 names
+$ docker exec app1 getent hosts shop.lab.internal
+10.10.0.10      shop.lab.internal
 ```
 
-`no-resolv` stops dnsmasq reading `/etc/resolv.conf` for upstream servers, and the warning confirms it has none. `local=/lab.internal/` makes it the final word for that domain.
+If it prints nothing, the proxy was started without `--network-alias`. Remove it with `docker rm -f proxy` and start it again with the alias; your files in `/stack` are kept, so you only repeat the setup inside the proxy. A line in the client's `/etc/hosts`, added with `docker run --add-host shop.lab.internal:10.10.0.10`, would also work, but only on that one machine, and `dig` would not see it.
 
 </details>
 
 ### Trust the certificate authority
 
-Start the client with your DNS server and the CA certificate mounted read-only. Mount only `ca.crt`, not the whole `ca` directory, so the client never sees the CA's private key:
+Start the client with the CA certificate mounted read-only. Mount only `ca.crt`, not the whole `ca` directory, so the client never sees the CA's private key:
 
 ```bash
-$ docker run -it --rm --name client --hostname client --network lab --ip 10.10.0.30 --dns 10.10.0.53 --cap-add NET_ADMIN -v "$PWD/ca/ca.crt":/lab-ca.crt:ro netlab
+$ docker run -it --rm --name client --hostname client --network lab --ip 10.10.0.30 --cap-add NET_ADMIN -v "$PWD/ca/ca.crt":/lab-ca.crt:ro netlab
 root@client:/#
 ```
 
@@ -285,14 +266,11 @@ Pings to the proxy now go unanswered, because ICMP is not on the list. That is a
 
 ## Check it works
 
-On the client. The name comes from your DNS server:
+On the client. The name comes from the lab's DNS:
 
 ```bash
-root@client:/# dig shop.lab.internal | grep -A1 'ANSWER SECTION'
-;; ANSWER SECTION:
-shop.lab.internal.	0	IN	A	10.10.0.10
-root@client:/# dig nothing.lab.internal | grep status
-;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 42315
+root@client:/# dig +short shop.lab.internal
+10.10.0.10
 ```
 
 HTTPS works without `-k`, and requests alternate between the apps:
@@ -330,14 +308,9 @@ root@client:/# nc -zv -w 3 shop.lab.internal 8080
 nc: connect to shop.lab.internal (10.10.0.10) port 8080 (tcp) timed out: Operation now in progress
 ```
 
-And the logs agree. dnsmasq saw the client's questions, and the apps saw requests from the proxy, not from the client:
+And the logs agree. The apps saw requests from the proxy, not from the client:
 
 ```bash
-$ docker logs dns 2>&1 | tail -n 4
-Oct 25 07:34:22 dnsmasq[1]: query[AAAA] shop.lab.internal from 10.10.0.30
-Oct 25 07:34:22 dnsmasq[1]: config shop.lab.internal is NODATA-IPv6
-Oct 25 07:34:22 dnsmasq[1]: query[A] shop.lab.internal from 10.10.0.30
-Oct 25 07:34:22 dnsmasq[1]: config shop.lab.internal is 10.10.0.10
 $ docker logs app2 2>&1 | tail -n 1
 10.10.0.10 - - [25/Oct/2026 07:32:34] "GET / HTTP/1.0" 200 -
 ```
@@ -347,7 +320,7 @@ The apps log `HTTP/1.0` because that is what nginx uses towards an upstream unle
 Keep the stack running if you go on to *Diagnose traffic with tcpdump*, which uses it. To remove it:
 
 ```bash
-$ docker rm -f proxy app1 app2 dns
+$ docker rm -f proxy app1 app2
 ```
 
 The client goes away by itself when you `exit`, because it was started with `--rm`.
@@ -356,4 +329,4 @@ The client goes away by itself when you `exit`, because it was started with `--r
 
 - Firewall the apps too, so port 8000 accepts connections only from `10.10.0.10`, and check that the client can no longer reach `app1:8000` directly.
 - Add `proxy_next_upstream` and a short `proxy_connect_timeout`, stop `app2`, and check that every request still gets an answer.
-- Add a second name, `admin.lab.internal`, with its own certificate and a `server` block that only allows the client's address.
+- Add a second name, `admin.lab.internal`, with its own alias, certificate and `server` block that only allows the client's address.

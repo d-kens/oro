@@ -1,6 +1,6 @@
 An IP address gets a packet to the right machine. But a server might run a web server, an SSH server and a database all at once, and each packet has to reach the right one. That is what port numbers are for. A large share of "cannot connect" problems come down to the port: nothing is listening on it, something is listening on the wrong address, or something in between is blocking it.
 
-This topic covers ports, sockets, and how to see what a machine is listening on and connected to. By the end you can read the output of `ss`, explain why a service bound to `127.0.0.1` cannot be reached from another machine, and tell a refused connection from one that timed out.
+This topic covers ports, sockets, how to see what a machine is listening on and connected to, and `nc`, the tool for opening a connection by hand. By the end you can read the output of `ss`, explain why a service bound to `127.0.0.1` cannot be reached from another machine, test whether a port is open, and tell a refused connection from one that timed out.
 
 ## Ports
 
@@ -131,6 +131,34 @@ OSError: [Errno 98] Address already in use
 
 `ss -tlnp 'sport = :8000'` then tells you which process already has it.
 
+## Opening connections by hand with nc
+
+**Netcat:** the command `nc`, which opens a TCP or UDP connection and connects it to your terminal. What you type goes out over the network, and what comes back is printed. It is the quickest way to answer "is that port open from here?" and to talk to a service without its usual client. The lab image has netcat-openbsd, the usual version on Ubuntu and Debian; options differ slightly in other versions, so check `nc -h` on an unfamiliar machine.
+
+`nc` has two modes. With `-l`, it **listens** on a port and waits for one connection. Without it, it **connects** to an address and port. Start a listener on beta, then connect from alpha:
+
+```bash
+root@beta:/# nc -l 9000
+```
+
+```bash
+root@alpha:/# nc beta 9000
+hello from alpha
+```
+
+`hello from alpha` appears on beta, and anything typed on beta appears on alpha. <kbd>Ctrl</kbd>+<kbd>C</kbd> on either side closes the connection. A listener accepts one connection and exits; `-k` keeps it listening for more. `-u` uses UDP instead of TCP. When input comes from a file or a pipe, `-N` closes the connection once the input ends, so `nc` does not wait for more.
+
+Most of the time you use `nc` to check whether a port answers. `-z` connects and closes again without sending anything, `-v` reports what happened, and `-w` sets a time limit in seconds:
+
+```bash
+root@alpha:/# nc -zv -w 3 beta 80
+Connection to beta (10.10.0.3) 80 port [tcp/http] succeeded!
+root@alpha:/# nc -z -w 3 beta 22; echo $?
+1
+```
+
+`[tcp/http]` is the name `nc` finds for the port in `/etc/services`. It is only a label; it does not mean an HTTP server is really there. The **exit status** is 0 when the port answered and 1 when it did not, which makes `nc -z` useful in scripts that wait for a service, such as a database, to come up. Always give `-w` in scripts: when packets are dropped, a connection attempt can otherwise hang for about two minutes.
+
 ## Ephemeral ports and connections
 
 The server's port is fixed and known. The client's port is not: when a client connects, the kernel picks a free **ephemeral port** for its end from a range set aside for that:
@@ -140,7 +168,7 @@ root@alpha:/# cat /proc/sys/net/ipv4/ip_local_port_range
 32768	60999
 ```
 
-To see connections, drop `-l`. Hold two connections open from alpha to beta with `nc`, which the *Netcat* topic covers. `&` runs each in the background:
+To see connections, drop `-l`. Hold two connections open from alpha to beta with `nc`. `sleep 60` sends nothing for a minute, so each connection stays open, and `&` runs each in the background:
 
 ```bash
 root@alpha:/# sleep 60 | nc beta 80 &
@@ -182,7 +210,7 @@ root@alpha:/# curl -sv http://beta:9000/ 2>&1 | grep refused
 * connect to 10.10.0.3 port 9000 from 10.10.0.2 port 53860 failed: Connection refused
 ```
 
-`-z` tells `nc` to only test the connection and `-v` makes it report the result. curl only says `Couldn't connect to server` unless you ask for `-v`.
+curl only says `Couldn't connect to server` unless you ask for `-v`.
 
 A **timeout** takes as long as the client is willing to wait. The packets went out and nothing came back at all. Usually a firewall dropped them silently, or the address leads nowhere. To see one, block port 8000 on beta with a firewall rule; the *Firewall basics* topic explains the command:
 
@@ -254,6 +282,22 @@ ESTAB 0      0          10.10.0.3:80      10.10.0.2:40392
 ```
 
 The connection is `10.10.0.2`, port `40392`, to `10.10.0.3`, port `80`. Port 80 was chosen by whoever configured nginx; port 40392 was picked by alpha's kernel from the ephemeral range, and yours will differ. On beta the same four values appear with local and peer swapped. If `ss` on alpha shows nothing, the 60 seconds may have run out; start it again.
+
+</details>
+
+### Task 3: Wait for a service
+
+Stop nginx on beta with `nginx -s stop`. Write a one-line shell loop on alpha that checks port 80 on beta every second and prints `up` as soon as it answers. Start the loop, then start nginx on beta while it runs.
+
+<details>
+<summary>Check your work</summary>
+
+```bash
+root@alpha:/# until nc -z -w 1 beta 80 2>/dev/null; do sleep 1; done; echo up
+up
+```
+
+`until` repeats the loop while the command fails, using the exit status of `nc`. `-w 1` keeps each try short, and `2>/dev/null` hides the messages `nc` writes to standard error, so only `up` is printed. A common mistake is leaving out `-z`: `nc` then connects and waits for input, and the loop never moves on.
 
 </details>
 

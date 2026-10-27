@@ -52,7 +52,7 @@ If you run `ss -uan` on beta now, the listener shows `ESTAB` with alpha's addres
 
 ## What can go missing
 
-On a quiet local network, almost nothing is lost, so you have to cause some loss to see the difference. `tc` with `netem` makes an interface drop a share of its outgoing packets on purpose; the *Latency and bandwidth* topic covers it. Here, alpha drops 30 percent of what it sends.
+On a quiet local network, almost nothing is lost, so you have to cause some loss to see the difference. `tc` with `netem` makes an interface drop a share of its outgoing packets on purpose, and can add delay in the same way. Here, alpha drops 30 percent of what it sends.
 
 Start a fresh listener on beta, then on alpha send the numbers 1 to 20, one datagram every tenth of a second:
 
@@ -146,7 +146,7 @@ UDP fits when a fresh answer matters more than a guaranteed one, or when the pro
 
 - **DNS**: one short question, one short answer. A handshake would double the time for each lookup, and if the answer does not come, the client simply asks again.
 - **Voice, video and games**: a sound sample that arrives late is useless, so it is better skipped than resent.
-- **Time sync (NTP)**, **DHCP**, and many monitoring and logging protocols, which send small, frequent messages.
+- **Time sync (NTP)**, **DHCP** (how a machine gets its address when it joins a network), and many monitoring and logging protocols, which send small, frequent messages.
 - **Newer protocols** that build their own reliability on top of UDP. HTTP/3 runs over a protocol called QUIC, which uses UDP underneath.
 
 DNS is the one you meet every day. Capture port 53 on alpha and ask one of the root DNS servers a question directly; the *DNS basics* topic explains what root servers are:

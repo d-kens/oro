@@ -51,4 +51,4 @@ The titles overlap a great deal, and the same work goes under different names at
 
 ## How this roadmap is ordered
 
-The roadmap starts with what everything else runs on (Linux, scripting, Git and networking), then packages applications (Docker), puts them on a cloud (AWS, Terraform), automates their delivery (GitHub Actions), runs them at scale (Kubernetes, Helm, Argo CD), and finishes with watching and securing them (Observability, DevSecOps). The capstone puts it all together.
+The roadmap starts with what everything else runs on (Linux, scripting, Git and networking), then packages applications (Docker), puts them on a cloud (Cloud computing, AWS, Terraform), automates their delivery (GitHub Actions), runs them at scale (Kubernetes, Helm, Argo CD), and finishes with watching and securing them (Observability, DevSecOps). The capstone puts it all together.

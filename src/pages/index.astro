@@ -15,8 +15,8 @@ const first = road.steps.map(([slug]) => skill(slug)).find(Boolean);
   <h1>Learn DevOps and cloud, in order.</h1>
   <p class="lead">One skill at a time, from Linux to Kubernetes, with notes for every topic and labs that run on your own computer.</p>
   <p class="actions">
-    <a class="link" href={href(`skills/${first.slug}.html`)}>Start with {first.name}</a>
-    <a href={href('roadmap.html')}>or see the roadmap</a>
+    <a class="start" href={href(`skills/${first.slug}.html`)}><span>Start here</span></a>
+    <a href={href('roadmap.html')}>Roadmap</a>
   </p>
 </header>
 

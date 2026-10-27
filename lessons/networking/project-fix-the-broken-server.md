@@ -1,6 +1,6 @@
 A colleague has set up a small web server called `web`, and a test machine called `client` next to it. From the client, `curl http://web/` fails. Your job is to find out why and make it work, without rebuilding anything. There is more than one fault, and each one hides the next, so you fix them one at a time and in order.
 
-The project is an exercise in *The debugging playbook*: check the name, then the path, then the port, then the application. Along the way you use what you learned in *DNS basics*, *Ports and sockets*, *Netcat*, *Firewall basics*, *tcpdump* and *Serve a website with nginx*.
+The project is an exercise in *The debugging playbook*: check the name, then the path, then the port, then the application. Along the way you use what you learned in *DNS basics*, *Ports and sockets*, *Firewall basics*, *tcpdump* and *Serve a website with nginx*.
 
 ## What you need
 
@@ -364,5 +364,5 @@ $ docker rm -f web client
 ## Going further
 
 - Run the setup script again and fix all five faults with a one-line command each, then put those commands in a `fix.sh` you could hand to a colleague.
-- Replace the deleted firewall rule with a sensible set: allow port 80 and established connections, and drop everything else, as in *Firewall practice*.
+- Replace the deleted firewall rule with a sensible set: allow port 80 and established connections, and drop everything else, as in *Firewall basics*.
 - Break the lab yourself in a way not covered here, such as a wrong default route on the client, and ask someone to find it.

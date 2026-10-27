@@ -1,16 +1,12 @@
 Every packet carries the address it comes from and the address it is going to. On almost every network you will work with, those are IP addresses. When a service cannot be reached, one of the first questions is which address it is on and whether that address can be reached from where you are.
 
-This topic covers the two kinds of IP address, IPv4 and IPv6, the ranges set aside for private networks, and how to find the addresses a machine has. By the end you can read an address, tell a private one from a public one, and list a machine's addresses with `ip`.
+This topic covers the two kinds of IP address, IPv4 and IPv6, the ranges set aside for private networks, and the network interfaces that addresses belong to. By the end you can tell a private address from a public one, list a machine's interfaces and addresses with `ip`, bring an interface down and up, add an address, and check an interface's MTU.
 
 ## IPv4 addresses
 
 An **IPv4 address** is a 32-bit number. Nobody writes it as one long number. Instead it is split into four bytes, each written in decimal and separated by dots, like `10.10.0.2`. Each of the four parts is called an **octet** and can be anything from 0 to 255.
 
-```text
-10.10.0.2   =   00001010 . 00001010 . 00000000 . 00000010
-```
-
-32 bits allow about 4.3 billion addresses. That sounds like a lot, but there are more devices than that, and the free pool ran out years ago. Two things keep IPv4 going: private ranges that many networks reuse, and NAT, which lets many private addresses share one public one (the *NAT* topic covers it).
+32 bits allow about 4.3 billion addresses. There are more devices than that, and the free pool ran out years ago. Two things keep IPv4 going: private ranges that many networks reuse, and NAT, which lets many private addresses share one public one (the *NAT* topic covers it).
 
 An address has two parts. The first part says which **network** the host is on, and the rest says which **host** it is on that network. On the lab, `10.10.0` is the network and the last number is the host, so alpha (`10.10.0.2`) and beta (`10.10.0.3`) are on the same network. Where exactly the split falls is written after a slash, as in `10.10.0.2/24`. The *Subnets and CIDR* topic explains that number in full. For now, read `/24` as "the first three octets are the network".
 
@@ -26,17 +22,19 @@ Some ranges are set aside for **private** networks: homes, offices, data centres
 
 Every other ordinary address is **public**: it is unique across the whole internet and can be routed to from anywhere. A web server that the world can reach has a public address somewhere in front of it, even if the server itself only has a private one.
 
-A few more ranges are worth knowing because you will meet them:
+A few more ranges come up often:
 
 | Range | Meaning |
 | --- | --- |
 | `127.0.0.0/8` | **Loopback**. Always the machine itself. `127.0.0.1` is the one you will use. |
-| `169.254.0.0/16` | **Link-local**. A machine gives itself one of these when it cannot get an address from DHCP. Cloud platforms also use `169.254.169.254` for the instance metadata service. |
+| `169.254.0.0/16` | **Link-local**. A machine gives itself one of these when it asks the network for an address and gets no answer. Cloud platforms also use `169.254.169.254` for the instance metadata service. |
 | `100.64.0.0/10` | Shared address space used by internet providers for their own NAT. Not yours to use, and not public either. |
 | `0.0.0.0` | "No particular address". A server listening on `0.0.0.0` listens on all of its addresses, as the *Ports and sockets* topic shows. |
 | `192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24` | Reserved for documentation. These lessons use them for made-up public addresses. |
 
-A useful habit: when you see an address in a log or an error, decide first which kind it is. A connection from `10.x` came from inside your network. A connection from a public address came from outside, or from something that changes addresses on the way in. An address starting `169.254` usually means a machine that failed to get its proper address.
+Most machines get their address automatically when they join a network, through **DHCP**: the machine broadcasts a request, and a DHCP server, usually the router or the cloud provider's network, replies with an address, a gateway and a DNS server. A `169.254` address means that exchange failed.
+
+When you see an address in a log or an error, decide first which kind it is. A connection from `10.x` came from inside your network. A connection from a public address came from outside, or from something that changes addresses on the way in.
 
 ## IPv6 addresses
 
@@ -51,34 +49,17 @@ That is long, so two shortening rules apply:
 - Leading zeros in a group can be dropped: `0db8` becomes `db8`, `0002` becomes `2`.
 - One run of all-zero groups can be replaced by `::`. Only one, or the address would be ambiguous.
 
-So the address above is usually written `2001:db8::2`. Both forms mean the same address, and tools may show either.
+So the address above is usually written `2001:db8::2`. `::1` is the IPv6 loopback, addresses starting `fe80:` are link-local, addresses starting `fd` are the private range, and most addresses starting `2` or `3` are public. There is so much IPv6 space that a network does not need NAT: every device can have a public address, and a firewall decides what may reach it.
 
-The special ranges have IPv6 versions too:
+Most networks today run both at once, which is called **dual stack**. A name can have an IPv4 address and an IPv6 address, and a client may try either. When something works from one machine and not another, check which of the two each one used. The lab network runs on IPv4 only; Docker turns IPv6 off on networks that were not created with it.
 
-| Address or range | Meaning |
-| --- | --- |
-| `::1` | Loopback, the same as `127.0.0.1` |
-| `fe80::/10` | Link-local. Every IPv6 interface gives itself one automatically. |
-| `fc00::/7` (in practice `fd..`) | Unique local addresses, the private ranges of IPv6 |
-| `2001:db8::/32` | Reserved for documentation |
-| Most addresses starting `2` or `3` | Global, public addresses |
+## Interfaces
 
-There is so much IPv6 space that a network does not need NAT. Every device can have a public address, and a firewall decides what may reach it.
+A machine does not have an IP address on its own. The address belongs to one of its **network interfaces**, the points where it connects to a network. An interface is anything the kernel can send packets out of and receive packets from. Some match real hardware, such as `eth0` or `ens5` for a network card, and many are virtual: the loopback `lo`, bridges such as `docker0` that act as software switches, tunnels such as `wg0` for a VPN, and virtual pairs that connect containers.
 
-Most networks today run both at once, which is called **dual stack**. A name can have an IPv4 address and an IPv6 address, and a client may try either. When something works from one machine and not another, it is worth checking which of the two each one used.
+In the lab, each container's `eth0` is one end of a virtual pair. The other end is plugged into the bridge Docker made for the `lab` network, and the `@if33` is the number of the interface at the other end. Your number will differ.
 
-The lab network runs on IPv4 only. Docker turns IPv6 off on networks that were not created with it, so on alpha you will only see the IPv6 loopback:
-
-```bash
-root@alpha:/# ip -6 addr
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 state UNKNOWN qlen 1000
-    inet6 ::1/128 scope host 
-       valid_lft forever preferred_lft forever
-```
-
-## Finding a machine's addresses
-
-On Linux, `ip addr` lists every interface and the addresses on it. You saw the brief form in the first topic. The full form shows more:
+`ip addr` lists every interface and the addresses on it:
 
 ```bash
 root@alpha:/# ip addr show eth0
@@ -88,31 +69,15 @@ root@alpha:/# ip addr show eth0
        valid_lft forever preferred_lft forever
 ```
 
-- `inet` is an IPv4 address, with its prefix length after the slash. `inet6` would be an IPv6 one.
-- `brd` is the broadcast address of that network, covered in the *Subnets and CIDR* topic.
+- The flags in angle brackets. `UP` means the interface has been switched on. `LOWER_UP` means the link underneath is working: on real hardware, a cable is plugged in and the other end is up. You need both for traffic to flow.
+- `mtu 1500` is the largest packet the interface will send, covered below.
+- `link/ether` is the interface's **MAC address**, a hardware address used to deliver packets between machines on the same local network. *The layers model* topic shows it in use.
+- `inet` is an IPv4 address, with its prefix length after the slash. `inet6` would be an IPv6 one. `brd` is the broadcast address of that network.
 - `scope global` means the address can be used to talk to other machines. The loopback's addresses have `scope host`, meaning this machine only.
-- `link/ether` is the hardware address, which the *MAC addresses and ARP* topic covers.
 
-Some variations save time:
+`ip -br addr` gives one line per interface, `ip -4 addr` and `ip -6 addr` show one family, and `ip -s link` adds counters of packets received (`RX`) and sent (`TX`), with errors and drops. On a real server, `errors` or `dropped` counters that keep climbing point to a problem with the card, the cable or the driver, below anything IP can see.
 
-| Command | Shows |
-| --- | --- |
-| `ip -br addr` | One line per interface, with state and addresses |
-| `ip -4 addr` / `ip -6 addr` | Only IPv4 or only IPv6 addresses |
-| `ip addr show eth0` | One interface |
-| `hostname -I` | Just the addresses, all on one line, without the loopback |
-
-```bash
-root@alpha:/# ip -4 -br addr
-lo               UNKNOWN        127.0.0.1/8 
-eth0@if33        UP             10.10.0.2/24 
-root@alpha:/# hostname -I
-10.10.0.2 
-```
-
-On your own computer the commands differ. On Linux it is the same `ip addr`. On macOS, `ifconfig` lists interfaces, and `ipconfig getifaddr en0` prints the address of the main one. On Windows, `ipconfig` in a terminal.
-
-You will notice that your own computer almost certainly has a private address, such as `192.168.1.20`. Your **public address** is not on any of your interfaces. It belongs to your home router, which shares it among every device in the house. The only way to see it from inside is to ask a server on the internet what address your request came from. Cloud servers work the same way: the server's interface has a private address, and the public address the world uses is mapped onto it by the provider's network.
+A machine's **public address** is often not on any of its interfaces. A home computer has a private address, and the public one belongs to the router. A cloud server's interface has a private address, and the provider's network maps the public one onto it.
 
 To see which of its addresses a machine will use to reach a given destination, ask the routing table:
 
@@ -122,31 +87,77 @@ root@alpha:/# ip route get 10.10.0.3
     cache 
 ```
 
-`src` is the address the reply will be sent back to. That matters on machines with several addresses, and the *Routing and gateways* topic explains the rest of the line.
+`src` is the address the packet is sent from. The *Routing and gateways* topic explains the rest of the line.
 
-## Checking addresses with Python
+## The loopback
 
-The lab image has `python3`, whose standard `ipaddress` module knows all the special ranges. It is handy for checking your reading of an address:
+Every machine has a **loopback** interface, `lo`. Packets sent to it never leave the machine; they come straight back in. It holds `127.0.0.1` and `::1`, and programs use it to talk to other programs on the same machine. Docker's DNS server in the lab listens on `127.0.0.11`, so even name lookups in the lab depend on `lo`:
 
 ```bash
-root@alpha:/# python3 -c "import ipaddress; a = ipaddress.ip_address('10.10.0.2'); print(a.is_private, a.is_global)"
-True False
-root@alpha:/# python3 -c "import ipaddress; print(ipaddress.ip_address('2001:db8::2').exploded)"
-2001:0db8:0000:0000:0000:0000:0000:0002
+root@alpha:/# ip link set lo down
+root@alpha:/# ping -c 1 beta
+ping: beta: Temporary failure in name resolution
+root@alpha:/# ip link set lo up
 ```
 
-`is_global` is the one to trust for "reachable from the internet". `is_private` is broader than the three private ranges: it is also true for loopback, link-local and the documentation ranges, because none of them are public.
+## Changing an interface by hand
+
+`ip link set` and `ip addr` change interfaces. These changes need root, and in the lab they work because the containers were started with `--cap-add NET_ADMIN`.
+
+```bash
+root@alpha:/# ip link set eth0 down
+root@alpha:/# ping -c 1 10.10.0.3
+ping: connect: Network is unreachable
+```
+
+The address is still configured, but the interface is off, so the kernel has no way out to the network. `Network is unreachable` is an error from your own machine: no packet was sent at all. Bring it back and look at the routing table:
+
+```bash
+root@alpha:/# ip link set eth0 up
+root@alpha:/# ip route
+10.10.0.0/24 dev eth0 proto kernel scope link src 10.10.0.2 
+```
+
+Before, it also had a line `default via 10.10.0.1 dev eth0`, the route to everything outside the lab. Taking the interface down removed every route that used it, and bringing it up only restored the route the kernel makes for the address itself. Until you add the default route back with `ip route add default via 10.10.0.1`, alpha cannot reach the internet. On a real server, a network service such as systemd-networkd or NetworkManager normally puts the routes back. Be careful doing this over SSH: taking down the interface you are connected through cuts off your own session.
+
+An interface can hold more than one address. Add one with `ip addr add`, giving the prefix length, and other machines can use it straight away:
+
+```bash
+root@alpha:/# ip addr add 10.10.0.50/24 dev eth0
+root@beta:/# ping -c 1 10.10.0.50
+64 bytes from 10.10.0.50: icmp_seq=1 ttl=64 time=0.148 ms
+root@alpha:/# ip addr del 10.10.0.50/24 dev eth0
+```
+
+Nothing done with `ip` survives a reboot, or in the lab, the container exiting. Permanent settings live in the system's network configuration, such as netplan files on Ubuntu, or come from DHCP. On a cloud server you rarely add addresses by hand; you attach them through the provider, and the server picks them up.
+
+## MTU
+
+**MTU:** maximum transmission unit, the largest packet an interface will send, in bytes. Ethernet's standard is 1500. Larger data is cut into packets that fit.
+
+You can test it with `ping`. `-s` sets the size of the data, and `-M do` forbids splitting the packet. An ICMP header is 8 bytes and an IPv4 header is 20, so 1472 bytes of data makes exactly 1500:
+
+```bash
+root@alpha:/# ping -c 1 -M do -s 1472 beta
+PING beta (10.10.0.3) 1472(1500) bytes of data.
+1480 bytes from beta.lab (10.10.0.3): icmp_seq=1 ttl=64 time=0.038 ms
+root@alpha:/# ping -c 1 -M do -s 1473 beta
+PING beta (10.10.0.3) 1473(1501) bytes of data.
+ping: local error: message too long, mtu=1500
+```
+
+`ip link set eth0 mtu 1400` changes it. MTU problems have a recognisable shape. Small packets get through and large ones vanish, so a connection opens, a short request works, and then a large response or file transfer hangs. You meet this with VPNs and tunnels, which add their own headers and so leave less room, and in cloud networks, where some links allow larger "jumbo" packets of around 9000 bytes and others do not.
 
 ## Tasks
 
 ### Task 1: Classify some addresses
 
-Without running anything, decide for each address whether it is private, public, loopback, link-local or something else: `172.20.4.9`, `192.168.0.254`, `172.32.0.1`, `127.0.0.53`, `169.254.10.20`, `100.64.3.3`, `fd12:3456::1`. Then check your answers on alpha with Python's `ipaddress` module.
+Without running anything, decide for each address whether it is private, public, loopback, link-local or something else: `172.20.4.9`, `192.168.0.254`, `172.32.0.1`, `127.0.0.53`, `169.254.10.20`, `100.64.3.3`, `fd12:3456::1`. Then check your answers on alpha with Python's `ipaddress` module, which knows all the special ranges.
 
 <details>
 <summary>Check your work</summary>
 
-A short loop prints both flags for each address:
+A short loop prints the flags for each address:
 
 ```bash
 root@alpha:/# python3 -c "
@@ -164,30 +175,31 @@ for a in ['172.20.4.9', '192.168.0.254', '172.32.0.1', '127.0.0.53', '169.254.10
 fd12:3456::1 True False False False
 ```
 
-The common mistake is `172.32.0.1`. The private range is `172.16` to `172.31`, so `172.32` is public. `127.0.0.53` is loopback, because all of `127.0.0.0/8` is, not only `127.0.0.1`. `100.64.3.3` is neither private nor global: it is the shared range providers use for their own NAT. `fd12:3456::1` is an IPv6 unique local address, the IPv6 private range.
+The common mistake is `172.32.0.1`. The private range is `172.16` to `172.31`, so `172.32` is public. `127.0.0.53` is loopback, because all of `127.0.0.0/8` is, not only `127.0.0.1`. `100.64.3.3` is neither private nor global: it is the shared range providers use for their own NAT. `fd12:3456::1` is an IPv6 unique local address, the IPv6 private range. `is_private` is broader than the three private ranges, so trust `is_global` for "reachable from the internet".
 
 </details>
 
-### Task 2: Every address alpha has, and one it uses
+### Task 2: Down, up, and fully working
 
-On alpha, list all of its IPv4 and IPv6 addresses. Then find an IPv4 address of `example.com` with `dig +short`, and ask alpha which of its own addresses it would use to reach it.
+On alpha, take `eth0` down and bring it back up. Then make alpha fully working again, so that both `ping -c 1 beta` and `ping -c 1 example.com` succeed. Write down what was missing.
 
 <details>
 <summary>Check your work</summary>
 
 ```bash
-root@alpha:/# ip -br addr
-lo               UNKNOWN        127.0.0.1/8 ::1/128 
-eth0@if33        UP             10.10.0.2/24 
-root@alpha:/# dig +short example.com
-104.20.23.154
-172.66.147.243
-root@alpha:/# ip route get 104.20.23.154
-104.20.23.154 via 10.10.0.1 dev eth0 src 10.10.0.2 uid 0 
-    cache 
+root@alpha:/# ip link set eth0 down
+root@alpha:/# ip link set eth0 up
+root@alpha:/# ping -c 1 beta
+64 bytes from beta.lab (10.10.0.3): icmp_seq=1 ttl=64 time=0.035 ms
+root@alpha:/# ping -c 1 example.com
+ping: connect: Network is unreachable
+root@alpha:/# ip route add default via 10.10.0.1
+root@alpha:/# ping -c 1 example.com
+PING example.com (104.20.23.154) 56(84) bytes of data.
+64 bytes from 104.20.23.154: icmp_seq=1 ttl=63 time=77.3 ms
 ```
 
-alpha has two IPv4 addresses (`127.0.0.1` and `10.10.0.2`) and one IPv6 address (`::1`). The addresses for example.com will probably differ for you, and there may be one or several. alpha sends from `10.10.0.2`, its only address that can leave the machine, through `10.10.0.1`, Docker's gateway. You may also see several `DOWN` interfaces such as `tunl0` with no address; they are unused and can be ignored.
+The default route was missing. Beta still worked because it is on alpha's own network, which the kernel's automatic route covers. The address and time for example.com will differ for you. The likely mistake is to stop after `ping beta` succeeds and assume the machine is fine.
 
 </details>
 
@@ -202,29 +214,29 @@ alpha has two IPv4 addresses (`127.0.0.1` and `10.10.0.2`) and one IPv6 address 
 
 </details>
 
-**2. Write `2001:0db8:0000:0000:0001:0000:0000:0010` in its shortest form.**
+**2. A new server cannot be reached by anything. `ip -br addr` on it shows `eth0 UP 169.254.83.12/16`. What does that suggest?**
 
 <details>
 <summary>Show answer</summary>
 
-`2001:db8::1:0:0:10`. Leading zeros go from every group, and the longest run of zero groups (the first two) becomes `::`. The second run has to stay as `0:0`, because `::` can only be used once.
+The server did not get its proper address. An address in `169.254.0.0/16` is one a machine picks for itself when it asks for an address and gets no answer, so the likely problem is DHCP: the server cannot reach the DHCP server, or no DHCP server is configured for that network.
 
 </details>
 
-**3. A new server cannot be reached by anything. `ip -br addr` on it shows `eth0 UP 169.254.83.12/16`. What does that suggest?**
-
-<details>
-<summary>Show answer</summary>
-
-The server did not get its proper address. An address in `169.254.0.0/16` is one a machine picks for itself when it asks for an address and gets no answer, so the likely problem is DHCP: the server cannot reach the DHCP server, or no DHCP server is configured for that network. The *DHCP* topic covers how that exchange works.
-
-</details>
-
-**4. A colleague runs `ip addr` on a cloud server and sees only `10.0.3.17`, yet people on the internet reach the server at `203.0.113.40`. Is something misconfigured?**
+**3. A colleague runs `ip addr` on a cloud server and sees only `10.0.3.17`, yet people on the internet reach the server at `203.0.113.40`. Is something misconfigured?**
 
 <details>
 <summary>Show answer</summary>
 
 No. That is normal. The server only has its private address on its interface. The provider's network maps the public address onto it and translates packets on the way in and out, which is a form of NAT. The server never sees the public address in its own interface list.
+
+</details>
+
+**4. After a VPN is set up, SSH sessions to a server connect and show a prompt, but freeze as soon as you run a command with a lot of output. Small commands work. What would you check first?**
+
+<details>
+<summary>Show answer</summary>
+
+The MTU. Small packets fit and get through; large ones are too big for the tunnel, which adds its own headers, and get dropped. Test with `ping -M do -s` at different sizes to find the largest size that gets through, then lower the MTU on the interface to match.
 
 </details>

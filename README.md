@@ -1,6 +1,6 @@
 # Paipa
 
-Hands-on DevOps and cloud skills: Linux, networking and shell scripting so far, each taught as topics in order with lessons, tasks, quizzes and projects that run on your own computer, plus a DevOps roadmap. The name comes from the pipeline every change travels, from a commit to production.
+Hands-on DevOps and cloud skills: What is DevOps, Linux, shell scripting, networking and cloud computing so far, each taught as topics in order with lessons, tasks, quizzes and projects that run on your own computer, plus a DevOps roadmap. The name comes from the pipeline every change travels, from a commit to production.
 
 Live at <https://d-kens.github.io/paipa/>.
 

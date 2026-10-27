@@ -23,7 +23,7 @@ $ docker exec -it beta bash
 root@beta:/#
 ```
 
-In the first beta shell, start a listener on port 9000 with netcat. The *Netcat* topic covers it in full; here it just accepts one connection and prints what it receives:
+In the first beta shell, start a listener on port 9000 with `nc`, from the *Ports and sockets* topic. It accepts one connection and prints what it receives:
 
 ```bash
 root@beta:/# nc -l 9000

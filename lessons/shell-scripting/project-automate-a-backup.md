@@ -1,6 +1,6 @@
 A backup you have to remember to take is a backup that will be missing on the day you need it. In this project you write a script that archives a directory, keeps the newest seven copies, and logs everything it does. Then you schedule it to run every night and prove you can restore from it.
 
-It uses the *Archives* topic for `tar`, *Running things on a schedule* for cron, *Pipes and text* and *Your shell* for the script itself, *Finding things* for `find`, and *Creating and moving files* and *Disks and space* along the way.
+From this skill it uses *Arguments and input*, *Functions*, *Exit codes and errors* and *Robust scripts*. From the Linux skill it uses *Archives* for `tar`, *Running things on a schedule* for cron, and *Finding things* for `find`.
 
 ## What you need
 

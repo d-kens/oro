@@ -183,7 +183,7 @@ traceroute to example.com (104.20.23.154), 30 hops max, 60 byte packets
 ...
 ```
 
-Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop it. On a Linux server with a direct connection, the same command shows the real path. `mtr`, also in the lab image, runs traceroute continuously and shows the packet loss at each hop; the *Latency and bandwidth* topic uses it.
+Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop it. On a Linux server with a direct connection, the same command shows the real path. `mtr`, also in the lab image, runs traceroute continuously and shows the delay and packet loss at each hop, which makes it the usual tool for finding where on a path a connection slows down.
 
 ## Tasks
 

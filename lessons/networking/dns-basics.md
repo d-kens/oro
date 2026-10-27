@@ -1,6 +1,6 @@
 Before a machine can send a single packet to `example.com` or `db-01`, it has to turn the name into an IP address. That lookup is DNS, the Domain Name System. When it fails, nothing else gets a chance to run, which is why "it's always DNS" is a common saying among people who look after servers.
 
-DNS is not one server but a chain of them, plus a few files on your own machine that are consulted first. By the end you can explain where a lookup goes, read `/etc/hosts`, `/etc/nsswitch.conf` and `/etc/resolv.conf`, and follow a lookup step by step with `dig`.
+This topic covers where a lookup goes and what a domain publishes. By the end you can read `/etc/hosts`, `/etc/nsswitch.conf` and `/etc/resolv.conf`, follow a lookup with `dig`, ask for any record type, and know which type to use for which job.
 
 ## Names are a tree
 
@@ -49,36 +49,21 @@ ff02::2	ip6-allrouters
 10.10.0.2	alpha
 ```
 
-Each line is an address followed by one or more names. Docker wrote these lines, including alpha's own name. You can add your own, and they take effect at once:
+Each line is an address followed by one or more names. Docker wrote these lines; you can add your own, and they take effect at once. To see what the system resolves, as a program would, use **getent**. It follows the order in `nsswitch.conf`, so it sees `/etc/hosts`:
 
 ```bash
-root@alpha:/# echo "203.0.113.10 web-01" >> /etc/hosts
-```
-
-To see what the system resolves, as a program would, use **getent**. It follows the order in `nsswitch.conf`, so it sees `/etc/hosts`:
-
-```bash
-root@alpha:/# getent hosts web-01
-203.0.113.10    web-01
 root@alpha:/# getent hosts example.com
 104.20.23.154   example.com
 172.66.147.243  example.com
-```
-
-Because `files` comes first, `/etc/hosts` can override real DNS. Add a line for example.com and look again:
-
-```bash
 root@alpha:/# echo "192.0.2.50 example.com" >> /etc/hosts
 root@alpha:/# getent hosts example.com
 192.0.2.50      example.com
-root@alpha:/# ping -c 1 -W 1 example.com
-PING example.com (192.0.2.50) 56(84) bytes of data.
 ```
 
-`ping`, `curl` and most programs now go to `192.0.2.50`, an address that goes nowhere. This is useful for testing a new server before changing DNS, and a classic cause of "it works on every machine except this one". Remove the two lines when you are done. In a container, `/etc/hosts` is managed by Docker and `sed -i` cannot replace it, so filter it and write it back:
+Because `files` comes first, `/etc/hosts` overrides real DNS. `ping`, `curl` and most programs now go to `192.0.2.50`, an address that goes nowhere. This is useful for testing a new server before changing DNS, and a classic cause of "it works on every machine except this one". Remove the line when you are done. In a container, `/etc/hosts` is managed by Docker and `sed -i` cannot replace it, so filter it and write it back:
 
 ```bash
-root@alpha:/# grep -v -e web-01 -e 192.0.2.50 /etc/hosts > /tmp/hosts && cat /tmp/hosts > /etc/hosts
+root@alpha:/# grep -v 192.0.2.50 /etc/hosts > /tmp/hosts && cat /tmp/hosts > /etc/hosts
 ```
 
 ## /etc/resolv.conf
@@ -99,7 +84,7 @@ options ndots:0
 The lines that matter:
 
 - `nameserver` is the address of the recursive resolver. You can list up to three; the next is tried if the first does not answer. Here it is `127.0.0.11`, Docker's DNS service, reached on a loopback address inside every container.
-- `search`, when present, lists domains to try appended to short names, so `db-01` can mean `db-01.lab.internal`. The *Run your own DNS* topic uses it.
+- `search`, when present, lists domains to try appended to short names, so `db-01` can mean `db-01.lab.internal`.
 - `options` adjusts the behaviour, such as how many dots a name needs before it is tried as a full name first (`ndots`).
 
 On an Ubuntu server outside a container, `/etc/resolv.conf` often says `nameserver 127.0.0.53`. That is **systemd-resolved**, a local caching service that forwards to the real resolvers. `resolvectl status` shows which ones.
@@ -135,52 +120,72 @@ Your addresses and numbers may differ. Read it from the top:
 - `status: NOERROR` means the name exists. `NXDOMAIN` would mean it does not; `SERVFAIL` that the resolver could not get an answer.
 - The flags `rd ra` mean "recursion desired" and "recursion available": dig asked for the full walk, and the server does it.
 - The **question** is the name and record type asked for, `A` for an IPv4 address.
-- The **answer** has one line per record: name, TTL, class, type and value. The *DNS record types* topic covers the types.
+- The **answer** has one line per record. The next section reads them.
 - `SERVER` shows which resolver answered.
 
-To see the walk the resolver does, use `+trace`. dig then starts at the root and follows each referral itself. Docker's DNS service does not answer the first question `+trace` asks, about the root servers, so point the trace at a root server with `@`:
+Two shorter forms are more useful day to day. `+short` prints only the values, and `+noall +answer` prints just the answer lines:
 
 ```bash
-root@alpha:/# dig +trace +nodnssec example.com @a.root-servers.net
-.			518400	IN	NS	a.root-servers.net.
-.			518400	IN	NS	m.root-servers.net.
-...
-;; Received 811 bytes from 198.41.0.4#53(a.root-servers.net) in 1067 ms
-
-com.			172800	IN	NS	a.gtld-servers.net.
-com.			172800	IN	NS	m.gtld-servers.net.
-...
-;; Received 836 bytes from 192.203.230.10#53(e.root-servers.net) in 641 ms
-
-example.com.		172800	IN	NS	hera.ns.cloudflare.com.
-example.com.		172800	IN	NS	elliott.ns.cloudflare.com.
-;; Received 359 bytes from 192.42.93.30#53(g.gtld-servers.net) in 201 ms
-
-example.com.		300	IN	A	104.20.23.154
-example.com.		300	IN	A	172.66.147.243
-;; Received 72 bytes from 172.64.35.228#53(elliott.ns.cloudflare.com) in 86 ms
+root@alpha:/# dig +short example.com
+104.20.23.154
+172.66.147.243
 ```
 
-Lines are trimmed here. There are four steps, and each one is a referral to the next level down: the root lists itself, a root server names the `com` servers, a `com` server names the servers for `example.com`, and one of those, the authoritative server, gives the answer. Which servers answer at each step varies from run to run, and you may see a timeout from one of them before another answers; dig just tries the next.
+To see the walk the resolver does, run `dig +trace +nodnssec example.com @a.root-servers.net`. dig then starts at a root server and follows each referral itself, printing one group per step: a root server names the `com` servers, a `com` server names the servers for `example.com`, and one of those, the authoritative server, gives the answer. The `@` is needed because Docker's DNS service does not answer the first question `+trace` asks, and `+nodnssec` hides the signature records that would otherwise fill the screen.
 
-`+nodnssec` hides the signature records used by DNSSEC, which would otherwise fill the screen.
+## Records
+
+A DNS name holds a set of **records**, each with a type: one type for its IPv4 address, another for its mail servers, another for free text that other services check. Every record has five parts, which `dig` prints in this order:
+
+```text
+example.com.		377	IN	A	172.66.147.243
+name            TTL     class   type    value
+```
+
+The **TTL** is how many seconds a resolver may cache the record. The **class** is always `IN` (internet) in practice. The format of the value depends on the type. dig asks for `A` records unless you name another type after the domain, as in `dig +short example.com MX`.
+
+| Type | Maps a name to | Typical use |
+| --- | --- | --- |
+| A | An IPv4 address | Websites, servers |
+| AAAA | An IPv6 address | The same, over IPv6 |
+| CNAME | Another name | Aliases, pointing at a cloud service |
+| MX | Mail servers, with priorities | Receiving email |
+| TXT | Free text | SPF, domain verification |
+| NS | Authoritative name servers | Delegating a domain |
+| SOA | Zone details | Serial, timers, negative TTL |
+| PTR | A name, from an address | Reverse lookups, with `dig -x` |
+
+A name can have several records of the same type. example.com has two A records, and a client may use either, which is a simple way to spread traffic over more than one server. A name can also have both A and AAAA records, and a client that has IPv6 usually tries it first.
+
+A **CNAME** says "this name is another name for that one". Its value is a name, and the resolver carries on and looks that one up:
+
+```text
+www.example.com.      300   IN   CNAME   web-01.example.com.
+web-01.example.com.   300   IN   A       203.0.113.10
+```
+
+With that, `www` always follows `web-01`: when the server moves, you change one A record. CNAMEs are common for pointing your own name at a cloud service, such as a load balancer, whose addresses the provider changes when it needs to. A name with a CNAME cannot have any other records, so the bare domain, `example.com` itself, cannot be a CNAME. Some DNS providers offer an "alias" record type to work around that.
+
+**MX** records carry a priority, and lower numbers are tried first. example.com publishes `MX 0 .`, a **null MX**, which states that the domain accepts no email at all. **TXT** records are mostly used to prove things to other services. `v=spf1 -all` is an **SPF** record, listing which servers may send email for the domain (here, none). A random-looking string is usually a **verification** token: a service asks you to publish a value, then checks for it, which proves you control the domain.
+
+**NS** records are the links in the tree that the trace followed. A domain should have at least two, so one can fail. When you move a domain to a new DNS provider, changing the NS records at the registrar, where you bought the domain, is the step that makes the switch.
+
+The **SOA** record holds facts about the zone itself:
+
+```bash
+root@alpha:/# dig example.com SOA +short
+elliott.ns.cloudflare.com. dns.cloudflare.com. 2418004112 10000 2400 604800 1800
+```
+
+In order: the primary name server, the administrator's mail address with the `@` written as a dot, a serial number that goes up with each change, three timers for secondary servers, and last the **negative TTL**, here 1800 seconds. When a name does not exist, resolvers cache the `NXDOMAIN` answer for that long.
+
+When results look odd, ask one of the domain's own name servers with `@`, which shows what the domain really publishes with no cache in between. `dig +short example.com AAAA @$(dig +short example.com NS | head -1)` runs the inner `dig` first to find a name server. In the lab this matters for AAAA records: Docker Desktop's DNS service does not pass IPv6 answers to containers without IPv6, so the lab's resolver returns nothing for them.
 
 ## Caching and TTL
 
-Walking the tree for every lookup would be slow and would overload the root servers. So every resolver keeps answers in a **cache**, for as long as the record's **TTL** (time to live) says, in seconds.
+Walking the tree for every lookup would be slow and would overload the root servers. So every resolver keeps answers in a **cache**, for as long as the record's TTL says. Run `dig example.net | grep "Query time"` twice: the first lookup goes out to the internet and takes hundreds of milliseconds, and the second comes from a cache in a few. The TTL in an answer from a resolver is normally the time left on its cached copy, counting down, though Docker Desktop's resolver does not always show that.
 
-The authoritative server in the trace sets the TTL of example.com's A records to 300 seconds. A resolver that has fetched them can hand them out for up to five minutes without asking again. You can see a cache working in the query time. Ask twice for a name nobody has looked up yet:
-
-```bash
-root@alpha:/# dig example.net | grep "Query time"
-;; Query time: 241 msec
-root@alpha:/# dig example.net | grep "Query time"
-;; Query time: 5 msec
-```
-
-The first lookup went out to the internet. The second came from a cache. The TTL in an answer from a resolver is normally the time left on its cached copy, counting down. Docker Desktop's resolver does not always show that, so the TTLs you see in the lab may not count down or match the authoritative value.
-
-Caching is why DNS changes are not instant. If you move `web-01.example.com` to a new address, resolvers that cached the old one keep using it until the TTL runs out. The usual practice is to lower the TTL a day before a planned change, make the change, and raise it again afterwards.
+Caching is why DNS changes are not instant. If you move `web-01.example.com` to a new address, resolvers that cached the old one keep using it until the TTL runs out. The usual practice is to lower the TTL a day before a planned change, make the change, and raise it again afterwards. The negative TTL works the same way for names that do not exist yet: look up a name before you create it, and you may wait for that long before the new record appears.
 
 ## Tasks
 
@@ -203,16 +208,32 @@ root@alpha:/#
 
 </details>
 
-### Task 2: Trace a name yourself
+### Task 2: Profile a domain
 
-Run `dig +trace +nodnssec example.org @a.root-servers.net`. For each step, write down which server answered and what it said: a list of servers for the next level, or the final answer. Then run `dig example.org` and compare the TTL with the one in the last step of the trace.
+Write down every record of the types A, AAAA, MX, TXT and NS that example.org publishes. Use `+short`, and ask the authoritative server for AAAA. From the results, answer: does example.org accept email, and who hosts its DNS?
 
 <details>
 <summary>Check your work</summary>
 
-You see four groups. The first lists the root servers. The second comes from a root server and lists the servers for `org`. The third comes from an `org` server and lists the name servers for `example.org`. The last comes from one of those name servers and holds the A records, with the TTL set by the domain's owner.
+```bash
+root@alpha:/# for t in A MX TXT NS; do echo "== $t"; dig +short example.org $t; done
+== A
+172.66.157.237
+104.20.26.136
+== MX
+0 .
+== TXT
+"_uyh0vgv5ukyofwj3ddwspnni01vmlyy"
+"v=spf1 -all"
+== NS
+katelyn.ns.cloudflare.com.
+mitch.ns.cloudflare.com.
+root@alpha:/# dig +short example.org AAAA @$(dig +short example.org NS | head -1)
+2606:4700:10::6814:1a88
+2606:4700:10::ac42:9ded
+```
 
-The answer from `dig example.org` comes from the lab's resolver instead. Its addresses match the trace, but its TTL is whatever is left in a cache, or a value Docker Desktop's resolver chose, so it usually differs. If the trace stops with `couldn't get address` or timeouts, the lab has no route to the internet; check with `ping -c 1 example.com`.
+The null MX, `0 .`, says it accepts no email, and the SPF record says no server may send mail for it either. The NS records name the DNS provider. Values change over time, so yours may differ. The likely mistake is asking for AAAA through the lab resolver, getting nothing, and concluding the domain has no IPv6.
 
 </details>
 
@@ -236,20 +257,20 @@ The stub resolver is part of every machine and asks one question of one server, 
 
 </details>
 
-**3. You change the A record for `www.example.com` from one address to another. An hour later, some users still reach the old server. The record's TTL was 86400. Why?**
+**3. What is the difference between an A record and a CNAME record?**
 
 <details>
 <summary>Show answer</summary>
 
-86400 seconds is a day. Resolvers that cached the old record before the change can keep serving it for up to a day. Lowering the TTL well before a planned change avoids this.
+An A record maps a name directly to an IPv4 address. A CNAME maps a name to another name, which the resolver then looks up in turn. A name with a CNAME cannot have any other records.
 
 </details>
 
-**4. A service on a server cannot be reached by name: `curl http://web-01.example.com` fails with `Could not resolve host`, but `dig web-01.example.com` returns the right address. What do you check?**
+**4. A service on a server cannot be reached under its new name: you added an A record for `api.example.com` ten minutes ago, the authoritative server returns it, but your resolver still says `NXDOMAIN`. You had tried the name once before creating it. What is going on?**
 
 <details>
 <summary>Show answer</summary>
 
-DNS itself works, so look at what the system resolver does differently from dig. `getent hosts web-01.example.com` shows what programs actually get. Check `/etc/nsswitch.conf`, in case `dns` is missing from the `hosts` line, and `/etc/resolv.conf`, in case the system points at a different server from the one dig used, for example because dig was run with `@`.
+The resolver cached the earlier `NXDOMAIN` answer for the negative TTL, the last value in the domain's SOA record. Until that expires, it keeps saying the name does not exist. You can wait, query the authoritative server with `dig @` to confirm the record is right, or flush the resolver's cache if you control it.
 
 </details>

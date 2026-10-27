@@ -49,7 +49,6 @@ export const SKILLS = [
       ['users-and-permissions', 'Users and permissions', 'Users, groups, read, write and execute, chmod and chown, and when to use sudo.'],
       ['processes', 'Processes', 'What a process is, seeing what is running, signals, and stopping a process that will not stop.'],
       ['services-with-systemd', 'Services with systemd', 'Starting, stopping and enabling services, reading their logs with journalctl, and writing a unit file.'],
-      ['networking-basics', 'Networking basics', 'IP addresses, ports, DNS, and checking a connection with ping, curl, ss and dig.'],
       ['installing-software', 'Installing software', 'Package managers, repositories, and keeping a machine up to date.'],
       ['disks-and-space', 'Disks and space', 'Filesystems, mounting, and finding what is filling a disk with df and du.'],
       ['watching-a-machine', 'Watching a machine', 'CPU, memory and load, top and free, and telling a busy server from a broken one.'],
@@ -61,8 +60,7 @@ export const SKILLS = [
     ],
     projects: [
       ['project-set-up-a-machine', 'Set up a new machine', 'Create users and groups, lock down a shared directory, and install and run a service that starts on boot.'],
-      ['project-read-the-logs', 'Read the logs', 'Take a web server log and answer questions with a pipeline: the busiest hour, the most common errors, the top visitors.'],
-      ['project-automate-a-backup', 'Automate a backup', 'Write a script that archives a directory, keeps the last seven copies, runs every night and logs what it did.']
+      ['project-read-the-logs', 'Read the logs', 'Take a web server log and answer questions with a pipeline: the busiest hour, the most common errors, the top visitors.']
     ]
   },
   {
@@ -70,39 +68,28 @@ export const SKILLS = [
     summary: 'How machines find and talk to each other, from IP addresses and ports to DNS, HTTP, TLS, routing and firewalls, and how to find out why they cannot.',
     topics: [
       ['what-a-network-is', 'What a network is', 'Hosts, links, packets, switches and routers. Building a small network of your own to practise on.'],
-      ['ip-addresses', 'IP addresses', 'IPv4 and IPv6 addresses, private and public ranges, and finding a machine\'s addresses.'],
-      ['interfaces', 'Interfaces', 'Network interfaces, the loopback, bringing an interface up and down, and adding an address.'],
+      ['ip-addresses', 'IP addresses', 'IPv4 and IPv6 addresses, private and public ranges, network interfaces and the loopback, and an interface\'s MTU.'],
       ['subnets-and-cidr', 'Subnets and CIDR', 'Network masks, CIDR notation, and working out which addresses are on the same network.'],
-      ['mac-addresses-and-arp', 'MAC addresses and ARP', 'Hardware addresses, and how a machine finds the one behind an IP address on its own network.'],
       ['the-layers-model', 'The layers model', 'The layers a packet passes through, what each one adds, and which tools work at which layer.'],
-      ['ports-and-sockets', 'Ports and sockets', 'How one machine runs many services, well-known ports, and seeing what is listening.'],
+      ['ports-and-sockets', 'Ports and sockets', 'How one machine runs many services, well-known ports, seeing what is listening, and testing a port with nc.'],
       ['tcp', 'TCP', 'Connections, the three-way handshake, connection states, and what reliable delivery costs.'],
       ['udp', 'UDP', 'Sending without a connection, where that is the right choice, and what can go missing.'],
-      ['netcat', 'Netcat', 'Opening raw TCP and UDP connections by hand to test a port or talk to a service.'],
-      ['dns-basics', 'DNS basics', 'How a name becomes an address, resolvers, caching, /etc/hosts and following a lookup with dig.'],
-      ['dns-record-types', 'DNS record types', 'A, AAAA, CNAME, MX, TXT and NS records, TTLs, and reading what a domain publishes.'],
-      ['run-your-own-dns', 'Run your own DNS', 'A small DNS server for your lab network, and pointing machines at it.'],
-      ['http', 'HTTP', 'Requests and responses, methods, status codes, and watching a request with curl.'],
-      ['http-headers-redirects-and-json', 'HTTP headers, redirects and JSON', 'The headers that matter, following redirects, and sending and reading JSON.'],
+      ['dns-basics', 'DNS basics', 'How a name becomes an address, /etc/hosts and resolvers, record types, caching and TTLs, and following a lookup with dig.'],
+      ['http', 'HTTP', 'Requests and responses, methods, status codes, headers, redirects and JSON, and watching a request with curl.'],
       ['serve-a-website-with-nginx', 'Serve a website with nginx', 'Installing nginx, serving a site, server blocks, and reading its logs.'],
-      ['tls-and-https', 'TLS and HTTPS', 'What TLS protects, certificates and the chain of trust, and inspecting a site\'s certificate.'],
-      ['make-your-own-certificates', 'Make your own certificates', 'A certificate authority of your own, signing a certificate, and serving HTTPS with it.'],
+      ['tls-and-https', 'TLS and HTTPS', 'What TLS protects, certificates and the chain of trust, inspecting a site\'s certificate, and signing one with your own CA.'],
       ['routing-and-gateways', 'Routing and gateways', 'The routing table, the default gateway, and following a packet\'s path with traceroute.'],
       ['nat', 'NAT', 'How private addresses reach the internet, and forwarding a port from outside to a machine inside.'],
-      ['dhcp', 'DHCP', 'How a machine gets its address, gateway and DNS server automatically when it joins a network.'],
-      ['firewall-basics', 'Firewall basics', 'Packet filtering, rules and chains, default policies, and allowing only what you need.'],
-      ['firewall-practice', 'Firewall practice', 'Locking down a server step by step without locking yourself out.'],
+      ['firewall-basics', 'Firewall basics', 'Packet filtering, rules and chains, default policies, and locking down a server without locking yourself out.'],
       ['tcpdump', 'tcpdump', 'Capturing packets, filtering them, and reading what was actually sent.'],
       ['ssh-and-tunnels', 'SSH and tunnels', 'Keys, the SSH config file, jump hosts, and forwarding ports through SSH.'],
       ['reverse-proxy-and-load-balancing', 'Reverse proxy and load balancing', 'Putting nginx in front of applications and spreading requests across several of them.'],
-      ['scanning-with-nmap', 'Scanning with nmap', 'Finding hosts and open ports on a network you are allowed to scan.'],
-      ['the-debugging-playbook', 'The debugging playbook', 'A layer-by-layer method for working out why a service cannot be reached.'],
-      ['latency-and-bandwidth', 'Latency and bandwidth', 'Measuring delay and throughput, and adding delay on purpose to see what it does.']
+      ['the-debugging-playbook', 'The debugging playbook', 'A layer-by-layer method for working out why a service cannot be reached.']
     ],
     projects: [
       ['project-fix-the-broken-server', 'Fix the broken server', 'A lab network where a web service cannot be reached. Find each fault, layer by layer, and fix it.'],
-      ['project-build-a-small-web-stack', 'Build a small web stack', 'Two application servers behind an nginx load balancer with HTTPS and a DNS name of its own.'],
-      ['project-diagnose-traffic-with-tcpdump', 'Diagnose traffic with tcpdump', 'Capture a request from start to finish and explain every packet: DNS, the handshake, TLS and HTTP.']
+      ['project-build-a-small-web-stack', 'Build a small web stack', 'Two application servers behind an nginx load balancer with HTTPS from your own certificate authority and a name in the lab\'s DNS.'],
+      ['project-diagnose-traffic-with-tcpdump', 'Diagnose traffic with tcpdump', 'Capture a request from start to finish and explain every packet: the TCP handshake, TLS and HTTP.']
     ]
   },
   {
@@ -124,6 +111,7 @@ export const SKILLS = [
       ['real-world-scripts', 'Real-world scripts', 'Patterns from scripts that run in production: logging, configuration files, dry runs, and running from cron.']
     ],
     projects: [
+      ['project-automate-a-backup', 'Automate a backup', 'Write a script that archives a directory, keeps the last seven copies, runs every night and logs what it did.'],
       ['project-health-check', 'Health check', 'A script that checks disk, memory, load and services, writes a report, and exits with a status a monitor can act on.'],
       ['project-bulk-users-from-a-file', 'Bulk users from a file', 'Create and update user accounts from a CSV file, with validation, a dry-run mode and a summary, safe to run again.'],
       ['project-deploy-script', 'Deploy script', 'Release a new version of a site into a timestamped directory, switch to it with a symlink, check it, and roll back on failure.']

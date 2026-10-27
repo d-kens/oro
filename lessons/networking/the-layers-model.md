@@ -1,4 +1,4 @@
-So far you have met MAC addresses, IP addresses and port numbers, and each one does a different job. Networking splits the work of sending data into **layers**, each handling one job and relying on the one below it. People talk about networks in these terms all the time: "a layer 2 problem", "a layer 4 load balancer", "it works at layer 3 but not layer 7".
+So far you have met IP addresses and port numbers, and each one does a different job. Networking splits the work of sending data into **layers**, each handling one job and relying on the one below it. People talk about networks in these terms all the time: "a layer 2 problem", "a layer 4 load balancer", "it works at layer 3 but not layer 7".
 
 This topic covers the two layer models in use, how each layer wraps the data from the one above, and which tools look at which layer. By the end you can name the layers, read the layers of a real packet in a capture, and follow a `curl` request down through them and back up.
 
@@ -15,7 +15,7 @@ Because of this split, a web browser does not need to know whether it is on Wi-F
 
 ## The OSI model
 
-The **OSI model** has seven layers. Hardly any real software follows it exactly, but its numbers are the vocabulary engineers use, so it is worth knowing:
+The **OSI model** has seven layers. Hardly any real software follows it exactly, but engineers use its layer numbers when they talk about networks:
 
 | Number | Name | What it covers | Example |
 | --- | --- | --- | --- |
@@ -44,7 +44,7 @@ The names of the units are not used strictly, and "packet" is often used for all
 
 ## Encapsulation
 
-When a program sends data, each layer on the way down wraps what it is given in its own header, a bit like putting a letter in an envelope, then that envelope in a mailbag. This is **encapsulation**:
+When a program sends data, each layer on the way down wraps what it is given in its own header. This is **encapsulation**:
 
 ```text
                                        [ HTTP request          ]   application
@@ -54,6 +54,8 @@ When a program sends data, each layer on the way down wraps what it is given in 
 ```
 
 On the receiving machine, each layer reads and removes its own header and hands the rest up. Routers along the way only unwrap as far as the IP header: they take the packet out of the incoming frame, decide where it goes next, and put it in a new frame with new MAC addresses. The IP header and everything inside it travels unchanged from end to end.
+
+The link layer uses its own addresses. A **MAC address** is a 48-bit hardware address, written as six pairs of hex digits like `36:c0:c2:4d:58:0c`, that identifies an interface on its local network; `ip link` shows it as `link/ether`. To send to an IP address on its own network, a machine needs the MAC address behind it, and finds it with **ARP** (Address Resolution Protocol): it broadcasts "who has `10.10.0.3`?", and the owner replies with its MAC. The answers are kept in the **neighbour table**, which `ip neigh` shows.
 
 You can see the wrapping in a real capture. On alpha, capture one ping to beta. `-e` adds the Ethernet header to the output:
 
@@ -82,7 +84,7 @@ Each tool you use answers a question about one layer. Knowing which is which tel
 | --- | --- | --- |
 | Link | Is the interface up? Do I know the neighbour's MAC? | `ip link`, `ip neigh`, `tcpdump -e` |
 | Internet | Do I have an address? Is there a route? Do packets get there? | `ip addr`, `ip route`, `ping`, `traceroute`, `mtr` |
-| Transport | Is anything listening on the port? Does a connection open? | `ss`, `nc`, `nmap` |
+| Transport | Is anything listening on the port? Does a connection open? | `ss`, `nc` |
 | Application | Does the service answer correctly? | `curl`, `dig`, `openssl s_client`, `ssh` |
 
 `tcpdump` is the exception: it sees every layer at once, which is why it is the tool of last resort when the others disagree.

@@ -1,6 +1,6 @@
 When a new server arrives, someone has to make it ready for the people and programs that will use it. In this project you do that for a small web team: you create their accounts, give them a shared directory that only they can use, run their web site as a service that starts on boot, and let one person restart it without handing them full control of the machine.
 
-It uses the *Users and permissions* topic most, along with *Services with systemd*, *Installing software*, *Editing files*, *Networking basics* and *Processes*.
+It uses the *Users and permissions* topic most, along with *Services with systemd*, *Installing software*, *Editing files* and *Processes*.
 
 **This project needs a real Linux machine or a virtual machine**, because it uses systemd to start the service on boot, and a plain Docker container does not run systemd. Use one of these:
 

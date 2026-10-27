@@ -1,6 +1,6 @@
 Plain HTTP crosses the network as readable text. Anyone on the path, such as a shared Wi-Fi network, a compromised router or a misconfigured proxy, can read it and change it. **TLS** (Transport Layer Security) wraps the connection so they cannot, and **HTTPS** is simply HTTP sent inside TLS, usually on port 443.
 
-You will spend more time fixing TLS than setting it up: certificates expire, names do not match, a server forgets to send part of its chain. By the end you can explain what TLS protects, read a certificate and its chain, inspect any site's certificate with openssl and curl, and recognise the common errors from their messages.
+You will spend more time fixing TLS than setting it up: certificates expire, names do not match, a server forgets to send part of its chain. By the end you can explain what TLS protects, read a certificate and its chain, inspect any site's certificate with openssl and curl, recognise the common errors from their messages, and sign a certificate with a certificate authority of your own.
 
 ## What TLS gives you
 
@@ -160,7 +160,7 @@ root@alpha:/# echo $?
 
 ## Common errors
 
-To see the errors in the lab, give beta a quick certificate that no CA has signed. `openssl req -x509` makes a **self-signed** certificate, signed by its own key, valid here for the name `web-01`. `openssl s_server` then runs a minimal TLS server on port 4433. The *Make your own certificates* topic does this properly; this is just enough to break things:
+To see the errors in the lab, give beta a quick certificate that no CA has signed. `openssl req -x509` makes a **self-signed** certificate, signed by its own key, valid here for the name `web-01`. `openssl s_server` then runs a minimal TLS server on port 4433. The next section signs a certificate properly; this is just enough to break things:
 
 ```bash
 root@beta:/# cd /root
@@ -188,6 +188,30 @@ curl refuses before sending any HTTP. These are the errors you will meet most, w
 | `certificate has expired` | The current time is after `notAfter` | Renew it, and check the client's clock |
 
 `curl -k` (or `--insecure`) skips all these checks and connects anyway. It is fine for a quick look in a lab, but it removes the authentication part of TLS, so never put it in a script or a health check. The connection would still be encrypted, but possibly to an impostor.
+
+## A certificate authority of your own
+
+Internal services, test environments and labs often use a **private CA**: a CA key and certificate that you make yourself, and that only your own machines trust. It signs server certificates the same way a public CA does, and clients that have its certificate in their trust store accept them without `-k`.
+
+It takes four `openssl` commands. First the CA: a key and a self-signed certificate. Then the server: a key and a **certificate signing request** (CSR), which holds the server's public key and the name it wants. Last, the CA signs the request. Modern clients check the SAN rather than `CN`, so the signed certificate must carry the name as `subjectAltName`, given here in a small extensions file:
+
+```bash
+root@beta:~# mkdir ca && cd ca
+root@beta:~/ca# openssl req -x509 -newkey rsa:2048 -nodes -keyout ca.key -out ca.crt -days 365 -subj "/CN=Lab CA"
+root@beta:~/ca# openssl req -newkey rsa:2048 -nodes -keyout web-01.key -out web-01.csr -subj "/CN=web-01"
+root@beta:~/ca# echo "subjectAltName=DNS:web-01" > web-01.ext
+root@beta:~/ca# openssl x509 -req -in web-01.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 90 -extfile web-01.ext -out web-01.crt
+Certificate request self-signature ok
+subject=CN = web-01
+root@beta:~/ca# openssl verify -CAfile ca.crt web-01.crt
+web-01.crt: OK
+```
+
+The `openssl req` commands also print lines of dots and plus signs while they make the keys; that is normal. `-nodes` leaves the private keys unencrypted, so a server can read them at start-up. `openssl verify` checks the chain: the server certificate was signed by the CA.
+
+A server uses `web-01.crt` and `web-01.key`, for example `openssl s_server -cert web-01.crt -key web-01.key`, or nginx's `ssl_certificate` and `ssl_certificate_key`. A client trusts the CA in one of two ways: for one command, with `curl --cacert ca.crt`; for the whole machine, by copying `ca.crt` into `/usr/local/share/ca-certificates/` with a `.crt` ending and running `update-ca-certificates`. After that, every program on the client that uses the system trust store accepts certificates the CA signs.
+
+`ca.key` is the most sensitive file here. Anyone who has it can sign certificates your clients will trust, so in real use it never sits on a web server, and a client is only ever given `ca.crt`.
 
 ## Tasks
 

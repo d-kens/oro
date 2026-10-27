@@ -161,7 +161,7 @@ Read warnings as well as errors.
 
 ## Several sites on one server
 
-One nginx can serve many sites on the same port. It reads the `Host` header of each request and picks the server block whose `server_name` matches, as the *HTTP headers, redirects and JSON* topic described. If none matches, it uses the **default server** for that port: the one marked `default_server` on its `listen` line, or else the first one it loaded.
+One nginx can serve many sites on the same port. It reads the `Host` header of each request and picks the server block whose `server_name` matches, as the *HTTP* topic described. If none matches, it uses the **default server** for that port: the one marked `default_server` on its `listen` line, or else the first one it loaded.
 
 Add a second site for `docs.example.com`:
 

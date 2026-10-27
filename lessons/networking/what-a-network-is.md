@@ -21,7 +21,7 @@ To reach a host on a *different* network, packets go through a **router**. A rou
 
 | Device | Joins | Decides using |
 | --- | --- | --- |
-| Switch | Hosts on the same local network | Hardware (MAC) addresses, in the *MAC addresses and ARP* topic |
+| Switch | Hosts on the same local network | Hardware (MAC) addresses, in *The layers model* topic |
 | Router | Different networks | IP addresses and a routing table, in the *Routing and gateways* topic |
 
 In the cloud you never see the cables or the boxes, but the same parts exist. A virtual network is a set of subnets, the cloud provider's software does the switching, and route tables decide where packets go.
@@ -30,7 +30,7 @@ In the cloud you never see the cables or the boxes, but the same parts exist. A 
 
 A packet needs an address to reach its destination. On today's networks that is an **IP address**, such as `10.10.0.2` or `2001:db8::2`. The *IP addresses* topic covers them in full.
 
-People and configuration files mostly use **names** instead, such as `db-01` or `example.com`. Before a host can send anything to a name, it has to find the IP address behind it. That lookup is **DNS**, which has three topics of its own later on.
+People and configuration files mostly use **names** instead, such as `db-01` or `example.com`. Before a host can send anything to a name, it has to find the IP address behind it. That lookup is **DNS**, covered in the *DNS basics* topic.
 
 Last, a host runs many programs that use the network at once. A **port** number says which program a packet is for: a web server usually listens on port 80 or 443, and SSH on port 22. The *Ports and sockets* topic covers them.
 
@@ -46,7 +46,7 @@ First, build an image with the networking tools this skill uses. Make a director
 FROM ubuntu:24.04
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     iproute2 iputils-ping traceroute mtr-tiny dnsutils curl ca-certificates netcat-openbsd \
-    tcpdump nmap iptables iperf3 openssl openssh-client openssh-server nginx dnsmasq python3 nano less \
+    tcpdump iptables openssl openssh-client openssh-server nginx python3 nano less \
  && rm -rf /var/lib/apt/lists/*
 ```
 
