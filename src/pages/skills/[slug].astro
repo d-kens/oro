@@ -15,7 +15,7 @@ const mine = lessons.filter((l) => l.skill === s), topics = mine.filter((l) => !
   <p class="crumbs"><a href={href('skills.html')}>Skills</a></p>
   <h1>{s.name}</h1>
   <p>{s.summary}</p>
-  <p class="facts">{s.level} · {s.topics.length} topics · {s.projects.length} projects</p>
+  <p class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</p>
   <p class="start"><a class="link" href={href(mine[0].url)}>Start with {mine[0].title}</a></p>
 </header>
 <h2>Topics</h2>
@@ -24,11 +24,13 @@ const mine = lessons.filter((l) => l.skill === s), topics = mine.filter((l) => !
     <li><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
   ))}
 </ol>
+{projects.length > 0 && <>
 <h2>Projects</h2>
 <ol class="skill-steps">
   {projects.map((l) => (
     <li><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
   ))}
 </ol>
+</>}
 </main>
 </Layout>

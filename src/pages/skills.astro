@@ -14,7 +14,7 @@ import { href } from '../lib/site.js';
     <li>
       <a href={href(`skills/${s.slug}.html`)}>{s.name}</a>
       <p>{s.summary}</p>
-      <span class="facts">{s.level} · {s.topics.length} topics · {s.projects.length} projects</span>
+      <span class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</span>
     </li>
   ))}
 </ul>

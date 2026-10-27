@@ -4,6 +4,18 @@
    Each topic and project has a lesson in lessons/<skill>/<slug>.md; the build stops if one is missing. */
 export const SKILLS = [
   {
+    slug: 'what-is-devops', name: 'What is DevOps', level: 'Beginner',
+    summary: 'What DevOps is, the problems it grew out of, and the ideas behind it: the delivery lifecycle, culture, and measuring how a team delivers.',
+    topics: [
+      ['what-devops-is', 'What DevOps is', 'Development and operations working as one team, what DevOps aims for, where the name came from, and the jobs built around it.'],
+      ['before-devops', 'Before DevOps', 'Separate teams, handovers and big releases, what went wrong with them, and how agile led to DevOps.'],
+      ['the-delivery-lifecycle', 'The delivery lifecycle', 'The stages a change goes through from an idea to production, the practices that automate them, feedback loops, and environments.'],
+      ['culture-and-calms', 'Culture and CALMS', 'Culture, automation, lean, measurement and sharing, owning what you build, and blameless postmortems.'],
+      ['measuring-delivery', 'Measuring delivery', 'The four DORA metrics, how to work each one out, and how teams use them.']
+    ],
+    projects: []
+  },
+  {
     slug: 'cloud-computing', name: 'Cloud computing', level: 'Beginner',
     summary: 'What the cloud is, why companies moved to it, and the ideas every provider shares: service models, regions and zones, scaling, paying for use, and who is responsible for what.',
     topics: [

@@ -24,7 +24,7 @@ const skill = (slug) => SKILLS.find((s) => s.slug === slug);
           <li class:list={{ live: s }}>
             <span class="n">{pad(i + 1)}</span>
             {s ? <a href={href(`skills/${s.slug}.html`)}>{s.name}</a> : <span>{name}</span>}
-            <span class="facts">{s ? `${s.topics.length} topics · ${s.projects.length} projects` : 'Planned'}</span>
+            <span class="facts">{s ? `${s.topics.length} topics` + (s.projects.length ? ` · ${s.projects.length} projects` : '') : 'Planned'}</span>
           </li>
         );
       })}

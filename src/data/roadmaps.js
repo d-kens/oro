@@ -5,6 +5,7 @@ export const ROADMAPS = [
     slug: 'devops', name: 'DevOps engineer',
     summary: 'Build, ship and run software: the servers it runs on, the pipelines that test and release it, and the platforms that keep it running.',
     steps: [
+      ['what-is-devops', 'What is DevOps'],
       ['linux', 'Linux'],
       ['shell-scripting', 'Shell scripting'],
       ['python-for-devops', 'Python for DevOps'],
