@@ -17,10 +17,10 @@ For a long time these were separate teams with separate goals. Developers were m
 
 It rests on a few ideas that the rest of this skill and this roadmap cover:
 
-- **Shared ownership:** The team that builds a service also cares about how it runs.
-- **Small, frequent changes:** Releasing a little at a time, so each release is easy to check and easy to undo.
-- **Automation:** Letting machines do the repeated work of building, testing, releasing and setting up servers, so it is fast and the same every time.
-- **Feedback:** Watching what the software does in production and measuring how well the team delivers, then using what you learn.
+- **Shared ownership:** The team that builds a service is also responsible for running it in production: releasing it, watching it and fixing it when it breaks. Because the team deals with problems in production itself, it builds software that is easier to run.
+- **Small, frequent changes:** Releasing small changes often, instead of saving up many changes for one large release. A small change is easier to review and test, and if it causes a problem, the cause is easier to find and the change is easier to undo.
+- **Automation:** Using scripts and tools to build, test and release software and to set up servers, instead of doing these steps by hand. Automated steps run quickly, give the same result every time and avoid the mistakes people make when repeating the same task many times.
+- **Feedback:** Finding out quickly whether a change works, from tests and builds before release and from monitoring after it. Teams also track how often they release, how long a change takes to reach production, how often releases fail and how fast they recover, then use what they learn to improve.
 
 DevOps is a way of working. Tools such as Docker, Terraform or GitHub Actions support it, but a team can use all of them and still work in the old way, with a slow handover between two groups.
 
