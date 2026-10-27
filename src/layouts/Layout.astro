@@ -7,7 +7,7 @@ const { title: pageTitle, description, url = '', ogType = 'website', noindex = f
 const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Learn DevOps and cloud';
 /* the nav links; the current page's link is marked, and a skill's page counts as part of Skills. */
 const here = Astro.url.pathname;
-const links = [['skills.html', 'Skills'], ['roadmap.html', 'Roadmaps']]
+const links = [['skills.html', 'Skills'], ['roadmap.html', 'Roadmap']]
   .map(([path, label]) => ({ path, label, current: here.endsWith('/' + path) || (path === 'skills.html' && here.includes('/skills/')) }));
 ---
 <!doctype html>

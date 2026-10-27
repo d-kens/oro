@@ -22,31 +22,5 @@ export const ROADMAPS = [
       ['devsecops', 'DevSecOps'],
       ['capstone', 'Capstone']
     ]
-  },
-  {
-    slug: 'cloud', name: 'Cloud engineer',
-    summary: 'Build and run systems on AWS: the networks, servers, storage and services they use, who can reach them, what they cost and how they survive failure.',
-    steps: [
-      ['cloud-computing', 'What is cloud computing'],
-      ['linux', 'Linux'],
-      ['shell-scripting', 'Shell scripting'],
-      ['networking', 'Networking'],
-      ['git', 'Git'],
-      ['aws-fundamentals', 'AWS fundamentals'],
-      ['aws-iam', 'IAM'],
-      ['aws-ec2', 'EC2'],
-      ['aws-vpc', 'VPC'],
-      ['aws-s3', 'S3'],
-      ['aws-databases', 'Databases'],
-      ['aws-messaging', 'Messaging'],
-      ['aws-serverless', 'Serverless'],
-      ['docker', 'Docker'],
-      ['aws-ecs', 'ECS on Fargate'],
-      ['terraform', 'Terraform'],
-      ['aws-monitoring', 'Monitoring and auditing'],
-      ['aws-security', 'Security'],
-      ['aws-architecture', 'Cost and architecture'],
-      ['cloud-capstone', 'Capstone']
-    ]
   }
 ];

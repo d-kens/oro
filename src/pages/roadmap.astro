@@ -1,5 +1,5 @@
 ---
-/* the roadmaps: each one the skills for a role, in order. Written skills link to their page; the rest are planned. */
+/* the roadmap: the skills for a role, in order. Written skills link to their page; the rest are planned. */
 import Layout from '../layouts/Layout.astro';
 import { ROADMAPS } from '../data/roadmaps.js';
 import { SKILLS } from '../data/skills.js';
@@ -7,10 +7,10 @@ import { href, pad } from '../lib/site.js';
 
 const skill = (slug) => SKILLS.find((s) => s.slug === slug);
 ---
-<Layout url="roadmap.html" title="Roadmaps" description="The DevOps engineer and cloud engineer roadmaps: the skills to learn, in order.">
+<Layout url="roadmap.html" title="Roadmap" description="The DevOps engineer roadmap: the skills to learn, in order.">
 <main class="roadmap">
 <header>
-  <h1>Roadmaps</h1>
+  <h1>Roadmap</h1>
   <p>The skills for a role, in the order to learn them. Linked skills are written; the rest are planned.</p>
 </header>
 {ROADMAPS.map((r) => (
