@@ -28,14 +28,21 @@ const decode = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&qu
 export const textOf = (html) => decode(html.replace(/<\/(p|li|h\d|pre|td|th|tr|blockquote)>/g, ' ').replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim();
 
 /* the search entries for one page of rendered Markdown: one per h2/h3, holding the text up to the next heading.
-   m gives the number and title used to sort and label the results; url is the page. */
+   The prose and the code blocks are kept apart: both are searched, but previews are taken from the prose.
+   m gives the lesson's number, skill and title, used to sort, group and label the results; url is the page. */
 export function searchEntries(m, html, url) {
   const entries = [];
+  const add = (a, b) => (a + ' ' + b).trim();
   let cur = null;
   html.split(/(<h[23] id="[^"]*">[\s\S]*?<\/h[23]>)/).forEach((chunk) => {
     const h = chunk.match(/^<h[23] id="([^"]*)">([\s\S]*?)<\/h[23]>$/);
-    if (h) entries.push(cur = { num: m.num, module: m.title, heading: textOf(h[2]), text: '', url: `${url}#${h[1]}` });
-    else if (cur) cur.text = (cur.text + ' ' + textOf(chunk)).trim();
+    if (h) {
+      entries.push(cur = { num: m.num, skill: m.skill, lesson: m.lesson, page: url, heading: textOf(h[2]), text: '', code: '', url: `${url}#${h[1]}` });
+    } else if (cur) {
+      (chunk.match(/<pre[\s\S]*?<\/pre>/g) || []).forEach((pre) => { cur.code = add(cur.code, textOf(pre)); });
+      /* the prose leaves out code and the labels of the answer boxes, such as "Show answer" */
+      cur.text = add(cur.text, textOf(chunk.replace(/<pre[\s\S]*?<\/pre>|<summary>[\s\S]*?<\/summary>/g, ' ')));
+    }
   });
   return entries;
 }

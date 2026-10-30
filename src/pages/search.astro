@@ -1,5 +1,11 @@
 ---
+/* search: the box is the page's heading. Before you type, a few searches to try and the skills to browse; search.js
+   fills in the results, grouped by lesson, with a skill filter. */
 import Layout from '../layouts/Layout.astro';
+import { SKILLS } from '../data/skills.js';
+import { href } from '../lib/site.js';
+
+const tries = ['dns', 'systemd', 'subnets', 'permissions', 'cron', 'tls'];
 ---
 <Layout url="search.html" title="Search" description="Search every Oro lesson." noindex scripts={['search.js']}>
   <main class="search">
@@ -7,7 +13,13 @@ import Layout from '../layouts/Layout.astro';
       <label for="q" class="sr">Search the lessons</label>
       <input id="q" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search the lessons" aria-describedby="status" aria-controls="results">
     </form>
+    <div class="search-start" id="start">
+      <p><span>Try</span>{tries.map((t) => <a href={`${href('search.html')}?q=${t}`}>{t}</a>)}</p>
+      <p><span>Or browse</span>{SKILLS.map((s) => <a href={href(`skills/${s.slug}.html`)}>{s.name}</a>)}</p>
+    </div>
     <p class="search-status" id="status" aria-live="polite"></p>
+    <div class="jump search-filter" id="filter" role="group" aria-label="Show results from"></div>
     <ol class="results" id="results"></ol>
+    <p class="search-more"><button class="btn outline" type="button" id="more" hidden>Show more lessons</button></p>
   </main>
 </Layout>
