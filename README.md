@@ -80,4 +80,4 @@ The build stops with an error if a topic or project has no lesson file, or a les
 
 ## Search engines
 
-The build writes `sitemap.xml`. Submit `https://oro.co.ke/sitemap.xml` in Google Search Console.
+The build writes `sitemap.xml` and a `robots.txt` that points crawlers to it. Submit `https://oro.co.ke/sitemap.xml` in Google Search Console.
