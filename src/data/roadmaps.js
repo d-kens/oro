@@ -1,4 +1,4 @@
-/* Paipa roadmaps: the skills to learn for a role, in order. A step whose slug matches a skill in src/data/skills.js
+/* Oro roadmaps: the skills to learn for a role, in order. A step whose slug matches a skill in src/data/skills.js
    links to it; any other step is shown as planned. */
 export const ROADMAPS = [
   {

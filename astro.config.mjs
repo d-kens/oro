@@ -5,7 +5,7 @@ import { checkLessons } from './src/lib/check.js';
 
 /* runs before every dev server and build */
 const lessonsCheck = {
-  name: 'paipa-lessons-check',
+  name: 'oro-lessons-check',
   hooks: {
     'astro:config:setup': () => {
       const problems = checkLessons(new URL('./lessons/', import.meta.url));
@@ -18,7 +18,7 @@ const lessonsCheck = {
 
 export default defineConfig({
   site: 'https://d-kens.github.io',
-  base: '/paipa/',
+  base: '/oro/',
   /* notes/linux.html, not notes/linux/: the URLs the site has always had */
   build: { format: 'file' },
   integrations: [lessonsCheck],

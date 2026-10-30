@@ -1,4 +1,4 @@
-/* Paipa skills: each skill is a set of topics learned in order, ending in projects.
+/* Oro skills: each skill is a set of topics learned in order, ending in projects.
    Read by the Skills page and the skill pages (skills/<slug>.html).
    A topic is [slug, title, the one line it covers]; a project is [slug, title, what you build]. Every project runs on your own computer.
    Each topic and project has a lesson in lessons/<skill>/<slug>.md; the build stops if one is missing. */

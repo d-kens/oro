@@ -1,15 +1,15 @@
 /* Shared settings and helpers for the pages and endpoints. */
 import { SKILLS } from '../data/skills.js';
 
-export const SITE = 'https://d-kens.github.io/paipa';   /* the live address, without a trailing slash */
-export const NAME = 'Paipa';
+export const SITE = 'https://d-kens.github.io/oro';   /* the live address, without a trailing slash */
+export const NAME = 'Oro';
 /* the WhatsApp group's invite link, shown as "Join the group" in the nav */
 export const WHATSAPP = 'https://chat.whatsapp.com/REPLACE_WITH_INVITE_CODE';
 /* every topic and project of every skill, in order, as { skill, slug, title, line, project, n, url } */
 export const lessons = SKILLS.flatMap((s) => s.topics.map((t) => [t, false]).concat(s.projects.map((p) => [p, true]))
   .map(([[slug, title, line], project], i) => ({ skill: s, slug, title, line, project, n: i + 1, url: `skills/${s.slug}/${slug}.html` })));
 
-/* a path on the site, with the /paipa/ base in front: href('notes/linux.html') */
+/* a path on the site, with the /oro/ base in front: href('notes/linux.html') */
 export const href = (p = '') => import.meta.env.BASE_URL.replace(/\/?$/, '/') + p;
 
 export const pad = (x) => String(x).padStart(2, '0');

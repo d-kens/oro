@@ -39,7 +39,7 @@ const links = [['skills.html', 'Skills'], ['roadmap.html', 'Roadmap']]
 
 <div class="wrap">
   <nav aria-label="Site">
-    <a class="logo" href={href('index.html')}>paipa</a>
+    <a class="logo" href={href('index.html')}>oro</a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-links" aria-label="Open menu"><span></span></button>
     <ul id="site-links">
       {links.map((l, i) => <li><a href={href(l.path)} aria-current={l.current ? 'page' : undefined}><span class="n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{l.label}</a></li>)}
