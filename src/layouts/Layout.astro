@@ -5,10 +5,10 @@ import { SITE, NAME, WHATSAPP, href } from '../lib/site.js';
 
 const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [] } = Astro.props;
 const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Learn cloud and DevOps';
-/* the nav links; the current page's link is marked, and a skill's page counts as part of Skills. */
+/* the nav links; the current page's link is marked, the site's root counts as Home, and a skill's page counts as part of Skills. */
 const here = Astro.url.pathname;
-const links = [['roadmap.html', 'Roadmaps'], ['skills.html', 'Skills'], ['projects.html', 'Projects'], ['about.html', 'About']]
-  .map(([path, label]) => ({ path, label, current: here.endsWith('/' + path) || (path === 'skills.html' && here.includes('/skills/')) }));
+const links = [['index.html', 'Home'], ['roadmap.html', 'Roadmaps'], ['skills.html', 'Skills'], ['projects.html', 'Projects'], ['about.html', 'About']]
+  .map(([path, label]) => ({ path, label, current: here.endsWith('/' + path) || (path === 'index.html' && here === href()) || (path === 'skills.html' && here.includes('/skills/')) }));
 ---
 <!doctype html>
 <html lang="en">
