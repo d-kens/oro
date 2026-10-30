@@ -61,10 +61,10 @@ Run this before you push, to see exactly what GitHub Pages will publish.
 | `src/data/skills.js` | Each skill, its level and summary, and its topics and projects in order |
 | `src/data/roadmaps.js` | Each roadmap and its skills in order; skills not in `skills.js` show as planned |
 | `lessons/<skill>/<slug>.md` | One lesson per topic or project, in Markdown, loaded as the `lessons` content collection (`src/content.config.js`) |
-| `src/layouts/Layout.astro` | The shared head, nav, footer and scripts every page uses, including the drawn wordmark |
-| `src/pages/` | The home, roadmaps, skills, search and 404 pages, one page per skill and per lesson, the search index and the sitemap |
+| `src/layouts/Layout.astro` | The shared head, nav, footer and scripts every page uses, including the logo |
+| `src/pages/` | The home, roadmaps, skills, projects, about, search and 404 pages, one page per skill and per lesson, the search index and the sitemap |
 | `src/lib/` | Shared settings and helpers, and the lessons check |
-| `public/` | `styles.css`, `nav.js`, `search.js`, `lesson.js` and `favicon.svg`, copied to the site as they are |
+| `public/` | `styles.css`, `nav.js`, `search.js`, `lesson.js`, the logos and `favicon.svg`, copied to the site as they are |
 | `astro.config.mjs` | The site address, `.html` URLs, and highlight.js for code blocks |
 
 All colours are set once, at the top of `public/styles.css`.

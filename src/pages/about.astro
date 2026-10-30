@@ -4,37 +4,24 @@ import Layout from '../layouts/Layout.astro';
 import { WHATSAPP } from '../lib/site.js';
 ---
 <Layout url="about.html" title="About" description="Learn the skills cloud engineers use every day, in order. Oro is written for beginners and for people moving into cloud work from another job.">
-<main class="home about">
-<header class="page-hero">
-  <p class="eyebrow">About</p>
-  <h1>A place to learn cloud and DevOps.</h1>
-  <p class="lead">Learn the skills cloud engineers use every day, in order. Oro is written for beginners and for people moving into cloud work from another job.</p>
+<main class="about">
+<header>
+  <h1>About</h1>
+  <p>Learn the skills cloud engineers use every day, in order. Oro is written for beginners and for people moving into cloud work from another job.</p>
 </header>
-
-<section class="band white" aria-labelledby="who-head">
-  <div class="band-in">
-    <div class="head"><h2 id="who-head">Who it's for</h2><p>No experience is needed to start.</p></div>
-    <div class="how">
-      <div><span class="n">01</span><h3>Beginners</h3><p>People new to tech. The first lessons start from the basics and explain new terms as they come up.</p></div>
-      <div><span class="n">02</span><h3>Career changers</h3><p>People moving into cloud from support, development, networking or another field, who want a clear order to learn in.</p></div>
-      <div><span class="n">03</span><h3>Working engineers</h3><p>People who use cloud tools already and want to fill the gaps underneath them, such as Linux, networking and how the cloud works.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="band" aria-labelledby="teach-head">
-  <div class="head"><h2 id="teach-head">How you learn</h2><p>Every skill works the same way.</p></div>
-  <div class="facts-grid">
-    <div><h3>In plain words</h3><p>Each lesson explains what a tool does, why it exists and how to use it, with tasks to try as you read.</p></div>
-    <div><h3>On your own computer</h3><p>Labs and projects run locally. You don't need a cloud account or a credit card, and nothing you practise can run up a bill.</p></div>
-  </div>
-</section>
-
-<section class="cta" aria-labelledby="cta-head">
-  <div class="band-in">
-    <div><h2 id="cta-head">Learn with others.</h2><p>Ask questions and share your progress in the Oro community on WhatsApp.</p></div>
-    <a class="start" href={WHATSAPP} target="_blank" rel="noopener"><span>Join the community</span></a>
-  </div>
-</section>
+<article class="md">
+  <h2>Who it's for</h2>
+  <p>No experience is needed to start.</p>
+  <ul>
+    <li><strong>Beginners:</strong> people new to tech. The first lessons start from the basics and explain new terms as they come up.</li>
+    <li><strong>Career changers:</strong> people moving into cloud from support, development, networking or another field, who want a clear order to learn in.</li>
+    <li><strong>Working engineers:</strong> people who use cloud tools already and want to fill the gaps underneath them, such as Linux, networking and how the cloud works.</li>
+  </ul>
+  <h2>How you learn</h2>
+  <p>Each lesson explains what a tool does, why it exists and how to use it, with tasks to try as you read.</p>
+  <p>Labs and projects run on your own computer. You don't need a cloud account or a credit card, and nothing you practise can run up a bill.</p>
+  <h2>Community</h2>
+  <p>Ask questions and share your progress in the <a href={WHATSAPP} target="_blank" rel="noopener">Oro community on WhatsApp</a>.</p>
+</article>
 </main>
 </Layout>

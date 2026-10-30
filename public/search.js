@@ -8,7 +8,6 @@
   /* built by src/pages/search-index.json.js: one entry per section of each lesson */
   var INDEX = null;
 
-  /* ---------- search ---------- */
   /* A query word matches a word in the notes that starts with it, so "iam" finds "IAM" and "IAM's" but not "diameter".
      A plural query is cut back to its singular first, so "subnets" finds "subnet" as well as "subnets". */
   function stem(w) {

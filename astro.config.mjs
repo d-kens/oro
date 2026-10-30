@@ -19,7 +19,7 @@ const lessonsCheck = {
 export default defineConfig({
   site: 'https://oro.co.ke',
   base: '/',
-  /* notes/linux.html, not notes/linux/: the URLs the site has always had */
+  /* skills/linux.html, not skills/linux/: the URLs the site has always had */
   build: { format: 'file' },
   integrations: [lessonsCheck],
   markdown: {
