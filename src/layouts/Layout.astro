@@ -1,9 +1,10 @@
 ---
 /* The shared layout: every page has the same head, nav and scripts.
-   url: the page's path on the live site, for canonical links. scripts: files in public/ to load after nav.js. */
+   url: the page's path on the live site, for canonical links. scripts: files in public/ to load after nav.js.
+   crumbs: [name, path] pairs from the top down, given to search engines as a breadcrumb trail. */
 import { SITE, NAME, WHATSAPP, href } from '../lib/site.js';
 
-const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [] } = Astro.props;
+const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [], crumbs = [] } = Astro.props;
 const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Learn cloud and DevOps';
 /* the nav links; the current page's link is marked, the site's root counts as Home, and a skill's page counts as part of Skills. */
 const here = Astro.url.pathname;
@@ -29,6 +30,10 @@ const links = [['index.html', 'Home'], ['roadmap.html', 'Roadmaps'], ['skills.ht
 <meta property="og:image" content={`${SITE}/og-image.png`}>
 <meta name="twitter:card" content="summary_large_image">
 </>}
+{crumbs.length > 0 && <script type="application/ld+json" set:html={JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map(([name, path], i) => ({ '@type': 'ListItem', position: i + 1, name, item: `${SITE}/${path}` }))
+})} />}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..600&family=Hanken+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap">

@@ -14,7 +14,8 @@ const sections = headings.filter((h) => h.depth === 2);
 const minutes = Math.max(1, Math.round(entry.body.split(/\s+/).filter(Boolean).length / 220));
 const neighbours = [[all[l.n - 2], 'Previous'], [all[l.n], 'Next']];
 ---
-<Layout url={l.url} title={`${l.title} · ${s.name}`} ogType="article" scripts={['lesson.js']} description={`${s.name}: ${l.line}`}>
+<Layout url={l.url} title={`${l.title} · ${s.name}`} ogType="article" scripts={['lesson.js']} description={`${s.name}: ${l.line}`}
+  crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`], [l.title, l.url]]}>
 <div class="progress-line" aria-hidden="true"></div>
 <main class:list={['notes', { 'has-toc': sections.length >= 3 }]}>
 <header class="notes-head">
