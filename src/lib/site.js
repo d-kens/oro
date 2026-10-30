@@ -3,8 +3,8 @@ import { SKILLS } from '../data/skills.js';
 
 export const SITE = 'https://oro.co.ke';   /* the live address, without a trailing slash */
 export const NAME = 'Oro';
-/* the WhatsApp group's invite link, shown as "Join the group" in the nav */
-export const WHATSAPP = 'https://chat.whatsapp.com/REPLACE_WITH_INVITE_CODE';
+/* the WhatsApp community's invite link, shown as "Join the community" in the nav */
+export const WHATSAPP = 'https://chat.whatsapp.com/JXkdh10fJXE5bf9Ku6i5D5';
 /* every topic and project of every skill, in order, as { skill, slug, title, line, project, n, url } */
 export const lessons = SKILLS.flatMap((s) => s.topics.map((t) => [t, false]).concat(s.projects.map((p) => [p, true]))
   .map(([[slug, title, line], project], i) => ({ skill: s, slug, title, line, project, n: i + 1, url: `skills/${s.slug}/${slug}.html` })));
