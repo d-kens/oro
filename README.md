@@ -2,7 +2,7 @@
 
 Oro is a place to learn cloud and DevOps. It teaches the skills cloud engineers use every day, one step at a time, with clear notes and labs that run on your own computer.
 
-Live at <https://oro.co.ke>.
+Live at <https://oro.co.ke>. To run the site on your own computer, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What's on the site
 
