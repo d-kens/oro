@@ -1,34 +1,58 @@
 ---
-/* the roadmap: the skills for a role, in order. Written skills link to their page; the rest are planned. */
+/* the roadmaps: the skills for a role, in order, grouped into stages. Written skills link to their page with their
+   size and reading time; the rest are planned. */
 import Layout from '../layouts/Layout.astro';
 import { ROADMAPS } from '../data/roadmaps.js';
 import { SKILLS } from '../data/skills.js';
-import { href, pad } from '../lib/site.js';
+import { href, lessons, pad, skillMinutes, roughly } from '../lib/site.js';
 
 const skill = (slug) => SKILLS.find((s) => s.slug === slug);
+const reading = new Map(await Promise.all(SKILLS.map(async (s) => [s.slug, await skillMinutes(s)])));
+const firstLesson = (s) => lessons.find((l) => l.skill === s);
+
+const roads = ROADMAPS.map((r) => {
+  const written = r.steps.map(([slug]) => skill(slug)).filter(Boolean);
+  let n = 0;
+  return {
+    r, written,
+    total: written.reduce((sum, s) => sum + reading.get(s.slug), 0),
+    first: written.length ? firstLesson(written[0]) : null,
+    stages: r.stages.map((st) => ({ name: st.name, steps: st.steps.map(([slug, name]) => ({ n: ++n, name, s: skill(slug) })) }))
+  };
+});
 ---
 <Layout url="roadmap.html" title="Roadmaps" description="The DevOps engineer roadmap: the skills to learn, in order.">
-<main class="roadmap">
-<header>
+<main class="home">
+<header class="page-hero">
   <h1>Roadmaps</h1>
-  <p>The skills for a role, in the order to learn them. Linked skills are written; the rest are planned.</p>
+  <p class="lead">The skills for a role, in the order to learn them, grouped into stages. Linked skills are written; the rest are planned.</p>
 </header>
-{ROADMAPS.map((r) => (
-  <section class="path" id={r.slug}>
-    <h2>{r.name}</h2>
-    <p>{r.summary}</p>
-    <ol>
-      {r.steps.map(([slug, name], i) => {
-        const s = skill(slug);
-        return (
-          <li class:list={{ live: s }}>
-            <span class="n">{pad(i + 1)}</span>
-            {s ? <a href={href(`skills/${s.slug}.html`)}>{s.name}</a> : <span>{name}</span>}
-            <span class="facts">{s ? `${s.topics.length} topics` + (s.projects.length ? ` · ${s.projects.length} projects` : '') : 'Planned'}</span>
-          </li>
-        );
-      })}
-    </ol>
+
+{roads.map(({ r, written, total, first, stages }) => (
+  <section class="road" id={r.slug} aria-labelledby={`${r.slug}-head`}>
+    <div class="road-head">
+      <div>
+        <h2 id={`${r.slug}-head`}>{r.name}</h2>
+        <p>{r.summary}</p>
+        <p class="facts">{written.length} of {r.steps.length} steps written · {roughly(total)} of reading so far</p>
+      </div>
+      {first && <a class="btn" href={href(first.url)}>Start this roadmap</a>}
+    </div>
+    {stages.map((st) => (
+      <div class="stage">
+        <h3>{st.name}</h3>
+        <ol>
+          {st.steps.map(({ n, name, s }) => (
+            <li class:list={{ live: s }}>
+              <span class="n">{pad(n)}</span>
+              {s ? <a href={href(`skills/${s.slug}.html`)}>{s.name}</a> : <span>{name}</span>}
+              <span class="facts">{s ? `${s.topics.length} topics · ${roughly(reading.get(s.slug))}` : 'Planned'}</span>
+              {s && <a class="link" href={href(firstLesson(s).url)}>Start<span class="sr"> {s.name}</span></a>}
+            </li>
+          ))}
+        </ol>
+      </div>
+    ))}
   </section>
 ))}
 </main>

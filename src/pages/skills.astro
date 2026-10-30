@@ -1,18 +1,13 @@
 ---
 /* every skill in order: its size and reading time, where it sits on the roadmaps, and links into its lessons */
-import { getEntry } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import { ROADMAPS } from '../data/roadmaps.js';
 import { SKILLS } from '../data/skills.js';
-import { href, lessons, minutes } from '../lib/site.js';
-
-/* reading time for a whole skill, rounded so it reads as a rough size */
-const roughly = (min) => min < 50 ? `about ${Math.max(5, Math.round(min / 5) * 5)} minutes`
-  : Math.round(min / 60) === 1 ? 'about 1 hour' : `about ${Math.round(min / 60)} hours`;
+import { href, lessons, skillMinutes, roughly } from '../lib/site.js';
 
 const rows = await Promise.all(SKILLS.map(async (s) => {
   const mine = lessons.filter((l) => l.skill === s);
-  const total = (await Promise.all(mine.map(async (l) => minutes((await getEntry('lessons', `${s.slug}/${l.slug}`)).body)))).reduce((a, b) => a + b, 0);
+  const total = await skillMinutes(s);
   const steps = ROADMAPS.flatMap((r) => r.steps.some(([slug]) => slug === s.slug) ? [{ r, n: r.steps.findIndex(([slug]) => slug === s.slug) + 1 }] : []);
   return { s, first: mine[0], reading: roughly(total), steps };
 }));

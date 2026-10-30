@@ -195,23 +195,28 @@ button { font-family: inherit; }
 @media (max-width: 900px) { .hero { min-height: calc(100svh - 69px); } .hero::before { background-position: 70% 50%; background-size: 800px; } .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } .home .split { grid-template-columns: 1fr; padding-top: 64px; } .page-hero { padding-block: 56px 32px; } .covers > div { grid-template-columns: 1fr; } .proj-grid { grid-template-columns: 1fr; } .skill-rows li { grid-template-columns: 1fr; } .home .new { padding-top: 64px; } .new-list li { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .hero { padding-block: 32px; } .hero .lead { font-size: 18px; } .cols { grid-template-columns: 1fr; gap: 32px; } .steps li { grid-template-columns: 56px minmax(0, 1fr); } .steps .n { font-size: 52px; } .join-cta { margin-top: 64px; padding: 36px 24px; } .join-cta .mark { display: none; } }
 
-/* roadmaps page: each roadmap's skills in order; written skills are links, the rest are muted and marked planned */
-.roadmap { max-width: 860px; padding-block: 64px 96px; }
-.roadmap header h1 { font-size: clamp(40px, 6vw, 56px); }
-.roadmap header p { margin-top: 12px; color: var(--muted); }
-.path { margin-top: 56px; scroll-margin-top: 16px; }
-.path h2 { font-size: 30px; }
-.path > p { margin-top: 8px; max-width: 40em; color: var(--read); }
-.path ol { list-style: none; margin: 24px 0 0; padding: 0; }
-.path li { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; gap: 16px; align-items: baseline; padding-block: 14px; border-top: 1px solid var(--line); color: color-mix(in srgb, var(--fg) 50%, var(--bg)); }
-.path li:last-child { border-bottom: 1px solid var(--line); }
-.path .n { font: 400 14px var(--f-mono); color: var(--muted); }
-.path li > :nth-child(2) { font: 500 21px/1.3 var(--f-display); }
-.path .live { color: var(--fg); }
-.path a { text-decoration-color: var(--line); text-underline-offset: 5px; transition: color .2s, text-decoration-color .2s; }
-.path a:hover { color: var(--accent); text-decoration-color: currentColor; }
-.path .facts { font-size: 14px; color: var(--muted); white-space: nowrap; }
-@media (max-width: 640px) { .roadmap { padding-block: 40px 64px; } .path li { grid-template-columns: 2.4em minmax(0, 1fr); gap: 2px 16px; } .path .facts { grid-column: 2; } .path li > :nth-child(2) { font-size: 19px; } }
+/* roadmaps page: each roadmap's heading with its progress and a start button, then its stages, the stage name on the
+   left and its steps on the right. Written steps link to their skill; planned ones are muted. */
+.road { padding-top: 24px; scroll-margin-top: 16px; }
+.road + .road { margin-top: 96px; }
+.road-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 24px 48px; padding-bottom: 28px; border-bottom: 2px solid var(--fg); }
+.road-head h2 { font-size: clamp(32px, 4vw, 44px); }
+.road-head p:not(.facts) { margin-top: 12px; max-width: 40em; color: var(--read); }
+.road-head .facts { margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--muted); }
+.stage { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 8px 48px; padding-block: 28px; border-bottom: 1px solid var(--line); }
+.stage h3 { font-size: 22px; padding-top: 10px; }
+.stage ol { list-style: none; margin: 0; padding: 0; }
+.stage li { display: grid; grid-template-columns: 2.6em minmax(0, 1fr) auto 3.5em; gap: 16px; align-items: baseline; padding-block: 10px; color: color-mix(in srgb, var(--fg) 45%, var(--bg)); }
+.stage li + li { border-top: 1px solid var(--line); }
+.stage .n { font: 400 14px var(--f-mono); color: var(--muted); }
+.stage li > :nth-child(2) { font: 500 21px/1.3 var(--f-display); }
+.stage .live { color: var(--fg); }
+.stage li > a:nth-child(2) { text-decoration-color: var(--line); text-underline-offset: 5px; transition: color .2s, text-decoration-color .2s; }
+.stage li > a:nth-child(2):hover { color: var(--accent); text-decoration-color: currentColor; }
+.stage .facts { font-size: 14px; color: var(--muted); white-space: nowrap; }
+.stage .link { font-size: 15px; justify-self: end; }
+@media (max-width: 900px) { .stage { grid-template-columns: 1fr; } .stage h3 { padding-top: 0; } .road + .road { margin-top: 64px; } }
+@media (max-width: 640px) { .stage li { grid-template-columns: 2.4em minmax(0, 1fr) auto; gap: 2px 16px; } .stage .facts { grid-column: 2; grid-row: 2; } .stage .link { grid-column: 3; grid-row: 1; } .stage li > :nth-child(2) { font-size: 19px; } }
 
 /* a skill page lists its topics, then its projects, in order */
 .skill { max-width: 860px; padding-block: 64px 96px; }

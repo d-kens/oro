@@ -1,4 +1,5 @@
 /* Shared settings and helpers for the pages and endpoints. */
+import { getEntry } from 'astro:content';
 import { SKILLS } from '../data/skills.js';
 
 export const SITE = 'https://oro.co.ke';   /* the live address, without a trailing slash */
@@ -15,6 +16,12 @@ export const href = (p = '') => import.meta.env.BASE_URL.replace(/\/?$/, '/') + 
 export const pad = (x) => String(x).padStart(2, '0');
 /* minutes to read a lesson's Markdown, at 220 words a minute */
 export const minutes = (body) => Math.max(1, Math.round(body.split(/\s+/).filter(Boolean).length / 220));
+/* minutes to read every topic and project of a skill */
+export const skillMinutes = async (s) => (await Promise.all(lessons.filter((l) => l.skill === s)
+  .map(async (l) => minutes((await getEntry('lessons', `${s.slug}/${l.slug}`)).body)))).reduce((a, b) => a + b, 0);
+/* a reading time rounded so it reads as a rough size: "about 15 minutes", "about 3 hours" */
+export const roughly = (min) => min < 50 ? `about ${Math.max(5, Math.round(min / 5) * 5)} minutes`
+  : Math.round(min / 60) === 1 ? 'about 1 hour' : `about ${Math.round(min / 60)} hours`;
 const decode = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
   .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(n)).replace(/&amp;/g, '&');
 /* plain text of an HTML fragment; block ends become spaces so words from neighbouring paragraphs do not run together */
