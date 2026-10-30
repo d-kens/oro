@@ -1,9 +1,10 @@
 body{margin:0}
 
-/* Layout: one light theme, soft neutral grey with dark grey text. Newsreader for the wordmark and every heading, grotesk body, mono for labels and code. Deep navy is the only colour; everything else is grey or near-black. */
+/* Layout: one light theme in the oro palette: ink for text, buttons and links, gold for small marks only, cool greys for the rest.
+   Newsreader for every heading, grotesk body, mono for labels and code. */
 :root {
-  --bg: #f5f5f4; --bg-2: #eaeae8; --fg: #262626; --read: #333333; --muted: #6b6b6b; --line: #e0e0de;
-  --accent: #0d1330; --accent-dark: #060a1c;
+  --bg: #f6f7f9; --bg-2: #eceef2; --fg: #09112b; --read: #2b3142; --muted: #5f6675; --line: #e3e6ec;
+  --accent: #09112b; --accent-dark: #000000; --gold: #e0a526;
   --f-display: "Newsreader", Georgia, serif;
   --f-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -22,11 +23,14 @@ button { font-family: inherit; }
 .wrap { max-width: 1180px; margin-inline: auto; min-height: 100vh; display: flex; flex-direction: column; }
 .wrap > main, #app { flex: 1; }
 .mono { font-family: var(--f-mono); font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.link { font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; text-decoration-color: var(--accent); }
+.link { font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; text-decoration-color: var(--gold); }
 
 .wrap > nav { display: flex; align-items: baseline; justify-content: space-between; gap: 16px 28px; flex-wrap: wrap; padding-block: 24px; }
-/* wordmark: "oro" in plain text, in the nav's font, bold */
-.logo { font: 700 24px/1 var(--f-body); letter-spacing: -.02em; color: #111; text-decoration: none; }
+/* logo: the square-curl mark (public/logo.svg) beside "oro" in the nav's font, bold, the two the same height.
+   The letters of "oro" are .51em tall; the mark fills 43 of its 54 viewBox units, so .64em of image gives a mark .51em tall.
+   It sits on the letters' baseline, pulled down and left by the padding around it. */
+.logo { display: inline-flex; align-items: baseline; gap: .22em; align-self: center; font: 700 28px/1 var(--f-body); letter-spacing: -.03em; color: var(--fg); text-decoration: none; }
+.logo img { display: block; width: .64em; height: .64em; margin: 0 0 -.1em -.08em; transform: translateY(.07em); }
 .wrap > nav ul { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0 0 0 auto; padding: 0; font: 500 15px var(--f-body); }
 .wrap > nav ul a { text-decoration: none; color: var(--muted); cursor: pointer; transition: color .2s; }
 .wrap > nav ul a:hover, .wrap > nav ul a[aria-current] { color: var(--fg); }
@@ -38,14 +42,13 @@ button { font-family: inherit; }
 .search-link { padding-left: 28px; border-left: 1px solid var(--line); }
 .search-link a { display: inline-flex; align-items: center; gap: 8px; }
 .search-link kbd { font: 500 11px/1 var(--f-mono); padding: 3px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; color: var(--muted); background: #fff; }
-/* the WhatsApp group: the one outlined link in the bar; it fills navy from the left on hover */
-.wrap > nav .join a { display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px 7px 13px; border: 1px solid var(--accent); border-radius: 999px; color: var(--accent);
-  background: linear-gradient(var(--accent), var(--accent)) 0 0 / 0 100% no-repeat; transition: color .25s, background-size .3s; }
-.wrap > nav .join a:hover { color: #fff; background-size: 100% 100%; }
+/* the WhatsApp community: the one solid ink button in the bar */
+.wrap > nav .join a { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px 9px 13px; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 600; transition: background .2s; }
+.wrap > nav .join a:hover { color: #fff; background: #1c2647; }
 .menu-btn { display: none; }
 /* desktop: a navy underline slides in under the hovered link */
 @media (min-width: 901px) {
-  .wrap > nav ul li:not(.join) a { padding-block: 4px; background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 2px no-repeat; transition: color .2s, background-size .25s; }
+  .wrap > nav ul li:not(.join) a { padding-block: 4px; background: linear-gradient(var(--gold), var(--gold)) 0 100% / 0 2px no-repeat; transition: color .2s, background-size .25s; }
   .wrap > nav ul li:not(.join) a:hover, .wrap > nav ul li:not(.join) a[aria-current] { background-size: 100% 2px; }
 }
 /* phones and tablets: a sticky bar with the logo and a menu button. The button drops a sheet down from under the bar:
@@ -53,7 +56,7 @@ button { font-family: inherit; }
    The sheet only takes over once nav.js can close it again (the "js" class); without JavaScript the links stay as a plain list. */
 @media (max-width: 900px) {
   .wrap > nav { position: sticky; top: 0; z-index: 20; align-items: center; gap: 0 10px; margin-inline: -20px; padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--bg); }
-  .logo { white-space: nowrap; flex-shrink: 0; font-size: 22px; }
+  .logo { white-space: nowrap; flex-shrink: 0; font-size: 26px; }
   .menu-btn { order: 2; margin-left: auto; display: grid; place-items: center; width: 44px; height: 44px; margin-right: -8px; padding: 0; border: 0; background: transparent; color: var(--fg); cursor: pointer; }
   .menu-btn span, .menu-btn span::before, .menu-btn span::after { display: block; height: 2px; background: currentColor; border-radius: 2px; transition: transform .25s, background .2s, width .25s; }
   .menu-btn span { position: relative; width: 20px; }
@@ -80,7 +83,7 @@ button { font-family: inherit; }
   .wrap > nav .join a:active { background: var(--accent-dark); }
 
   .js .wrap > nav ul { position: fixed; top: var(--nav-h, 69px); left: 0; right: 0; max-height: calc(100dvh - var(--nav-h, 69px)); margin: 0; padding: 18px 20px 24px;
-    overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-bottom: 1px solid var(--line); border-radius: 0 0 16px 16px; box-shadow: 0 18px 40px -18px rgba(13, 19, 48, .35);
+    overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-bottom: 1px solid var(--line); border-radius: 0 0 16px 16px; box-shadow: 0 18px 40px -18px rgba(9, 17, 43, .35);
     visibility: hidden; clip-path: inset(0 0 100% 0); transition: clip-path .32s cubic-bezier(.2, .8, .2, 1), visibility 0s .32s; }
   .js .wrap > nav.open ul { visibility: visible; clip-path: inset(0 0 -60px 0); transition: clip-path .32s cubic-bezier(.2, .8, .2, 1); }
   .js .wrap > nav ul li { opacity: 0; transform: translateY(-6px); transition: opacity .3s, transform .3s; }
@@ -88,36 +91,72 @@ button { font-family: inherit; }
   .js .wrap > nav.open ul li:nth-child(2) { transition-delay: .03s; }
   .js .wrap > nav.open ul li:nth-child(4) { transition-delay: .1s; }
   /* the page behind the sheet dims; tapping it closes the menu (nav.js) */
-  .js .wrap > nav::after { content: ""; position: fixed; inset: var(--nav-h, 69px) 0 0; z-index: -1; background: rgba(13, 19, 48, .28); opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
+  .js .wrap > nav::after { content: ""; position: fixed; inset: var(--nav-h, 69px) 0 0; z-index: -1; background: rgba(9, 17, 43, .28); opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
   .js .wrap > nav.open::after { opacity: 1; visibility: visible; transition: opacity .3s; }
   html.menu-open { overflow: hidden; }
 }
 
-/* home page: a large serif headline and a start link, then the roadmap as one wrapping line of steps joined by a rule */
+/* home page: a hero that fills the first screen, then bands that each make one point. White bands and the closing ink band run the full width of the window. */
 /* the hero fills the first screen together with the nav bar above it (84px tall on desktop, 69px on phones), its content centred in the space left */
-.home { padding-block: 0 64px; }
 .hero { display: flex; flex-direction: column; justify-content: center; min-height: calc(100svh - 84px); padding-block: 48px; }
-.hero h1 { max-width: 12em; font-size: clamp(44px, 7vw, 80px); letter-spacing: -.025em; }
-.hero .lead { margin-top: 24px; max-width: 34em; font-size: 20px; color: var(--read); }
-.hero .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; margin-top: 40px; }
-/* the start button: a solid navy block; on hover the label rolls up and out while a copy of it, drawn as a text shadow 50px below, rolls in */
-.hero .actions .start { display: inline-block; overflow: hidden; padding: 15px 30px; border-radius: 4px; background: var(--accent); color: #fff; font: 600 17px/20px var(--f-body); text-decoration: none; }
-.hero .actions .start span { display: block; text-shadow: 0 50px #fff; transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
-.hero .actions .start:hover span { transform: translateY(-50px); }
-.hero .actions a:not(.start) { color: var(--muted); text-underline-offset: 4px; transition: color .2s; }
-.hero .actions a:not(.start):hover { color: var(--fg); }
-.home section { margin-top: 32px; }
-.home section h2 { font-size: 30px; }
-/* every step carries a rule in front of it; the list is pulled left by the rule's width and clipped there, so a rule only shows between two steps on the same line */
-.line ol { display: flex; flex-wrap: wrap; align-items: baseline; gap: 14px 0; list-style: none; margin: 28px 0 0 -52px; padding: 0; clip-path: inset(-20px -20px -20px 52px); font: 500 clamp(21px, 2.6vw, 28px)/1.3 var(--f-display); color: color-mix(in srgb, var(--fg) 38%, var(--bg)); }
-.line li { display: inline-flex; align-items: baseline; }
-.line li::before { content: ""; align-self: center; width: 28px; height: 1px; margin-inline: 12px; background: var(--line); }
-.line .n { margin-right: 6px; font: 400 12px var(--f-mono); color: var(--muted); }
-.line .live { color: var(--fg); }
-.line a { text-decoration-color: var(--line); text-underline-offset: 5px; transition: color .2s, text-decoration-color .2s; }
-.line a:hover { color: var(--accent); text-decoration-color: currentColor; }
-@media (max-width: 900px) { .hero { min-height: calc(100svh - 69px); } }
-@media (max-width: 640px) { .home { padding-block: 0 32px; } .hero { padding-block: 32px; } .hero .lead { font-size: 18px; } }
+.hero .eyebrow { margin-bottom: 18px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.hero h1 { max-width: 13em; font-size: clamp(48px, 8vw, 96px); letter-spacing: -.025em; }
+.hero .lead { margin-top: 24px; max-width: 34em; font-size: 20px; color: var(--muted); }
+.hero .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 16px; margin-top: 40px; }
+/* the hero's two buttons: the same size, a solid ink one and an ink outline that fills on hover */
+.btn { display: inline-flex; align-items: center; padding: 15px 26px; border: 1.5px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; font: 600 17px/20px var(--f-body); text-decoration: none; transition: background .2s, border-color .2s, color .2s; }
+.btn:hover { background: #1c2647; border-color: #1c2647; }
+.btn.outline { background: none; color: var(--accent); }
+.btn.outline:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* the start button: a solid ink block; on hover the label rolls up and out while a copy of it, drawn as a text shadow 50px below, rolls in */
+.start { display: inline-block; overflow: hidden; padding: 15px 28px; border-radius: 6px; background: var(--accent); color: #fff; font: 600 17px/20px var(--f-body); text-decoration: none; }
+.start span { display: block; text-shadow: 0 50px currentColor; transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
+.start:hover span { transform: translateY(-50px); }
+.start.light { background: #fff; color: var(--accent); }
+/* a band that reaches the window's edges, with its content back on the page's grid */
+.band.white, .cta { margin-inline: calc(50% - 50vw); }
+.band-in { max-width: calc(1180px + 40px); margin-inline: auto; padding-inline: 20px; }
+.band { padding-block: 88px; }
+.band.white { background: #fff; border-block: 1px solid var(--line); }
+.home .head { display: grid; gap: 12px; max-width: 40em; margin-bottom: 44px; }
+.home .head h2 { font-size: clamp(32px, 4vw, 44px); }
+.home .head p { font-size: 18px; color: var(--muted); }
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.how > div { display: grid; gap: 10px; align-content: start; padding-top: 22px; border-top: 2px solid var(--fg); }
+.how .n { font: 500 13px var(--f-mono); color: var(--muted); }
+.how h3 { font-size: 24px; }
+.how p { color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-block: 1px solid var(--line); }
+.stats > div { padding: 34px 24px; border-left: 1px solid var(--line); }
+.stats > div:first-child { padding-left: 0; border-left: 0; }
+.stats b { display: block; font: 500 52px/1 var(--f-display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stats span { display: block; margin-top: 8px; color: var(--muted); }
+.rcards { display: grid; gap: 18px; }
+.rcard { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px 48px; padding: 32px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; transition: border-color .2s; }
+.rcard:hover { border-color: var(--fg); }
+.rcard h3 { font-size: 28px; }
+.rcard p { margin-top: 10px; max-width: 40em; color: var(--muted); }
+.rmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; font-size: 15px; color: var(--muted); }
+.rmeta .go { color: var(--fg); font-weight: 600; text-decoration: underline; text-decoration-color: var(--gold); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+.scards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 18px; }
+.scard { display: grid; gap: 12px; align-content: start; padding: 26px; background: #fff; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; transition: border-color .2s, transform .2s; }
+.scard:hover { border-color: var(--fg); transform: translateY(-2px); }
+.scard h3 { font-size: 24px; }
+.scard p { font-size: 16px; color: var(--muted); }
+.scard .meta { font-size: 14px; font-weight: 600; }
+.cta { background: var(--fg); color: #fff; }
+.cta .band-in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; padding-block: 72px; }
+.cta h2 { font-size: clamp(32px, 4vw, 44px); }
+.cta p { margin-top: 10px; font-size: 18px; color: #b9bfd3; }
+@media (max-width: 900px) {
+  .hero { min-height: calc(100svh - 69px); }
+  .how { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats > div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .stats > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .rcard { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) { .hero { padding-block: 32px; } .hero .lead { font-size: 18px; } .band { padding-block: 56px; } .stats b { font-size: 40px; } .rcard, .scard { padding: 22px; } }
 
 /* roadmaps page: each roadmap's skills in order; written skills are links, the rest are muted and marked planned */
 .roadmap { max-width: 860px; padding-block: 64px 96px; }
@@ -153,6 +192,10 @@ button { font-family: inherit; }
 .skill .crumbs a:hover { color: var(--accent); }
 .skill header .facts { margin-top: 8px; font-size: 14px; }
 .skill h2 { margin-top: 56px; font-size: 28px; }
+.projects h2 a { text-decoration: none; transition: color .2s; }
+.projects h2 a:hover { text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 5px; }
+.about .md { margin-top: 8px; }
+.about .md h2 { margin-top: 44px; }
 .skill-steps { list-style: none; margin: 20px 0 0; padding: 0; }
 .skill-steps li { display: grid; grid-template-columns: 3em minmax(0, 1fr); gap: 4px 16px; padding-block: 18px; border-top: 1px solid var(--line); }
 .skill-steps li:last-child { border-bottom: 1px solid var(--line); }
@@ -270,8 +313,16 @@ button { font-family: inherit; }
 .md kbd { font: 500 .78em/1 var(--f-mono); padding: 3px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; background: #fff; color: var(--fg); white-space: nowrap; }
 .md details[open] > summary { margin-bottom: 8px; }
 
-/* footer: the nav links again, on the right */
-.site-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px 32px; margin-top: 72px; padding-block: 28px 40px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
-.site-foot ul { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; margin: 0; padding: 0; }
+/* footer: a full-width ink band with the logo, a line about oro, and the links in columns */
+.site-foot { margin: 0 calc(50% - 50vw); background: var(--fg); color: #b9bfd3; font-size: 15px; }
+.foot-in { display: grid; grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr)); gap: 32px; max-width: calc(1180px + 40px); margin-inline: auto; padding: 56px 20px 28px; }
+.site-foot .logo { color: #fff; }
+.foot-about p { margin-top: 14px; max-width: 26em; }
+.site-foot h2 { margin-bottom: 12px; font: 600 14.5px var(--f-body); letter-spacing: 0; color: #fff; }
+.site-foot ul { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .site-foot a { text-decoration: none; transition: color .2s; }
-.site-foot a:hover { color: var(--accent); }
+.site-foot a:hover { color: #fff; }
+.site-foot .copy { grid-column: 1 / -1; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, .1); font-size: 14px; }
+.wrap > main + .site-foot { margin-top: 72px; }
+.wrap > main.home + .site-foot { margin-top: 0; }
+@media (max-width: 900px) { .foot-in { grid-template-columns: repeat(2, minmax(0, 1fr)); } .foot-about { grid-column: 1 / -1; } }

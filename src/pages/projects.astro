@@ -1,0 +1,27 @@
+---
+/* every project from every skill, grouped by skill in the skills' order */
+import Layout from '../layouts/Layout.astro';
+import { SKILLS } from '../data/skills.js';
+import { href, lessons } from '../lib/site.js';
+
+const groups = SKILLS.map((s) => ({ s, projects: lessons.filter((l) => l.skill === s && l.project) })).filter((g) => g.projects.length);
+const total = groups.reduce((n, g) => n + g.projects.length, 0);
+---
+<Layout url="projects.html" title="Projects" description="Hands-on projects for every skill. Each one runs on your own computer, with no cloud account needed.">
+<main class="skill projects">
+<header>
+  <h1>Projects</h1>
+  <p>{total} hands-on projects, grouped by skill. Each one runs on your own computer, with no cloud account needed. Do a skill's lessons first, then its projects.</p>
+</header>
+{groups.map(({ s, projects }) => (
+  <section>
+    <h2><a href={href(`skills/${s.slug}.html`)}>{s.name}</a></h2>
+    <ol class="skill-steps">
+      {projects.map((l) => (
+        <li><span class="n">{String(projects.indexOf(l) + 1).padStart(2, '0')}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
+      ))}
+    </ol>
+  </section>
+))}
+</main>
+</Layout>

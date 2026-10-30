@@ -1,34 +1,78 @@
 ---
-/* the home page: what Oro is and where to start, then the roadmap drawn as one line of steps */
+/* the home page: what oro is and where to start, how it works, the numbers, the roadmaps, the skills ready now, and a closing call to start */
 import Layout from '../layouts/Layout.astro';
 import { ROADMAPS } from '../data/roadmaps.js';
 import { SKILLS } from '../data/skills.js';
-import { href, pad } from '../lib/site.js';
+import { href } from '../lib/site.js';
 
-const road = ROADMAPS[0];
 const skill = (slug) => SKILLS.find((s) => s.slug === slug);
-const first = road.steps.map(([slug]) => skill(slug)).find(Boolean);
+const first = ROADMAPS[0].steps.map(([slug]) => skill(slug)).find(Boolean);
+const topics = SKILLS.reduce((n, s) => n + s.topics.length, 0);
+const projects = SKILLS.reduce((n, s) => n + s.projects.length, 0);
+/* cloud and the foundations first; What is DevOps last, so the page does not read as DevOps only */
+const shown = [...SKILLS].sort((a, b) => (a.slug === 'what-is-devops') - (b.slug === 'what-is-devops'));
+const count = (s) => `${s.topics.length} lessons` + (s.projects.length ? ` · ${s.projects.length} projects` : '');
 ---
-<Layout description="Learn DevOps and cloud in order, one skill at a time, from Linux to Kubernetes, with notes for every topic and labs that run on your own computer.">
+<Layout description="The skills cloud engineers use every day, taught one step at a time, with clear notes and labs that run on your own computer.">
 <main class="home">
 <header class="hero">
-  <h1>Learn DevOps and cloud, in order.</h1>
-  <p class="lead">One skill at a time, from Linux to Kubernetes, with notes for every topic and labs that run on your own computer.</p>
+  <p class="eyebrow">Free, in order, for beginners</p>
+  <h1>Learn cloud and DevOps.</h1>
+  <p class="lead">The skills cloud engineers use every day, taught one step at a time, with clear notes and labs that run on your own computer.</p>
   <p class="actions">
-    <a class="start" href={href(`skills/${first.slug}.html`)}><span>Start here</span></a>
-    <a href={href('roadmap.html')}>Roadmap</a>
+    <a class="btn" href={href(`skills/${first.slug}.html`)}>Start learning</a>
+    <a class="btn outline" href={href('roadmap.html')}>See the roadmaps</a>
   </p>
 </header>
 
-<section class="line" aria-labelledby="line-head">
-  <h2 id="line-head">The roadmap</h2>
-  {/* every step in order on one wrapping line, joined like a pipeline; written skills link, the rest are muted */}
-  <ol>
-    {road.steps.map(([slug, name], i) => {
-      const s = skill(slug);
-      return <li class:list={{ live: s }}><span class="n">{pad(i + 1)}</span>{s ? <a href={href(`skills/${s.slug}.html`)}>{s.name}</a> : name}</li>;
-    })}
-  </ol>
+<section class="band white" aria-labelledby="how-head">
+  <div class="band-in">
+    <div class="head"><h2 id="how-head">How oro works</h2><p>Everything is written for someone starting from zero.</p></div>
+    <div class="how">
+      <div><span class="n">01</span><h3>Follow a roadmap</h3><p>Skills are laid out in the order they build on each other, so you always know what to learn next.</p></div>
+      <div><span class="n">02</span><h3>Read clear notes</h3><p>Every topic has a lesson that explains what a tool does, why it exists and how to use it.</p></div>
+      <div><span class="n">03</span><h3>Practise on your own computer</h3><p>Labs and projects run locally. You don't need a cloud account or a credit card to start.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" aria-label="oro in numbers">
+  <div class="stats">
+    <div><b>{ROADMAPS[0].steps.length}</b><span>roadmap steps</span></div>
+    <div><b>{topics}</b><span>lessons</span></div>
+    <div><b>{projects}</b><span>hands-on projects</span></div>
+    <div><b>{SKILLS.length}</b><span>skills ready now</span></div>
+  </div>
+</section>
+
+<section class="band white" aria-labelledby="road-head">
+  <div class="band-in">
+    <div class="head"><h2 id="road-head">Roadmaps</h2><p>A roadmap puts skills in order, so you always know what to learn next.</p></div>
+    <div class="rcards">
+      {ROADMAPS.map((r) => (
+        <a class="rcard" href={href(`roadmap.html#${r.slug}`)}>
+          <div><h3>{r.name} roadmap</h3><p>{r.summary}</p></div>
+          <div class="rmeta"><span>{r.steps.length} steps</span><span>{r.steps.filter(([slug]) => skill(slug)).length} ready</span><span class="go">View roadmap</span></div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="band" aria-labelledby="skills-head">
+  <div class="head"><h2 id="skills-head">Skills you can start now</h2><p>{SKILLS.length} skills are written and ready. Each one works on its own or as part of a roadmap.</p></div>
+  <div class="scards">
+    {shown.map((s) => (
+      <a class="scard" href={href(`skills/${s.slug}.html`)}><h3>{s.name}</h3><p>{s.summary}</p><span class="meta">{count(s)}</span></a>
+    ))}
+  </div>
+</section>
+
+<section class="cta" aria-labelledby="cta-head">
+  <div class="band-in">
+    <div><h2 id="cta-head">Start learning today.</h2><p>Pick a skill or follow a roadmap, at your own pace.</p></div>
+    <a class="start light" href={href(`skills/${first.slug}.html`)}><span>Start learning</span></a>
+  </div>
 </section>
 </main>
 </Layout>

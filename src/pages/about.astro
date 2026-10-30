@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { WHATSAPP, href } from '../lib/site.js';
+---
+<Layout url="about.html" title="About" description="oro is a free place to learn cloud and DevOps, written for beginners, with labs that run on your own computer.">
+<main class="skill about">
+<header>
+  <h1>About oro</h1>
+  <p>oro is a free place to learn cloud and DevOps. It's written for beginners and for people moving into cloud engineering from another job.</p>
+</header>
+<div class="md">
+  <h2>How it works</h2>
+  <p>A roadmap puts skills in the order they build on each other, so you always know what to learn next. Each skill is a set of lessons, and most skills end with projects that put the lessons together.</p>
+  <p>Every lesson explains what a tool does, why it exists and how to use it, with tasks to try as you read.</p>
+  <h2>Labs on your own computer</h2>
+  <p>Labs and projects run locally. You don't need a cloud account or a credit card to start, and nothing you practise can run up a bill.</p>
+  <h2>What it costs</h2>
+  <p>Everything on oro is free.</p>
+  <h2>Learn with others</h2>
+  <p>Ask questions and learn alongside other people in the <a href={WHATSAPP} target="_blank" rel="noopener">oro WhatsApp community</a>. To get started, <a href={href('roadmap.html')}>see the roadmaps</a>.</p>
+</div>
+</main>
+</Layout>
