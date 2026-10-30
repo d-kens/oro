@@ -375,13 +375,17 @@ button { font-family: inherit; }
 
 /* footer: a full-width ink band with the logo, a line about oro, and the links in columns */
 .site-foot { margin: 0 calc(50% - 50vw); background: var(--fg); color: #b9bfd3; font-size: 15px; }
-.foot-in { display: grid; grid-template-columns: 2fr repeat(2, minmax(0, 1fr)); gap: 32px; max-width: calc(1180px + 40px); margin-inline: auto; padding: 56px 20px 28px; }
+.foot-in { display: grid; grid-template-columns: 2fr repeat(3, minmax(0, 1fr)); gap: 32px; max-width: calc(1180px + 40px); margin-inline: auto; padding: 56px 20px 28px; }
 .site-foot .logo { color: #fff; }
-.foot-about p { margin-top: 14px; max-width: 26em; }
+.foot-about p { margin-top: 8px; max-width: 26em; }
+.foot-about .tagline { margin-top: 18px; font: 500 24px/1.2 var(--f-display); color: #fff; }
 .site-foot h2 { margin-bottom: 12px; font: 600 14.5px var(--f-body); letter-spacing: 0; color: #fff; }
 .site-foot ul { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .site-foot a { text-decoration: none; transition: color .2s; }
 .site-foot a:hover { color: #fff; }
-.site-foot .copy { grid-column: 1 / -1; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, .1); font-size: 14px; }
+/* the bottom row: copyright and licence on the left, back to top on the right */
+.foot-bottom { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, .1); font-size: 14px; }
+.foot-bottom a { color: #fff; text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 4px; }
 .wrap > main + .site-foot { margin-top: 72px; }
 @media (max-width: 900px) { .foot-in { grid-template-columns: repeat(2, minmax(0, 1fr)); } .foot-about { grid-column: 1 / -1; } }
+@media (max-width: 640px) { .foot-in { grid-template-columns: 1fr; } }

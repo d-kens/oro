@@ -3,6 +3,7 @@
    url: the page's path on the live site, for canonical links. scripts: files in public/ to load after nav.js.
    crumbs: [name, path] pairs from the top down, given to search engines as a breadcrumb trail. */
 import { SITE, NAME, WHATSAPP, href } from '../lib/site.js';
+import { SKILLS } from '../data/skills.js';
 
 const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [], crumbs = [] } = Astro.props;
 const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Learn cloud and DevOps';
@@ -42,7 +43,7 @@ const links = [['index.html', 'Home'], ['roadmap.html', 'Roadmaps'], ['skills.ht
 </head>
 <body>
 
-<div class="wrap">
+<div class="wrap" id="top">
   <nav aria-label="Site">
     <a class="logo" href={href('index.html')}><img src={href('logo.svg')} alt="" width="28" height="28">oro</a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-links" aria-label="Open menu"><span></span></button>
@@ -57,7 +58,8 @@ const links = [['index.html', 'Home'], ['roadmap.html', 'Roadmaps'], ['skills.ht
     <div class="foot-in">
       <div class="foot-about">
         <a class="logo" href={href('index.html')}><img src={href('logo-white.svg')} alt="" width="28" height="28">oro</a>
-        <p>Learn cloud and DevOps, one skill at a time, with notes and labs that run on your own computer.</p>
+        <p class="tagline">Learn cloud and DevOps.</p>
+        <p>One skill at a time, with notes and labs that run on your own computer.</p>
       </div>
       <div><h2>Learn</h2><ul>
         <li><a href={href('roadmap.html')}>Roadmaps</a></li>
@@ -65,11 +67,17 @@ const links = [['index.html', 'Home'], ['roadmap.html', 'Roadmaps'], ['skills.ht
         <li><a href={href('projects.html')}>Projects</a></li>
         <li><a href={href('search.html')}>Search</a></li>
       </ul></div>
+      <div><h2>Skills</h2><ul>
+        {SKILLS.map((s) => <li><a href={href(`skills/${s.slug}.html`)}>{s.name}</a></li>)}
+      </ul></div>
       <div><h2>Oro</h2><ul>
         <li><a href={href('about.html')}>About</a></li>
         <li><a href={WHATSAPP} target="_blank" rel="noopener">WhatsApp group</a></li>
       </ul></div>
-      <p class="copy">© {new Date().getFullYear()} Oro</p>
+      <div class="foot-bottom">
+        <p>© {new Date().getFullYear()} Oro. Lessons and brand all rights reserved; site code under the MIT licence.</p>
+        <a href="#top">Back to top</a>
+      </div>
     </div>
   </footer>
 </div>
