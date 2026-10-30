@@ -9,7 +9,7 @@ export const getStaticPaths = () => SKILLS.map((s) => ({ params: { slug: s.slug 
 const { s } = Astro.props;
 const mine = lessons.filter((l) => l.skill === s), topics = mine.filter((l) => !l.project), projects = mine.filter((l) => l.project);
 ---
-<Layout url={`skills/${s.slug}.html`} title={s.name} description={`${s.name}: ${s.summary}`}>
+<Layout url={`skills/${s.slug}.html`} title={s.name} description={`${s.name}: ${s.summary}`} crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`]]}>
 <main class="skill">
 <header>
   <p class="crumbs"><a href={href('skills.html')}>Skills</a></p>
