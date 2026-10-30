@@ -1,10 +1,11 @@
 /* Oro skills: each skill is a set of topics learned in order, ending in projects.
    Read by the Skills page and the skill pages (skills/<slug>.html).
    A topic is [slug, title, the one line it covers]; a project is [slug, title, what you build]. Every project runs on your own computer.
-   Each topic and project has a lesson in lessons/<skill>/<slug>.md; the build stops if one is missing. */
+   Each topic and project has a lesson in lessons/<skill>/<slug>.md; the build stops if one is missing.
+   added is the day the skill went up, as YYYY-MM-DD; the home page lists the newest skills by it. */
 export const SKILLS = [
   {
-    slug: 'what-is-devops', name: 'What is DevOps', level: 'Beginner',
+    slug: 'what-is-devops', added: '2026-10-27', name: 'What is DevOps', level: 'Beginner',
     summary: 'What DevOps is, the problems it grew out of, and the ideas behind it: the delivery lifecycle, culture, and measuring how a team delivers.',
     topics: [
       ['what-devops-is', 'What DevOps is', 'Development and operations working as one team, what DevOps aims for, where the name came from, and the jobs built around it.'],
@@ -16,7 +17,7 @@ export const SKILLS = [
     projects: []
   },
   {
-    slug: 'cloud-computing', name: 'Cloud computing', level: 'Beginner',
+    slug: 'cloud-computing', added: '2026-10-26', name: 'Cloud computing', level: 'Beginner',
     summary: 'What the cloud is, why companies moved to it, and the ideas every provider shares: service models, regions and zones, scaling, paying for use, and who is responsible for what.',
     topics: [
       ['what-cloud-computing-is', 'What cloud computing is', 'Renting computers instead of buying them, and the five things that make a service a cloud.'],
@@ -36,7 +37,7 @@ export const SKILLS = [
     ]
   },
   {
-    slug: 'linux', name: 'Linux', level: 'Beginner',
+    slug: 'linux', added: '2026-10-24', name: 'Linux', level: 'Beginner',
     summary: 'The command line and the operating system almost every server runs. Everything else on the roadmap sits on top of it.',
     topics: [
       ['what-linux-is', 'What Linux is', 'The kernel, distributions, and why servers run Linux. Getting a Linux shell on your own computer.'],
@@ -64,7 +65,7 @@ export const SKILLS = [
     ]
   },
   {
-    slug: 'networking', name: 'Networking', level: 'Beginner',
+    slug: 'networking', added: '2026-10-25', name: 'Networking', level: 'Beginner',
     summary: 'How machines find and talk to each other, from IP addresses and ports to DNS, HTTP, TLS, routing and firewalls, and how to find out why they cannot.',
     topics: [
       ['what-a-network-is', 'What a network is', 'Hosts, links, packets, switches and routers. Building a small network of your own to practise on.'],
@@ -93,7 +94,7 @@ export const SKILLS = [
     ]
   },
   {
-    slug: 'shell-scripting', name: 'Shell scripting', level: 'Intermediate',
+    slug: 'shell-scripting', added: '2026-10-25', name: 'Shell scripting', level: 'Intermediate',
     summary: 'Turning the commands from the Linux skill into Bash scripts that run unattended, handle bad input and fail safely.',
     topics: [
       ['shell-scripting-basics', 'Shell scripting basics', 'What a script is, the shebang line, making a script executable, and running it.'],

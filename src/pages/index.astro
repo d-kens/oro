@@ -8,6 +8,9 @@ import { href, WHATSAPP } from '../lib/site.js';
 const first = ROADMAPS[0].steps.map(([slug]) => SKILLS.find((s) => s.slug === slug)).find(Boolean);
 /* cloud and the foundations first; What is DevOps last, so the page does not read as DevOps only */
 const shown = [...SKILLS].sort((a, b) => (a.slug === 'what-is-devops') - (b.slug === 'what-is-devops'));
+/* the three newest skills, newest first */
+const newest = [...SKILLS].sort((a, b) => b.added.localeCompare(a.added)).slice(0, 3);
+const day = (iso) => new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 ---
 <Layout description="The skills cloud engineers use every day, taught one step at a time, with clear notes and labs that run on your own computer.">
 <main class="home">
@@ -44,6 +47,20 @@ const shown = [...SKILLS].sort((a, b) => (a.slug === 'what-is-devops') - (b.slug
     <li><span class="n" aria-hidden="true">1</span><h3>Read</h3><p>Each lesson explains what a tool does, why it exists and how to use it, in plain words.</p></li>
     <li><span class="n" aria-hidden="true">2</span><h3>Practise</h3><p>Every lesson ends with tasks to try and a short quiz, with the answers to check your work.</p></li>
     <li><span class="n" aria-hidden="true">3</span><h3>Build</h3><p>Each skill ends with projects that put its lessons together, like setting up a machine or writing a deploy script.</p></li>
+  </ol>
+</section>
+
+<section class="new" aria-labelledby="new-head">
+  <h2 id="new-head">Newly added</h2>
+  <p>The latest skills to go up on Oro.</p>
+  <ol class="new-list">
+    {newest.map((s) => (
+      <li>
+        <time datetime={s.added}>{day(s.added)}</time>
+        <div><h3>{s.name}</h3><p>{s.summary}</p></div>
+        <a class="link" href={href(`skills/${s.slug}.html`)}>See the lessons<span class="sr"> in {s.name}</span></a>
+      </li>
+    ))}
   </ol>
 </section>
 

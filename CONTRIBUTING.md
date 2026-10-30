@@ -69,7 +69,7 @@ All colours are set once, at the top of `public/styles.css`.
 
 ## Add a lesson or a skill
 
-1. Add the topic or project to its skill in `src/data/skills.js` as `[slug, title, one-line summary]`. For a new skill, add a whole entry with a `slug`, `name`, `level` and `summary`.
+1. Add the topic or project to its skill in `src/data/skills.js` as `[slug, title, one-line summary]`. For a new skill, add a whole entry with a `slug`, `added` (the date it goes up, as `YYYY-MM-DD`), `name`, `level` and `summary`.
 2. Write `lessons/<skill>/<slug>.md`. Start with a short intro, then `## ` sections, then `## Tasks` and `## Quiz`, with answers in `<details>` blocks. Any finished lesson is a good model, such as `lessons/linux/what-linux-is.md`.
 3. Run `npm run dev` and check the page, then `npm run build`.
 4. Push your changes to a branch and open a pull request against `master`. When it is merged, GitHub Actions builds the site and deploys it to GitHub Pages.
