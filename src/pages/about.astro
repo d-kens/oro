@@ -1,27 +1,42 @@
 ---
-/* the about page: what Oro is, who it's for, how you learn, and the community */
+/* the about page: what Oro is, who it's for, what it covers so far, and how to get in touch */
 import Layout from '../layouts/Layout.astro';
-import { WHATSAPP } from '../lib/site.js';
+import JoinCta from '../components/JoinCta.astro';
+import { ROADMAPS } from '../data/roadmaps.js';
+import { SKILLS } from '../data/skills.js';
+import { href } from '../lib/site.js';
+
+const written = (slug) => SKILLS.some((s) => s.slug === slug);
 ---
 <Layout url="about.html" title="About" description="Learn the skills cloud engineers use every day, in order. Oro is written for beginners and for people moving into cloud work from another job.">
-<main class="about">
-<header>
-  <h1>About</h1>
-  <p>Learn the skills cloud engineers use every day, in order. Oro is written for beginners and for people moving into cloud work from another job.</p>
+<main class="home">
+<header class="page-hero">
+  <h1>About Oro</h1>
+  <p class="lead">Learn the skills cloud engineers use every day, in order. Oro is written for beginners and for people moving into cloud work from another job.</p>
 </header>
-<article class="md">
-  <h2>Who it's for</h2>
+
+<section class="who" aria-labelledby="who-head">
+  <h2 id="who-head">Who it's for</h2>
   <p>No experience is needed to start.</p>
-  <ul>
-    <li><strong>Beginners:</strong> people new to tech. The first lessons start from the basics and explain new terms as they come up.</li>
-    <li><strong>Career changers:</strong> people moving into cloud from support, development, networking or another field, who want a clear order to learn in.</li>
-    <li><strong>Working engineers:</strong> people who use cloud tools already and want to fill the gaps underneath them, such as Linux, networking and how the cloud works.</li>
-  </ul>
-  <h2>How you learn</h2>
-  <p>Each lesson explains what a tool does, why it exists and how to use it, with tasks to try as you read.</p>
-  <p>Labs and projects run on your own computer. You don't need a cloud account or a credit card, and nothing you practise can run up a bill.</p>
-  <h2>Community</h2>
-  <p>Ask questions and share your progress in the <a href={WHATSAPP} target="_blank" rel="noopener">Oro community on WhatsApp</a>.</p>
-</article>
+  <div class="cols">
+    <div><h3>Beginners</h3><p>People new to tech. The first lessons start from the basics and explain new terms as they come up.</p></div>
+    <div><h3>Career changers</h3><p>People moving into cloud from support, development, networking or another field, who want a clear order to learn in.</p></div>
+    <div><h3>Working engineers</h3><p>People who use cloud tools already and want to fill the gaps underneath them, such as Linux, networking and how the cloud works.</p></div>
+  </div>
+</section>
+
+<section class="split" aria-labelledby="covers-head">
+  <div>
+    <h2 id="covers-head">What Oro covers</h2>
+    <p>Where the site is today.</p>
+  </div>
+  <dl class="covers">
+    <div><dt>Skills</dt><dd>{SKILLS.length} written so far: {SKILLS.map((s, i) => <>{i > 0 && (i === SKILLS.length - 1 ? ' and ' : ', ')}<a href={href(`skills/${s.slug}.html`)}>{s.name}</a></>)}.</dd></div>
+    <div><dt>Roadmaps</dt><dd>{ROADMAPS.map((r) => <><a href={href(`roadmap.html#${r.slug}`)}>{r.name}</a>, with {r.steps.filter(([slug]) => written(slug)).length} of its {r.steps.length} steps written. </>)}More roadmaps are planned.</dd></div>
+    <div><dt>Labs</dt><dd>Every lab and project runs on your own computer. You don't need a cloud account or a credit card.</dd></div>
+  </dl>
+</section>
+
+<JoinCta title="Get in touch" text="Questions, feedback or an idea for a lesson? Send them in the Oro community on WhatsApp, where you can also learn with others." />
 </main>
 </Layout>
