@@ -108,11 +108,10 @@ button { font-family: inherit; }
 .btn:hover { background: #1c2647; border-color: #1c2647; }
 .btn.outline { background: none; color: var(--accent); }
 .btn.outline:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-/* the start button: a solid ink block; on hover the label rolls up and out while a copy of it, drawn as a text shadow 50px below, rolls in */
-.start { display: inline-block; overflow: hidden; padding: 15px 28px; border-radius: 6px; background: var(--accent); color: #fff; font: 600 17px/20px var(--f-body); text-decoration: none; }
-.start span { display: block; text-shadow: 0 50px currentColor; transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
-.start:hover span { transform: translateY(-50px); }
-.start.light { background: #fff; color: var(--accent); }
+/* the closing band's start button: a white block; on hover the label rolls up and out while a copy of it, drawn as a text shadow 50px below, rolls in */
+.cta .start { display: inline-block; overflow: hidden; padding: 15px 28px; border-radius: 6px; background: #fff; color: var(--accent); font: 600 17px/20px var(--f-body); text-decoration: none; }
+.cta .start span { display: block; text-shadow: 0 50px currentColor; transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
+.cta .start:hover span { transform: translateY(-50px); }
 /* a band that reaches the window's edges, with its content back on the page's grid */
 .band.white, .cta { margin-inline: calc(50% - 50vw); }
 .band-in { max-width: calc(1180px + 40px); margin-inline: auto; padding-inline: 20px; }
