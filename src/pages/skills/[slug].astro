@@ -1,5 +1,5 @@
 ---
-/* one skill: its topics in order, then its projects */
+/* one skill: its topics in order, then its projects; progress.js marks the ones done in this browser */
 import Layout from '../../layouts/Layout.astro';
 import { SKILLS } from '../../data/skills.js';
 import { href, pad, lessons } from '../../lib/site.js';
@@ -9,26 +9,27 @@ export const getStaticPaths = () => SKILLS.map((s) => ({ params: { slug: s.slug 
 const { s } = Astro.props;
 const mine = lessons.filter((l) => l.skill === s), topics = mine.filter((l) => !l.project), projects = mine.filter((l) => l.project);
 ---
-<Layout url={`skills/${s.slug}.html`} title={s.name} description={`${s.name}: ${s.summary}`} crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`]]}>
+<Layout url={`skills/${s.slug}.html`} title={s.name} scripts={['progress.js']} description={`${s.name}: ${s.summary}`} crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`]]}>
 <main class="skill">
 <header>
   <p class="crumbs"><a href={href('skills.html')}>Skills</a></p>
   <h1>{s.name}</h1>
   <p>{s.summary}</p>
   <p class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</p>
+  <p class="facts done-count" data-count-of={mine.map((l) => l.url).join(' ')} hidden></p>
   <p class="start"><a class="link" href={href(mine[0].url)}>Start with {mine[0].title}</a></p>
 </header>
 <h2>Topics</h2>
 <ol class="skill-steps">
   {topics.map((l) => (
-    <li><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
+    <li data-lesson-row={l.url}><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
   ))}
 </ol>
 {projects.length > 0 && <>
 <h2>Projects</h2>
 <ol class="skill-steps">
   {projects.map((l) => (
-    <li><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
+    <li data-lesson-row={l.url}><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
   ))}
 </ol>
 </>}

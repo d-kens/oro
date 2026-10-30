@@ -288,13 +288,22 @@ button { font-family: inherit; }
 .hljs-number, .hljs-literal, .hljs-variable, .hljs-title { color: var(--fg); font-weight: 500; }
 .hljs-deletion { color: var(--accent); }
 .label { font-size: 13px; font-weight: 500; color: var(--accent); }
-.pn { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 48px; }
-.pn > * { display: grid; gap: 4px; align-content: start; padding-top: 18px; border-top: 1px solid var(--line); text-decoration: none; }
-.pn > :last-child { text-align: right; }
-.pn .label { color: var(--muted); font-weight: 400; }
-.pn b { font: 500 21px/1.25 var(--f-display); transition: color .2s; }
-.pn a:hover b { color: var(--accent); }
-@media (max-width: 640px) { .pn { grid-template-columns: 1fr; } .pn > :last-child { text-align: left; } }
+/* the end of a lesson: the done button, then the next topic as a white panel with its summary, and a quiet link back */
+.lesson-end { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--line); }
+.mark-done { margin-bottom: 24px; padding: 8px 16px; border-width: 1px; font-size: 15px; line-height: 20px; }
+.mark-done[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.mark-done[aria-pressed="true"]::before { content: ""; width: 6px; height: 10px; margin: -3px 10px 0 1px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.lesson-end nav { display: grid; gap: 16px; }
+.lesson-end .next { display: grid; gap: 6px; padding: 26px 28px; background: #fff; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; transition: border-color .2s; }
+.lesson-end .next:hover { border-color: var(--fg); }
+.lesson-end .next .label { color: var(--muted); font-weight: 600; }
+.lesson-end .next b { font: 500 26px/1.25 var(--f-display); }
+.lesson-end .next .line { color: var(--read); font-size: 16px; }
+.lesson-end .prev { justify-self: start; font-size: 15px; color: var(--muted); text-underline-offset: 4px; }
+.lesson-end .prev:hover { color: var(--fg); }
+/* lessons marked done in this browser (progress.js) */
+.skill-steps li.done h3::after { content: "Done"; margin-left: 12px; font: 600 13px var(--f-body); color: var(--muted); vertical-align: middle; }
+.done-count { color: var(--fg) !important; font-weight: 600; }
 
 /* contents list: a folding box above the notes on narrow screens, a sticky list beside them on wide ones.
    lesson.js marks the section being read with aria-current. */

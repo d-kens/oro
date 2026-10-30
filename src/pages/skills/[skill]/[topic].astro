@@ -1,5 +1,6 @@
 ---
-/* one topic or project of a skill: its lesson, with the contents list beside it on wide screens, and the topics either side */
+/* one topic or project of a skill: its lesson, with the contents list beside it on wide screens. It ends with a button to
+   mark it done (progress.js) and the next topic, or the way back to the skill after the last one. */
 import { getEntry, render } from 'astro:content';
 import Layout from '../../../layouts/Layout.astro';
 import { href, lessons, minutes } from '../../../lib/site.js';
@@ -11,9 +12,11 @@ const s = l.skill, all = lessons.filter((x) => x.skill === s);
 const entry = await getEntry('lessons', `${s.slug}/${l.slug}`);
 const { Content, headings } = await render(entry);
 const sections = headings.filter((h) => h.depth === 2);
-const neighbours = [[all[l.n - 2], 'Previous'], [all[l.n], 'Next']];
+const prev = all[l.n - 2], next = all[l.n];
+/* topics and projects are counted apart: "Topic 2 of 18", "Project 1 of 2" */
+const place = l.project ? `Project ${l.n - s.topics.length} of ${s.projects.length}` : `Topic ${l.n} of ${s.topics.length}`;
 ---
-<Layout url={l.url} title={`${l.title} · ${s.name}`} ogType="article" scripts={['lesson.js']} description={`${s.name}: ${l.line}`}
+<Layout url={l.url} title={`${l.title} · ${s.name}`} ogType="article" scripts={['lesson.js', 'progress.js']} description={`${s.name}: ${l.line}`}
   crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`], [l.title, l.url]]}>
 <div class="progress-line" aria-hidden="true"></div>
 <main class:list={['notes', { 'has-toc': sections.length >= 3 }]}>
@@ -21,7 +24,7 @@ const neighbours = [[all[l.n - 2], 'Previous'], [all[l.n], 'Next']];
   <p class="crumbs"><a href={href('skills.html')}>Skills</a><span aria-hidden="true">/</span><a href={href(`skills/${s.slug}.html`)}>{s.name}</a></p>
   <h1>{l.title}</h1>
   <p class="lead">{l.line}</p>
-  <p class="meta"><span>{l.project ? 'Project' : 'Topic'} {l.n} of {all.length}</span><span>{minutes(entry.body)} min read</span></p>
+  <p class="meta"><span>{place}</span><span>{minutes(entry.body)} min read</span></p>
 </header>
 {sections.length >= 3 && (
   <nav class="toc" aria-label="On this page"><details open><summary>On this page</summary><ul>
@@ -30,11 +33,15 @@ const neighbours = [[all[l.n - 2], 'Previous'], [all[l.n], 'Next']];
 )}
 <div class="notes-body">
 <article class="md"><Content /></article>
-<nav class="pn" aria-label={`${s.name} topics`}>
-  {neighbours.map(([x, label]) => x
-    ? <a href={href(x.url)}><span class="label">{label}</span><b>{x.title}</b></a>
-    : <a href={href(`skills/${s.slug}.html`)}><span class="label">Back to</span><b>{s.name}</b></a>)}
-</nav>
+<div class="lesson-end">
+  <button class="btn outline mark-done" type="button" data-lesson={l.url} aria-pressed="false" hidden>Mark as done</button>
+  <nav aria-label={`${s.name} topics`}>
+    {next
+      ? <a class="next" href={href(next.url)}><span class="label">Next {next.project ? 'project' : 'topic'}</span><b>{next.title}</b><span class="line">{next.line}</span></a>
+      : <a class="next" href={href(`skills/${s.slug}.html`)}><span class="label">You've reached the end of {s.name}</span><b>Back to {s.name}</b><span class="line">See every topic and project in the skill.</span></a>}
+    {prev && <a class="prev" href={href(prev.url)}>Previous: {prev.title}</a>}
+  </nav>
+</div>
 </div>
 </main>
 </Layout>

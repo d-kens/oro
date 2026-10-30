@@ -9,10 +9,10 @@ const rows = await Promise.all(SKILLS.map(async (s) => {
   const mine = lessons.filter((l) => l.skill === s);
   const total = await skillMinutes(s);
   const steps = ROADMAPS.flatMap((r) => r.steps.some(([slug]) => slug === s.slug) ? [{ r, n: r.steps.findIndex(([slug]) => slug === s.slug) + 1 }] : []);
-  return { s, first: mine[0], reading: roughly(total), steps };
+  return { s, first: mine[0], reading: roughly(total), steps, urls: mine.map((l) => l.url).join(' ') };
 }));
 ---
-<Layout url="skills.html" title="Skills" description="Cloud computing, Linux, networking, shell scripting and the ideas behind DevOps, taught topic by topic with hands-on tasks, quizzes and projects.">
+<Layout url="skills.html" title="Skills" scripts={['progress.js']} description="Cloud computing, Linux, networking, shell scripting and the ideas behind DevOps, taught topic by topic with hands-on tasks, quizzes and projects.">
 <main class="home">
 <header class="page-hero">
   <h1>Skills</h1>
@@ -20,11 +20,12 @@ const rows = await Promise.all(SKILLS.map(async (s) => {
 </header>
 
 <ol class="skill-rows">
-  {rows.map(({ s, first, reading, steps }) => (
+  {rows.map(({ s, first, reading, steps, urls }) => (
     <li>
       <div>
         <h2>{s.name}</h2>
         <p class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</p>
+        <p class="facts done-count" data-count-of={urls} hidden></p>
       </div>
       <div>
         <p>{s.summary}</p>
