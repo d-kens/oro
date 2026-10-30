@@ -34,7 +34,7 @@ Write a plan with these sections, a few lines each:
 3. **Deployment model**, now and after the move.
 4. **Region and zones.**
 5. **Scaling.**
-6. **Who secures what**: three things the provider will handle, and five the company must.
+6. **Who secures what**: three things the provider will handle, and at least five the company must.
 7. **Cost**: two ways to keep the bill down.
 8. **Risks**: two things that could go wrong during the move.
 
@@ -70,7 +70,7 @@ First email and documents, which are the simplest and least risky. Next backups,
 - Email and documents: **SaaS**. A hosted email and office suite; there is no reason to run an email server.
 - Booking database: **PaaS**, a managed database. The provider patches it, backs it up and runs a standby copy.
 - Booking website: **PaaS** or containers on a managed platform. The engineer deploys code and does not patch servers.
-- Nightly reports: **serverless**, a scheduled function that runs for an hour and costs nothing the rest of the day.
+- Nightly reports: **serverless**, a scheduled job on a serverless container service that runs for an hour and costs nothing the rest of the day. Serverless functions usually stop after 10 to 15 minutes, too short for an hour-long report.
 - Backups: built into the managed database, plus object storage for files.
 
 **3. Deployment model**

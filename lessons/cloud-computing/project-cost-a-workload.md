@@ -136,7 +136,7 @@ Your totals should match these:
 
 If your on-premises total is lower, check that you bought 5 servers, not 3: the shop must own enough for its busiest month. If your cloud total is higher, check that the extra web servers run for 3 months in all, not 36.
 
-Notice which row is the largest in each column. On-premises, it is people and the building; in the cloud, it is still people, then the database. Hardware itself is a small part of either.
+Notice which row is the largest in each column. In both, it is the engineer. On-premises, the servers and the rack space come next, and the hardware as a whole (servers, storage and network, $43,000) is about a third of the bill. In the cloud, there is no hardware to buy, and the database is the next largest cost after the engineer.
 
 ## Going further
 
