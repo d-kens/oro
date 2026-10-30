@@ -1,22 +1,44 @@
 ---
+/* every skill in order: its size and reading time, where it sits on the roadmaps, and links into its lessons */
 import Layout from '../layouts/Layout.astro';
+import { ROADMAPS } from '../data/roadmaps.js';
 import { SKILLS } from '../data/skills.js';
-import { href } from '../lib/site.js';
+import { href, lessons, skillMinutes, roughly } from '../lib/site.js';
+
+const rows = await Promise.all(SKILLS.map(async (s) => {
+  const mine = lessons.filter((l) => l.skill === s);
+  const total = await skillMinutes(s);
+  const steps = ROADMAPS.flatMap((r) => r.steps.some(([slug]) => slug === s.slug) ? [{ r, n: r.steps.findIndex(([slug]) => slug === s.slug) + 1 }] : []);
+  return { s, first: mine[0], reading: roughly(total), steps, urls: mine.map((l) => l.url).join(' ') };
+}));
 ---
-<Layout url="skills.html" title="Skills" description="Cloud computing, Linux, networking, shell scripting and the ideas behind DevOps, taught topic by topic with hands-on tasks, quizzes and projects.">
-<main class="skills">
-<header>
+<Layout url="skills.html" title="Skills" scripts={['progress.js']} description="Cloud computing, Linux, networking, shell scripting and the ideas behind DevOps, taught topic by topic with hands-on tasks, quizzes and projects.">
+<main class="home">
+<header class="page-hero">
   <h1>Skills</h1>
-  <p>Pick a skill and work through its topics in order. Each topic has hands-on tasks and a short quiz, and every skill ends with projects.</p>
+  <p class="lead">Pick a skill and work through its topics in order. Each topic has hands-on tasks and a short quiz, and every skill ends with projects.</p>
 </header>
-<ul class="skill-list">
-  {SKILLS.map((s) => (
+
+<ol class="skill-rows">
+  {rows.map(({ s, first, reading, steps, urls }) => (
     <li>
-      <a href={href(`skills/${s.slug}.html`)}>{s.name}</a>
-      <p>{s.summary}</p>
-      <span class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</span>
+      <div>
+        <h2>{s.name}</h2>
+        <p class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</p>
+        <p class="facts done-count" data-count-of={urls} hidden></p>
+      </div>
+      <div>
+        <p>{s.summary}</p>
+        <p class="facts">
+          {steps.map(({ r, n }) => <>Step {n} of the <a href={href(`roadmap.html#${r.slug}`)}>{r.name} roadmap</a> · </>)}{reading} of reading
+        </p>
+      </div>
+      <div class="go">
+        <a class="link" href={href(first.url)}>Start with {first.title}</a>
+        <a href={href(`skills/${s.slug}.html`)}>See all topics<span class="sr"> in {s.name}</span></a>
+      </div>
     </li>
   ))}
-</ul>
+</ol>
 </main>
 </Layout>

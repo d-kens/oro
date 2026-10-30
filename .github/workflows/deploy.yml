@@ -32,7 +32,7 @@ jobs:
 
       - run: npm ci
 
-      # Also checks the curriculum: fails if a published module has no notes file.
+      # Also checks the lessons: fails if a topic or project has no lesson file.
       - name: Build the site
         run: npm run build
 

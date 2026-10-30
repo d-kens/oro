@@ -1,17 +1,17 @@
 ---
-/* the home page: what Oro is and where to start, how it works, the numbers, the roadmaps, the skills ready now, and a closing call to start */
+/* the home page: what Oro is and where to start, the skills ready now, and how the lessons work */
 import Layout from '../layouts/Layout.astro';
+import JoinCta from '../components/JoinCta.astro';
 import { ROADMAPS } from '../data/roadmaps.js';
 import { SKILLS } from '../data/skills.js';
 import { href } from '../lib/site.js';
 
-const skill = (slug) => SKILLS.find((s) => s.slug === slug);
-const first = ROADMAPS[0].steps.map(([slug]) => skill(slug)).find(Boolean);
-const topics = SKILLS.reduce((n, s) => n + s.topics.length, 0);
-const projects = SKILLS.reduce((n, s) => n + s.projects.length, 0);
+const first = ROADMAPS[0].steps.map(([slug]) => SKILLS.find((s) => s.slug === slug)).find(Boolean);
 /* cloud and the foundations first; What is DevOps last, so the page does not read as DevOps only */
 const shown = [...SKILLS].sort((a, b) => (a.slug === 'what-is-devops') - (b.slug === 'what-is-devops'));
-const count = (s) => `${s.topics.length} lessons` + (s.projects.length ? ` · ${s.projects.length} projects` : '');
+/* the three newest skills, newest first */
+const newest = [...SKILLS].sort((a, b) => b.added.localeCompare(a.added)).slice(0, 3);
+const day = (iso) => new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 ---
 <Layout description="The skills cloud engineers use every day, taught one step at a time, with clear notes and labs that run on your own computer.">
 <main class="home">
@@ -24,54 +24,47 @@ const count = (s) => `${s.topics.length} lessons` + (s.projects.length ? ` · ${
   </p>
 </header>
 
-<section class="band white" aria-labelledby="how-head">
-  <div class="band-in">
-    <div class="head"><h2 id="how-head">How Oro works</h2><p>Everything is written for someone starting from zero.</p></div>
-    <div class="how">
-      <div><span class="n">01</span><h3>Follow a roadmap</h3><p>Skills are laid out in the order they build on each other, so you always know what to learn next.</p></div>
-      <div><span class="n">02</span><h3>Read clear notes</h3><p>Every topic has a lesson that explains what a tool does, why it exists and how to use it.</p></div>
-      <div><span class="n">03</span><h3>Practise on your own computer</h3><p>Labs and projects run locally. You don't need a cloud account or a credit card to start.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="band" aria-label="Oro in numbers">
-  <div class="stats">
-    <div><b>{ROADMAPS[0].steps.length}</b><span>roadmap steps</span></div>
-    <div><b>{topics}</b><span>lessons</span></div>
-    <div><b>{projects}</b><span>hands-on projects</span></div>
-    <div><b>{SKILLS.length}</b><span>skills ready now</span></div>
-  </div>
-</section>
-
-<section class="band white" aria-labelledby="road-head">
-  <div class="band-in">
-    <div class="head"><h2 id="road-head">Roadmaps</h2><p>A roadmap puts skills in order, so you always know what to learn next.</p></div>
-    <div class="rcards">
-      {ROADMAPS.map((r) => (
-        <a class="rcard" href={href(`roadmap.html#${r.slug}`)}>
-          <div><h3>{r.name} roadmap</h3><p>{r.summary}</p></div>
-          <div class="rmeta"><span>{r.steps.length} steps</span><span>{r.steps.filter(([slug]) => skill(slug)).length} ready</span><span class="go">View roadmap</span></div>
-        </a>
-      ))}
-    </div>
-  </div>
-</section>
-
-<section class="band" aria-labelledby="skills-head">
-  <div class="head"><h2 id="skills-head">Skills you can start now</h2><p>{SKILLS.length} skills are written and ready. Each one works on its own or as part of a roadmap.</p></div>
-  <div class="scards">
+<section class="skills" aria-labelledby="skills-head">
+  <h2 id="skills-head">Skills</h2>
+  <p>{SKILLS.length} skills are written so far. Each one works on its own or as a step of a roadmap.</p>
+  <div class="cols">
     {shown.map((s) => (
-      <a class="scard" href={href(`skills/${s.slug}.html`)}><h3>{s.name}</h3><p>{s.summary}</p><span class="meta">{count(s)}</span></a>
+      <div>
+        <h3>{s.name}</h3>
+        <p>{s.summary}</p>
+        <span class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</span>
+        <a class="link" href={href(`skills/${s.slug}.html`)}>See the lessons<span class="sr"> in {s.name}</span></a>
+      </div>
     ))}
   </div>
 </section>
 
-<section class="cta" aria-labelledby="cta-head">
-  <div class="band-in">
-    <div><h2 id="cta-head">Start learning today.</h2><p>Pick a skill or follow a roadmap, at your own pace.</p></div>
-    <a class="start" href={href(`skills/${first.slug}.html`)}><span>Start learning</span></a>
+<section class="split" aria-labelledby="how-head">
+  <div>
+    <h2 id="how-head">How you learn</h2>
+    <p>Every skill works the same way.</p>
   </div>
+  <ol class="steps">
+    <li><span class="n" aria-hidden="true">1</span><h3>Read</h3><p>Each lesson explains what a tool does, why it exists and how to use it, in plain words.</p></li>
+    <li><span class="n" aria-hidden="true">2</span><h3>Practise</h3><p>Every lesson ends with tasks to try and a short quiz, with the answers to check your work.</p></li>
+    <li><span class="n" aria-hidden="true">3</span><h3>Build</h3><p>Each skill ends with projects that put its lessons together, like setting up a machine or writing a deploy script.</p></li>
+  </ol>
 </section>
+
+<section class="new" aria-labelledby="new-head">
+  <h2 id="new-head">Newly added</h2>
+  <p>The latest skills to go up on Oro.</p>
+  <ol class="new-list">
+    {newest.map((s) => (
+      <li>
+        <time datetime={s.added}>{day(s.added)}</time>
+        <div><h3>{s.name}</h3><p>{s.summary}</p></div>
+        <a class="link" href={href(`skills/${s.slug}.html`)}>See the lessons<span class="sr"> in {s.name}</span></a>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<JoinCta />
 </main>
 </Layout>

@@ -1,36 +1,72 @@
 ---
-/* one skill: its topics in order, then its projects */
+/* one skill: where it sits on the roadmap and how long it takes, its topics in order with their reading times, its
+   projects as cards, and the next skill on the roadmap. progress.js marks the lessons done in this browser and turns
+   the start link into "Continue with" the first one not done. */
+import { getEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import { ROADMAPS } from '../../data/roadmaps.js';
 import { SKILLS } from '../../data/skills.js';
-import { href, pad, lessons } from '../../lib/site.js';
+import { href, pad, lessons, minutes, roughly } from '../../lib/site.js';
 
 export const getStaticPaths = () => SKILLS.map((s) => ({ params: { slug: s.slug }, props: { s } }));
 
 const { s } = Astro.props;
-const mine = lessons.filter((l) => l.skill === s), topics = mine.filter((l) => !l.project), projects = mine.filter((l) => l.project);
+const mine = await Promise.all(lessons.filter((l) => l.skill === s)
+  .map(async (l) => ({ ...l, min: minutes((await getEntry('lessons', `${s.slug}/${l.slug}`)).body) })));
+const topics = mine.filter((l) => !l.project), projects = mine.filter((l) => l.project);
+const total = mine.reduce((sum, l) => sum + l.min, 0);
+const written = (slug) => SKILLS.find((x) => x.slug === slug);
+/* the skill's place on each roadmap, and the next written skill after it on the first roadmap that has it */
+const places = ROADMAPS.flatMap((r) => {
+  const i = r.steps.findIndex(([slug]) => slug === s.slug);
+  return i < 0 ? [] : [{ r, n: i + 1, next: r.steps.slice(i + 1).map(([slug]) => written(slug)).find(Boolean) }];
+});
+const ahead = places.find((p) => p.next);
 ---
-<Layout url={`skills/${s.slug}.html`} title={s.name} description={`${s.name}: ${s.summary}`} crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`]]}>
-<main class="skill">
-<header>
+<Layout url={`skills/${s.slug}.html`} title={s.name} scripts={['progress.js']} description={`${s.name}: ${s.summary}`} crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`]]}>
+<main class="home skillpage">
+<header class="page-hero">
   <p class="crumbs"><a href={href('skills.html')}>Skills</a></p>
   <h1>{s.name}</h1>
-  <p>{s.summary}</p>
-  <p class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`}</p>
-  <p class="start"><a class="link" href={href(mine[0].url)}>Start with {mine[0].title}</a></p>
+  <p class="lead">{s.summary}</p>
+  <p class="facts">{s.level} · {s.topics.length} topics{s.projects.length > 0 && ` · ${s.projects.length} projects`} · {roughly(total)} of reading</p>
+  {places.length > 0 && <p class="facts">{places.map(({ r, n }, i) => <>{i > 0 && ' · '}Step {n} of the <a href={href(`roadmap.html#${r.slug}`)}>{r.name} roadmap</a></>)}</p>}
+  <p class="facts done-count" data-count-of={mine.map((l) => l.url).join(' ')} hidden></p>
+  <p class="start"><a class="btn" href={href(mine[0].url)} data-continue>Start with {mine[0].title}</a></p>
 </header>
-<h2>Topics</h2>
-<ol class="skill-steps">
-  {topics.map((l) => (
-    <li><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
-  ))}
-</ol>
-{projects.length > 0 && <>
-<h2>Projects</h2>
-<ol class="skill-steps">
-  {projects.map((l) => (
-    <li><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
-  ))}
-</ol>
-</>}
+
+<section class="skill-topics" aria-labelledby="topics-head">
+  <h2 id="topics-head">Topics</h2>
+  <ol class="skill-steps">
+    {topics.map((l) => (
+      <li data-lesson-row={l.url}><span class="n">{pad(l.n)}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div><span class="min">{l.min} min</span></li>
+    ))}
+  </ol>
+</section>
+
+{projects.length > 0 && (
+  <section class="skill-projects" aria-labelledby="projects-head">
+    <h2 id="projects-head">Projects</h2>
+    <p class="intro">Do these after the topics. Each one runs on your own computer.</p>
+    <div class="proj-grid">
+      {projects.map((l, i) => (
+        <article class="proj" data-lesson-row={l.url}>
+          <p class="meta">Project {i + 1} · {l.min} min read</p>
+          <h3>{l.title}</h3>
+          <p>{l.line}</p>
+          <a class="link" href={href(l.url)}>Open the project<span class="sr">: {l.title}</span></a>
+        </article>
+      ))}
+    </div>
+  </section>
+)}
+
+{ahead && (
+  <div class="lesson-end skill-next">
+    <nav aria-label="Next skill">
+      <a class="next" href={href(`skills/${ahead.next.slug}.html`)}><span class="label">Next on the {ahead.r.name} roadmap</span><b>{ahead.next.name}</b><span class="line">{ahead.next.summary}</span></a>
+    </nav>
+  </div>
+)}
 </main>
 </Layout>

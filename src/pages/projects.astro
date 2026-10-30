@@ -1,26 +1,41 @@
 ---
-/* every project from every skill, grouped by skill in the skills' order */
+/* every project from every skill, grouped by skill in the skills' order; projects.js turns the skill links into a filter */
+import { getEntry } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import { SKILLS } from '../data/skills.js';
-import { href, lessons } from '../lib/site.js';
+import { href, lessons, minutes } from '../lib/site.js';
 
-const groups = SKILLS.map((s) => ({ s, projects: lessons.filter((l) => l.skill === s && l.project) })).filter((g) => g.projects.length);
+const groups = await Promise.all(SKILLS.map(async (s) => ({ s, projects: await Promise.all(lessons.filter((l) => l.skill === s && l.project)
+  .map(async (l) => ({ ...l, min: minutes((await getEntry('lessons', `${s.slug}/${l.slug}`)).body) }))) })))
+  .then((gs) => gs.filter((g) => g.projects.length));
 const total = groups.reduce((n, g) => n + g.projects.length, 0);
 ---
-<Layout url="projects.html" title="Projects" description="Hands-on projects for every skill. Each one runs on your own computer, with no cloud account needed.">
-<main class="skill projects">
-<header>
+<Layout url="projects.html" title="Projects" description="Hands-on projects for every skill. Each one runs on your own computer, with no cloud account needed." scripts={['projects.js']}>
+<main class="home">
+<header class="page-hero">
   <h1>Projects</h1>
-  <p>{total} hands-on projects, grouped by skill. Each one runs on your own computer, with no cloud account needed. Do a skill's lessons first, then its projects.</p>
+  <p class="lead">{total} hands-on projects, grouped by skill. Each one runs on your own computer, with no cloud account needed.</p>
+  <nav class="jump" aria-label="Show projects for">
+    {groups.map(({ s, projects }) => <a href={`?skill=${s.slug}`} data-skill={s.slug}>{s.name}<span>{projects.length}</span></a>)}
+  </nav>
 </header>
+
 {groups.map(({ s, projects }) => (
-  <section>
-    <h2><a href={href(`skills/${s.slug}.html`)}>{s.name}</a></h2>
-    <ol class="skill-steps">
-      {projects.map((l) => (
-        <li><span class="n">{String(projects.indexOf(l) + 1).padStart(2, '0')}</span><div><h3><a href={href(l.url)}>{l.title}</a></h3><p>{l.line}</p></div></li>
+  <section class="proj-group" id={s.slug} aria-labelledby={`${s.slug}-head`}>
+    <div class="proj-head">
+      <h2 id={`${s.slug}-head`}>{s.name}</h2>
+      <p>Do the <a href={href(`skills/${s.slug}.html`)}>{s.name} lessons</a> first, then these projects.</p>
+    </div>
+    <div class="proj-grid">
+      {projects.map((l, i) => (
+        <article class="proj">
+          <p class="meta">Project {i + 1} · {l.min} min read</p>
+          <h3>{l.title}</h3>
+          <p>{l.line}</p>
+          <a class="link" href={href(l.url)}>Open the project<span class="sr">: {l.title}</span></a>
+        </article>
       ))}
-    </ol>
+    </div>
   </section>
 ))}
 </main>
