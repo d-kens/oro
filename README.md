@@ -2,7 +2,7 @@
 
 Hands-on DevOps and cloud skills: What is DevOps, Linux, shell scripting, networking and cloud computing so far, each taught as topics in order with lessons, tasks, quizzes and projects that run on your own computer, plus a DevOps roadmap. The name comes from the pipeline every change travels, from a commit to production.
 
-Live at <https://d-kens.github.io/oro/>.
+Live at <https://oro.co.ke>.
 
 ## Run it locally
 
@@ -34,15 +34,13 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:4321/oro/>. The page reloads by itself when you save a change to a page, a style or a lesson file.
-
-Note the `/oro/` at the end: the site lives under that path on GitHub Pages, so it does locally too. `http://localhost:4321/` on its own shows a 404.
+Open <http://localhost:4321/>. The page reloads by itself when you save a change to a page, a style or a lesson file.
 
 ### 4. Build and preview the real site
 
 ```bash
 npm run build     # builds the site into dist/, and checks the lessons (see below)
-npm run preview   # serves dist/ at http://localhost:4321/oro/
+npm run preview   # serves dist/ at http://localhost:4321/
 ```
 
 Run this before you push, to see exactly what GitHub Pages will publish.
@@ -53,7 +51,6 @@ Run this before you push, to see exactly what GitHub Pages will publish.
 | --- | --- |
 | `Node.js v22.x is not supported by Astro` | Your Node is too old. Run `nvm use`, or install Node 24. |
 | `Dev server already running at http://localhost:4321` | One is already running, perhaps in another terminal. Use it, or stop it with `npx astro dev stop` and start again. |
-| The page is blank or a 404 | Check the address ends in `/oro/`. |
 | The build stops with `error: lessons/... ` | The lessons and `src/data/skills.js` don't match. The message says which file to fix. |
 | The old favicon still shows | Browsers cache favicons. Hard-refresh (Cmd+Shift+R or Ctrl+Shift+R). |
 
@@ -68,7 +65,7 @@ Run this before you push, to see exactly what GitHub Pages will publish.
 | `src/pages/` | The home, roadmaps, skills, search and 404 pages, one page per skill and per lesson, the search index and the sitemap |
 | `src/lib/` | Shared settings and helpers, and the lessons check |
 | `public/` | `styles.css`, `nav.js`, `search.js`, `lesson.js` and `favicon.svg`, copied to the site as they are |
-| `astro.config.mjs` | The `/oro/` base, `.html` URLs, and highlight.js for code blocks |
+| `astro.config.mjs` | The site address, `.html` URLs, and highlight.js for code blocks |
 
 All colours are set once, at the top of `public/styles.css`.
 
@@ -83,4 +80,4 @@ The build stops with an error if a topic or project has no lesson file, or a les
 
 ## Search engines
 
-The build writes `sitemap.xml`. Submit `https://d-kens.github.io/oro/sitemap.xml` in Google Search Console. A project site can't serve its own `robots.txt`, so the sitemap has to be submitted by hand.
+The build writes `sitemap.xml`. Submit `https://oro.co.ke/sitemap.xml` in Google Search Console.
