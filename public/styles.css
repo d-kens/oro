@@ -108,9 +108,12 @@ button { font-family: inherit; }
   mask-image: var(--fade), var(--band); mask-composite: intersect; }
 .hero h1 { max-width: 13em; font-size: clamp(48px, 8vw, 96px); letter-spacing: -.025em; }
 .hero .lead { margin-top: 24px; max-width: 34em; font-size: 20px; color: var(--muted); }
-.hero .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin-top: 40px; }
-.btn { display: inline-flex; align-items: center; padding: 15px 26px; border-radius: 6px; background: var(--accent); color: #fff; font: 600 17px/20px var(--f-body); text-decoration: none; transition: background .2s; }
-.btn:hover { background: #1c2647; }
+.hero .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 16px; margin-top: 40px; }
+.btn { display: inline-flex; align-items: center; padding: 15px 26px; border: 1.5px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; font: 600 17px/20px var(--f-body); text-decoration: none; transition: background .2s, border-color .2s, color .2s; }
+.btn:hover { background: #1c2647; border-color: #1c2647; }
+/* the hero's second button: an ink outline that fills on hover */
+.btn.outline { background: none; color: var(--accent); }
+.btn.outline:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 .home .skills, .home .how { max-width: none; padding-block: 24px; }
 .home .how { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 32px 64px; align-items: start; padding-top: 96px; }
 .home .skills h2, .home .how h2 { font-size: clamp(32px, 4vw, 44px); }
@@ -132,8 +135,8 @@ button { font-family: inherit; }
 .join-cta { display: flex; align-items: center; justify-content: space-between; gap: 48px; margin-top: 72px; padding: 64px 56px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
 .join-cta .mark { flex-shrink: 0; width: 200px; height: 200px; margin-right: 24px; fill: none; stroke: var(--fg); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
 .join-cta h2 { font-size: clamp(32px, 4vw, 44px); }
-.join-cta .btn { gap: 10px; margin-top: 28px; background: var(--gold); color: var(--fg); }
-.join-cta .btn:hover { background: #c99118; }
+.join-cta .btn { gap: 10px; margin-top: 28px; border-color: var(--gold); background: var(--gold); color: var(--fg); }
+.join-cta .btn:hover { border-color: #c99118; background: #c99118; }
 .join-cta .btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .join-cta .btn svg .fill { fill: currentColor; stroke: none; }
 .join-cta p { margin-top: 10px; max-width: 34em; color: var(--muted); }
