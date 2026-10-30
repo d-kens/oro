@@ -1,5 +1,6 @@
 /* Lesson progress, kept only in this browser (localStorage), with no account: the "Mark as done" button at the end of a
-   lesson, the "Done" marks on a skill's topic list, and the "6 of 20 done" counts. If storage is blocked, nothing shows. */
+   lesson, the "Done" marks on a skill's topics and projects, the "6 of 20 done" counts, and "Continue with" on a skill page.
+   If storage is blocked, nothing shows. */
 (function () {
   var KEY = 'oro-done';
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return null; } }
@@ -29,6 +30,20 @@
   }
 
   each('[data-lesson-row]', function (li) { if (has(li.getAttribute('data-lesson-row'))) li.classList.add('done'); });
+
+  /* on a skill page, once something is done, the start link points at the first lesson not done yet */
+  var go = document.querySelector('[data-continue]');
+  if (go) {
+    var rows = Array.prototype.slice.call(document.querySelectorAll('[data-lesson-row]'));
+    var todo = rows.filter(function (r) { return !r.classList.contains('done'); });
+    if (todo.length && todo.length < rows.length) {
+      var a = todo[0].querySelector('a');
+      go.href = a.href;
+      go.textContent = 'Continue with ' + (todo[0].querySelector('h3').textContent);
+    } else if (!todo.length && rows.length) {
+      go.textContent = 'All done. Start again with ' + rows[0].querySelector('h3').textContent;
+    }
+  }
   each('[data-count-of]', function (el) {
     var urls = el.getAttribute('data-count-of').split(' '), n = urls.filter(has).length;
     if (n) { el.textContent = n + ' of ' + urls.length + ' done'; el.hidden = false; }

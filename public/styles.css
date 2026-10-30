@@ -220,26 +220,28 @@ button { font-family: inherit; }
 @media (max-width: 900px) { .stage { grid-template-columns: 1fr; } .stage h3 { padding-top: 0; } .road + .road { margin-top: 64px; } }
 @media (max-width: 640px) { .stage li { grid-template-columns: 2.4em minmax(0, 1fr) auto; gap: 2px 16px; } .stage .facts { grid-column: 2; grid-row: 2; } .stage .link { grid-column: 3; grid-row: 1; } .stage li > :nth-child(2) { font-size: 19px; } }
 
-/* a skill page lists its topics, then its projects, in order */
-.skill { max-width: 860px; padding-block: 64px 96px; }
-.skill header h1 { font-size: clamp(40px, 6vw, 56px); }
-.skill header p { margin-top: 12px; color: var(--muted); max-width: 40em; }
-.skill .crumbs { margin: 0 0 12px; font-size: 14px; }
-.skill .crumbs a { text-underline-offset: 4px; transition: color .2s; }
-.skill .crumbs a:hover { color: var(--accent); }
-.skill header .facts { margin-top: 8px; font-size: 14px; }
-.skill h2 { margin-top: 56px; font-size: 28px; }
-
+/* a skill page: the heading with its size, roadmap place and start button, the topics as numbered rows with their
+   reading time, the projects as cards, and the next skill on the roadmap */
+.skillpage .crumbs { margin-bottom: 14px; }
+.skillpage .page-hero .facts { margin-top: 10px; font-size: 15px; color: var(--muted); }
+.skillpage .page-hero .lead + .facts { margin-top: 20px; }
+.skillpage .page-hero .facts a { color: var(--fg); text-decoration-color: var(--gold); text-underline-offset: 3px; }
+.skillpage .start { margin-top: 28px; }
+.skill-topics, .skill-projects { max-width: 860px; padding-top: 24px; }
+.skill-projects { max-width: none; padding-top: 64px; }
+.skillpage h2 { font-size: clamp(28px, 3.4vw, 36px); }
+.skill-projects .intro { margin-top: 8px; color: var(--muted); }
+.skill-next { max-width: 860px; margin-top: 64px; }
+.skill-steps .min { font-size: 14px; color: var(--muted); white-space: nowrap; }
 .skill-steps { list-style: none; margin: 20px 0 0; padding: 0; }
-.skill-steps li { display: grid; grid-template-columns: 3em minmax(0, 1fr); gap: 4px 16px; padding-block: 18px; border-top: 1px solid var(--line); }
+.skill-steps li { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; gap: 4px 16px; align-items: baseline; padding-block: 18px; border-top: 1px solid var(--line); }
 .skill-steps li:last-child { border-bottom: 1px solid var(--line); }
 .skill-steps .n { font: 400 14px/1.9 var(--f-mono); color: var(--muted); }
 .skill-steps h3 { font: 500 21px/1.35 var(--f-display); }
 .skill-steps h3 a { text-decoration-color: var(--line); text-underline-offset: 5px; transition: color .2s, text-decoration-color .2s; }
 .skill-steps h3 a:hover { color: var(--accent); text-decoration-color: currentColor; }
-.skill header .start { margin-top: 28px; color: var(--fg); }
 .skill-steps p { margin-top: 4px; color: var(--read); font-size: 15.5px; }
-@media (max-width: 640px) { .skill { padding-block: 40px 64px; } .skill-steps li { grid-template-columns: 2.4em minmax(0, 1fr); } }
+@media (max-width: 640px) { .skill-steps li { grid-template-columns: 2.4em minmax(0, 1fr); } .skill-steps .min { grid-column: 2; } }
 
 /* lesson page: the lesson on the left; on wide screens a sticky contents list on the right (the 404 page uses the same head) */
 .notes { padding-block: 56px 48px; }
@@ -302,7 +304,7 @@ button { font-family: inherit; }
 .lesson-end .prev { justify-self: start; font-size: 15px; color: var(--muted); text-underline-offset: 4px; }
 .lesson-end .prev:hover { color: var(--fg); }
 /* lessons marked done in this browser (progress.js) */
-.skill-steps li.done h3::after { content: "Done"; margin-left: 12px; font: 600 13px var(--f-body); color: var(--muted); vertical-align: middle; }
+.skill-steps li.done h3::after, .proj.done h3::after { content: "Done"; margin-left: 12px; font: 600 13px var(--f-body); color: var(--muted); vertical-align: middle; }
 .done-count { color: var(--fg) !important; font-weight: 600; }
 
 /* contents list: a folding box above the notes on narrow screens, a sticky list beside them on wide ones.
