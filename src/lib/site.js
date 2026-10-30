@@ -13,6 +13,8 @@ export const lessons = SKILLS.flatMap((s) => s.topics.map((t) => [t, false]).con
 export const href = (p = '') => import.meta.env.BASE_URL.replace(/\/?$/, '/') + p;
 
 export const pad = (x) => String(x).padStart(2, '0');
+/* minutes to read a lesson's Markdown, at 220 words a minute */
+export const minutes = (body) => Math.max(1, Math.round(body.split(/\s+/).filter(Boolean).length / 220));
 const decode = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
   .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(n)).replace(/&amp;/g, '&');
 /* plain text of an HTML fragment; block ends become spaces so words from neighbouring paragraphs do not run together */
