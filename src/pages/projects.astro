@@ -2,7 +2,6 @@
 /* every project from every skill, grouped by skill in the skills' order; projects.js turns the skill links into a filter */
 import { getEntry } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
-import JoinCta from '../components/JoinCta.astro';
 import { SKILLS } from '../data/skills.js';
 import { href, lessons, minutes } from '../lib/site.js';
 
@@ -39,7 +38,5 @@ const total = groups.reduce((n, g) => n + g.projects.length, 0);
     </div>
   </section>
 ))}
-
-<JoinCta title="Built something?" text="Share it in the Oro community on WhatsApp, ask for feedback, and see what others are building." />
 </main>
 </Layout>
