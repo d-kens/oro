@@ -35,7 +35,6 @@ button { font-family: inherit; }
 .wrap > nav ul { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0 0 0 auto; padding: 0; font: 500 15px var(--f-body); }
 .wrap > nav ul a { text-decoration: none; color: var(--muted); cursor: pointer; transition: color .2s; }
 .wrap > nav ul a:hover, .wrap > nav ul a[aria-current] { color: var(--fg); }
-.wrap > nav ul .n { display: none; }
 .wrap > nav svg { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .wrap > nav svg .fill { fill: currentColor; stroke: none; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -53,7 +52,8 @@ button { font-family: inherit; }
   .wrap > nav ul li:not(.join) a:hover, .wrap > nav ul li:not(.join) a[aria-current] { background-size: 100% 2px; }
 }
 /* phones and tablets: a sticky bar with the logo and a menu button. The button drops a sheet down from under the bar:
-   a search box at the top, the pages as a numbered contents list, and the WhatsApp group as a button at the foot.
+   a search box at the top, the pages as a plain list (the current one underlined in gold, as on desktop),
+   and the WhatsApp group as a button at the foot.
    The sheet only takes over once nav.js can close it again (the "js" class); without JavaScript the links stay as a plain list. */
 @media (max-width: 900px) {
   .wrap > nav { position: sticky; top: 0; z-index: 20; align-items: center; gap: 0 10px; margin-inline: -20px; padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--bg); }
@@ -69,10 +69,9 @@ button { font-family: inherit; }
   .open .menu-btn span::after { width: 20px; transform: translateY(-6px) rotate(-45deg); }
 
   .wrap > nav ul { order: 3; width: 100%; flex-direction: column; align-items: stretch; gap: 0; margin: 10px 0 0; }
-  .wrap > nav ul a { display: grid; grid-template-columns: 36px 1fr; align-items: baseline; padding: 13px 0; border-top: 1px solid var(--line);
-    font: 500 26px/1.15 var(--f-display); letter-spacing: -.01em; color: var(--fg); }
-  .wrap > nav ul .n { display: block; font: 400 12px var(--f-mono); color: var(--muted); }
-  .wrap > nav ul a[aria-current], .wrap > nav ul a[aria-current] .n { color: var(--accent); }
+  .wrap > nav ul a { display: block; padding: 11px 0; border-top: 1px solid var(--line);
+    font: 500 20px/1.2 var(--f-display); letter-spacing: -.01em; color: var(--fg); }
+  .wrap > nav ul li:not(.join):not(.search-link) a[aria-current] { text-decoration: underline 2px var(--gold); text-underline-offset: 6px; }
   .wrap > nav ul a:active { color: var(--accent); }
   /* search: looks like a search box at the top of the sheet */
   .search-link { order: -1; margin: 0 0 14px; padding: 0; border: 0; }
@@ -84,9 +83,9 @@ button { font-family: inherit; }
   .wrap > nav .join a:active { background: var(--accent-dark); }
 
   .js .wrap > nav ul { position: fixed; top: var(--nav-h, 69px); left: 0; right: 0; max-height: calc(100dvh - var(--nav-h, 69px)); margin: 0; padding: 18px 20px 24px;
-    overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-bottom: 1px solid var(--line); border-radius: 0 0 16px 16px; box-shadow: 0 18px 40px -18px rgba(9, 17, 43, .35);
+    overflow-y: auto; overscroll-behavior: contain; background: var(--bg); border-bottom: 1px solid var(--line);
     visibility: hidden; clip-path: inset(0 0 100% 0); transition: clip-path .32s cubic-bezier(.2, .8, .2, 1), visibility 0s .32s; }
-  .js .wrap > nav.open ul { visibility: visible; clip-path: inset(0 0 -60px 0); transition: clip-path .32s cubic-bezier(.2, .8, .2, 1); }
+  .js .wrap > nav.open ul { visibility: visible; clip-path: inset(0); transition: clip-path .32s cubic-bezier(.2, .8, .2, 1); }
   .js .wrap > nav ul li { opacity: 0; transform: translateY(-6px); transition: opacity .3s, transform .3s; }
   .js .wrap > nav.open ul li { opacity: 1; transform: none; }
   /* the page behind the sheet dims; tapping it closes the menu (nav.js) */
