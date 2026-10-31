@@ -23,7 +23,7 @@ const places = ROADMAPS.flatMap((r) => {
 });
 const ahead = places.find((p) => p.next);
 ---
-<Layout url={`skills/${s.slug}.html`} title={s.name} scripts={['progress.js']} description={`${s.name}: ${s.summary}`} crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`]]}>
+<Layout url={`skills/${s.slug}.html`} title={s.search} scripts={['progress.js']} description={`${s.name}: ${s.summary}`} crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`]]}>
 <main class="home skillpage">
 <header class="page-hero">
   <p class="crumbs"><a href={href('skills.html')}>Skills</a></p>
