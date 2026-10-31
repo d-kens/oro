@@ -12,7 +12,7 @@ const rows = await Promise.all(SKILLS.map(async (s) => {
   return { s, first: mine[0], reading: roughly(total), steps, urls: mine.map((l) => l.url).join(' ') };
 }));
 ---
-<Layout url="skills.html" title="Skills" scripts={['progress.js']} description="Cloud computing, Linux, networking, shell scripting and the ideas behind DevOps, taught topic by topic with hands-on tasks, quizzes and projects.">
+<Layout url="skills.html" title="Cloud and DevOps skills" scripts={['progress.js']} description="Cloud computing, Linux, networking, shell scripting and the ideas behind DevOps, taught topic by topic with hands-on tasks, quizzes and projects.">
 <main class="home">
 <header class="page-hero">
   <h1>Skills</h1>

@@ -6,7 +6,7 @@ import { SITE, NAME, WHATSAPP, href } from '../lib/site.js';
 import { SKILLS } from '../data/skills.js';
 
 const { title: pageTitle, description, url = '', ogType = 'website', noindex = false, scripts = [], crumbs = [] } = Astro.props;
-const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Learn cloud and DevOps';
+const title = pageTitle ? pageTitle + ' · ' + NAME : NAME + ' · Learn cloud and DevOps skills';
 /* the nav links; the current page's link is marked, the site's root counts as Home, and a skill's page counts as part of Skills. */
 const here = Astro.url.pathname;
 const links = [['index.html', 'Home'], ['roadmap.html', 'Roadmaps'], ['skills.html', 'Skills'], ['projects.html', 'Projects'], ['about.html', 'About']]

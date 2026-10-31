@@ -10,7 +10,7 @@ const groups = await Promise.all(SKILLS.map(async (s) => ({ s, projects: await P
   .then((gs) => gs.filter((g) => g.projects.length));
 const total = groups.reduce((n, g) => n + g.projects.length, 0);
 ---
-<Layout url="projects.html" title="Projects" description="Hands-on projects for every skill. Each one runs on your own computer, with no cloud account needed." scripts={['projects.js']}>
+<Layout url="projects.html" title="Hands-on DevOps projects" description="Hands-on projects for every skill. Each one runs on your own computer, with no cloud account needed." scripts={['projects.js']}>
 <main class="home">
 <header class="page-hero">
   <h1>Projects</h1>

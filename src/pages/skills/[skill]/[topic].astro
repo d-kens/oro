@@ -16,7 +16,7 @@ const prev = all[l.n - 2], next = all[l.n];
 /* topics and projects are counted apart: "Topic 2 of 18", "Project 1 of 2" */
 const place = l.project ? `Project ${l.n - s.topics.length} of ${s.projects.length}` : `Topic ${l.n} of ${s.topics.length}`;
 ---
-<Layout url={l.url} title={`${l.title} · ${s.name}`} ogType="article" scripts={['lesson.js', 'progress.js']} description={`${s.name}: ${l.line}`}
+<Layout url={l.url} title={l.search} ogType="article" scripts={['lesson.js', 'progress.js']} description={`${s.name}: ${l.line}`}
   crumbs={[['Skills', 'skills.html'], [s.name, `skills/${s.slug}.html`], [l.title, l.url]]}>
 <div class="progress-line" aria-hidden="true"></div>
 <main class:list={['notes', { 'has-toc': sections.length >= 3 }]}>
