@@ -58,7 +58,7 @@ Much of DevOps is about shortening feedback loops: running tests on every commit
 
 ## Environments
 
-**Environment:** A complete, separate copy of the systems an application needs, used for one purpose.
+**Environment:** A separate set of servers, databases and settings where an application runs for one job.
 
 Most teams have at least these:
 
