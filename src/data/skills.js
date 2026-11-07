@@ -14,7 +14,7 @@ export const SKILLS = [
       ['before-devops', 'Before DevOps', 'Separate teams, handovers and big releases, what went wrong with them, and how agile led to DevOps.', 'Before DevOps: separate dev and ops teams'],
       ['the-delivery-lifecycle', 'The delivery lifecycle', 'The stages a change goes through from an idea to production, the practices that automate them, feedback loops, and environments.', 'The software delivery lifecycle in DevOps'],
       ['culture-and-calms', 'DevOps culture', 'Owning what you build, blameless postmortems, small batches, sharing across teams, and the CALMS model.', 'DevOps culture and the CALMS model'],
-      ['measuring-delivery', 'Measuring delivery', 'The four DORA metrics, how to work each one out, and how teams use them.', 'DORA metrics: measuring software delivery']
+      ['measuring-delivery', 'Measuring delivery', 'The five DORA metrics, how to work each one out, and how teams use them.', 'DORA metrics: measuring software delivery']
     ],
     projects: []
   },
