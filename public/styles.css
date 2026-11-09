@@ -325,6 +325,8 @@ button { font-family: inherit; }
   .toc a[aria-current] { border-left-color: var(--accent); color: var(--fg); }
 }
 .md h2, .md h3 { scroll-margin-top: 24px; }
+/* on phones the nav stays on screen, so a heading jumped to has to stop below it */
+@media (max-width: 900px) { .md h2, .md h3 { scroll-margin-top: 84px; } }
 
 /* search: the box is the page's heading, a large serif line on a rule, like writing on a ruled page */
 .search { max-width: 860px; padding-block: 64px 96px; }
