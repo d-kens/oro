@@ -4,22 +4,26 @@ import Layout from '../layouts/Layout.astro';
 import JoinCta from '../components/JoinCta.astro';
 import { ROADMAPS } from '../data/roadmaps.js';
 import { SKILLS } from '../data/skills.js';
-import { href } from '../lib/site.js';
+import { href, lessons } from '../lib/site.js';
 
 const first = ROADMAPS[0].steps.map(([slug]) => SKILLS.find((s) => s.slug === slug)).find(Boolean);
+/* every lesson as [url, title], in roadmap order, for progress.js to find the reader's next lesson; skills off the roadmap go last */
+const steps = ROADMAPS[0].steps.map(([slug]) => slug);
+const rank = (l) => { const i = steps.indexOf(l.skill.slug); return i < 0 ? steps.length : i; };
+const order = [...lessons].sort((a, b) => rank(a) - rank(b)).map((l) => [l.url, l.title]);
 /* cloud and the foundations first; What is DevOps last, so the page does not read as DevOps only */
 const shown = [...SKILLS].sort((a, b) => (a.slug === 'what-is-devops') - (b.slug === 'what-is-devops'));
 /* the three newest skills, newest first */
 const newest = [...SKILLS].sort((a, b) => b.added.localeCompare(a.added)).slice(0, 3);
 const day = (iso) => new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 ---
-<Layout description="The skills cloud engineers use every day, taught one step at a time, with clear notes and labs that run on your own computer.">
+<Layout scripts={['progress.js']} description="The skills cloud engineers use every day, taught one step at a time, with clear notes and labs that run on your own computer.">
 <main class="home">
 <header class="hero">
   <h1>Learn cloud and DevOps.</h1>
   <p class="lead">The skills cloud engineers use every day, taught one step at a time, with clear notes and labs that run on your own computer.</p>
   <p class="actions">
-    <a class="btn" href={href(`skills/${first.slug}.html`)}>Start learning</a>
+    <a class="btn" href={href(`skills/${first.slug}.html`)} data-resume={JSON.stringify(order)} data-base={href()}>Start learning</a>
     <a class="btn outline" href={href('roadmap.html')}>See the roadmaps</a>
   </p>
 </header>
