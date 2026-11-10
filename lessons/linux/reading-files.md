@@ -118,7 +118,7 @@ request 104 handled
 request 105 handled
 ```
 
-The `|` sends what `head` prints into `tail` instead of to the screen. It is called a **pipe**, and the *Pipes and text* topic covers it.
+The `|` sends what `head` prints into `tail` instead of to the screen. It is called a **pipe**, and the *Pipes and text processing* topic covers it.
 
 ## Following a log as it grows
 

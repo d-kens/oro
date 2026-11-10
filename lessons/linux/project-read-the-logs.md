@@ -1,6 +1,6 @@
 A web server writes one line to its access log for every request it answers. When something goes wrong, or someone asks how busy the site was, that log is where you look. In this project you generate a day of web traffic, answer six questions about it with pipelines, and then turn those pipelines into a script that reports on any log you give it.
 
-It draws mostly on the *Pipes and text* topic, with help from *Reading files*, *Finding things*, *Creating and moving files* and *Users and permissions* (to make the script executable).
+It draws mostly on the *Pipes and text processing* topic, with help from *Reading files*, *Searching for files and text*, *Creating, copying and deleting files* and *Users and permissions* (to make the script executable).
 
 ## What you need
 

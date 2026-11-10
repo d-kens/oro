@@ -4,7 +4,7 @@ This topic builds one such script, section by section: a clean-up job that delet
 
 ## The starting point
 
-The core of the job is one `find` command, which the Linux skill's *Finding things* topic introduced:
+The core of the job is one `find` command, which the Linux skill's *Searching for files and text* topic introduced:
 
 ```bash
 #!/bin/bash
@@ -188,7 +188,7 @@ END
 
 ## Running from cron
 
-The Linux skill's *Running things on a schedule* topic showed how to write a crontab line. Scripts that work by hand and fail under cron almost always fail for one of three reasons.
+The Linux skill's *Scheduling jobs with cron* topic showed how to write a crontab line. Scripts that work by hand and fail under cron almost always fail for one of three reasons.
 
 **A different environment.** Cron starts jobs with almost nothing set: no aliases, none of your shell settings, and a short `PATH`, often just `/usr/bin:/bin`. A command in `/usr/local/bin` or `/usr/sbin` is then "not found". Set `PATH` near the top of the script, so it no longer depends on who started it:
 

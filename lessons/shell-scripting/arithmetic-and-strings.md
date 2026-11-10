@@ -127,7 +127,7 @@ bash: 1.5 + 1: syntax error: invalid arithmetic operator (error token is ".5 + 1
 
 This catches percentages in particular. `$((3 / 4 * 100))` is 0, because `3 / 4` is already 0 before the multiplication. Multiply first and it is right: `$((3 * 100 / 4))` is 75. That is often enough.
 
-When you need real decimals, hand the sum to **awk**, which is installed everywhere and which the Linux skill's *Pipes and text* topic introduced. Pass values in with `-v` and do the work in a `BEGIN` block, which runs without reading any input:
+When you need real decimals, hand the sum to **awk**, which is installed everywhere and which the Linux skill's *Pipes and text processing* topic introduced. Pass values in with `-v` and do the work in a `BEGIN` block, which runs without reading any input:
 
 ```bash
 root@lab:~/scripts# awk 'BEGIN { printf "%.2f\n", 7 / 2 }'

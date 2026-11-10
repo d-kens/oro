@@ -304,7 +304,7 @@ fi
 
 `-x` matches the whole line and `-F` treats the text as plain characters rather than a pattern. The same goes for users (`id name`), packages and services: ask whether it exists, then act.
 
-**Write to a temporary file, then move it into place.** If a script writes straight to `report.txt` and fails halfway, readers see half a file. Write to a temporary file in the same directory and `mv` it over the old one at the end. On the same filesystem, `mv` is **atomic**: other programs see either the whole old file or the whole new one, never a mix. Task 1 uses this.
+**Write to a temporary file, then move it into place.** If a script writes straight to `report.txt` and fails halfway, readers see half a file. Write to a temporary file in the same directory and `mv` it over the old one at the end. On the same file system, `mv` is **atomic**: other programs see either the whole old file or the whole new one, never a mix. Task 1 uses this.
 
 ## Tasks
 
@@ -464,6 +464,6 @@ A lock, so a new run exits when the previous one is still going: `exec 9> /tmp/q
 <details>
 <summary>Show answer</summary>
 
-Writing straight to the target means a reader, or a later step, can see a half-written file, and a failure leaves it half-written. A `mv` within one filesystem is atomic: the old file is replaced by the complete new one in one step. The temporary file must be on the same filesystem as the target, so create it in the same directory, for example with `mktemp "$dir/name.XXXXXX"`.
+Writing straight to the target means a reader, or a later step, can see a half-written file, and a failure leaves it half-written. A `mv` within one file system is atomic: the old file is replaced by the complete new one in one step. The temporary file must be on the same file system as the target, so create it in the same directory, for example with `mktemp "$dir/name.XXXXXX"`.
 
 </details>

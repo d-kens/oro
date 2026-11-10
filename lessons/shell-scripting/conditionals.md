@@ -121,7 +121,7 @@ The same pattern with numbers turns the output of a command into an alert:
 
 ```bash
 #!/bin/bash
-# disk-alert.sh: warn when the root filesystem is getting full.
+# disk-alert.sh: warn when the root file system is getting full.
 used=$(df --output=pcent / | tail -n 1 | tr -dc '0-9')
 if [[ $used -ge 90 ]]; then
     echo "CRITICAL: / is ${used}% full"

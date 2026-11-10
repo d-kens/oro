@@ -118,7 +118,7 @@ $ pwd
 - `whoami` prints the user you are logged in as.
 - `hostname` prints the machine's name.
 - `date` prints the date and time.
-- `pwd` (*print working directory*) prints the directory you are in. The Docker container starts you in `/`, the top of the **filesystem**: all the directories and files on the machine. Your home directory is `/root`. The *Moving around* topic explains both.
+- `pwd` (*print working directory*) prints the directory you are in. The Docker container starts you in `/`, the top of the **file system**: all the directories and files on the machine. Your home directory is `/root`. The topic *The Linux file system* explains both.
 
 `echo` prints its arguments back to you:
 
@@ -202,7 +202,7 @@ Sat Oct 24 09:15:02 UTC 2026
 Machine: lab
 ```
 
-`$(hostname)` runs `hostname` and puts what it printed into the line. The *Pipes and text* topic goes much further with this.
+`$(hostname)` runs `hostname` and puts what it printed into the line. The *Pipes and text processing* topic goes much further with this.
 
 ## Tasks
 
@@ -210,14 +210,14 @@ Do these in your Linux shell.
 
 ### Task 1: Describe the machine
 
-Create a file called `machine.txt` in your home directory. First run `cd ~` to go there (`cd` changes directory; the *Moving around* topic covers it). The file should hold, in this order, one line each:
+Create a file called `machine.txt` in your home directory. First run `cd ~` to go there (`cd` changes directory; the topic *The Linux file system* covers it). The file should hold, in this order, one line each:
 
 1. the user you are logged in as
 2. the machine's name
 3. the kernel version
 4. the `PRETTY_NAME` line from `/etc/os-release`
 
-Use `>` for the first line and `>>` for the rest. You can find a single line of a file with `grep PRETTY_NAME /etc/os-release`; the *Finding things* topic explains `grep`.
+Use `>` for the first line and `>>` for the rest. You can find a single line of a file with `grep PRETTY_NAME /etc/os-release`; the *Searching for files and text* topic explains `grep`.
 
 <details>
 <summary>Check your work</summary>

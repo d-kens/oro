@@ -4,7 +4,7 @@ By the end you can tell what a link points at, create both kinds, predict what h
 
 ## Inodes
 
-On disk, a file has two parts. The **inode** holds everything about the file except its name: its size, owner, permissions, timestamps, and where its data lives. Each inode has a number that is unique within its filesystem. The name lives in the directory, which is just a list that pairs names with inode numbers.
+On disk, a file has two parts. The **inode** holds everything about the file except its name: its size, owner, permissions, timestamps, and where its data lives. Each inode has a number that is unique within its file system. The name lives in the directory, which is just a list that pairs names with inode numbers.
 
 `ls -i` shows the inode number in front of each name:
 
@@ -25,7 +25,7 @@ Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
 ...
 ```
 
-A filesystem has a fixed number of inodes, set when it is created. `df -i` shows how many are used. A disk can fill up with millions of tiny files and refuse new ones while `df -h` still shows free space, because it has run out of inodes rather than bytes.
+A file system has a fixed number of inodes, set when it is created. `df -i` shows how many are used. A disk can fill up with millions of tiny files and refuse new ones while `df -h` still shows free space, because it has run out of inodes rather than bytes.
 
 ## Hard links
 
@@ -56,7 +56,7 @@ hello
 second line
 ```
 
-Hard links have two limits. You cannot hard link a directory, and you cannot hard link across filesystems, because an inode number only means something on its own filesystem:
+Hard links have two limits. You cannot hard link a directory, and you cannot hard link across file systems, because an inode number only means something on its own file system:
 
 ```bash
 $ ln /root /root/dirlink
@@ -89,7 +89,7 @@ $ readlink -f notes-link.txt
 /root/notes-hard.txt
 ```
 
-Unlike hard links, symlinks can point at directories and at other filesystems.
+Unlike hard links, symlinks can point at directories and at other file systems.
 
 A relative target is resolved **from the directory the link is in**, not from where you were when you made it. This catches everyone once:
 
@@ -109,7 +109,7 @@ The link looks for `enabled/conf/site.conf`, which does not exist. The target sh
 | Points at | The inode | A path |
 | Own inode | No | Yes |
 | Works for directories | No | Yes |
-| Across filesystems | No | Yes |
+| Across file systems | No | Yes |
 | If the target name is deleted | Still works | Breaks |
 
 ## When the target moves or goes away

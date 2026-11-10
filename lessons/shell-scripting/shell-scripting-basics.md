@@ -119,7 +119,7 @@ A script is read far more often than it is written. A few habits from the start:
 
 ```bash
 #!/bin/bash
-# disk-report.sh: show how full the root filesystem is.
+# disk-report.sh: show how full the root file system is.
 # Usage: ./disk-report.sh
 
 echo "Disk use on $(hostname), $(date +%F)"

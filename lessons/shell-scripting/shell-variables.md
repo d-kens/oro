@@ -85,7 +85,7 @@ Cost: $5 for priya
 She said "hi"
 ```
 
-Use double quotes by default. Use single quotes when you want the text taken literally, such as a `sed` or `awk` program from the Linux skill's *Pipes and text* topic, where `$1` belongs to awk and not to the shell.
+Use double quotes by default. Use single quotes when you want the text taken literally, such as a `sed` or `awk` program from the Linux skill's *Pipes and text processing* topic, where `$1` belongs to awk and not to the shell.
 
 ## Always quote "$var"
 

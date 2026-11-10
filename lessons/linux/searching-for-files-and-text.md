@@ -70,7 +70,7 @@ $ grep -v INFO logs/app.log
 09:03:41 ERROR database timeout
 ```
 
-`grep` can do far more than match fixed text. The pattern is a *regular expression*, where some characters have special meanings. For now, keep to plain words; the *Pipes and text* topic goes further.
+`grep` can do far more than match fixed text. The pattern is a *regular expression*, where some characters have special meanings. For now, keep to plain words; the *Pipes and text processing* topic goes further.
 
 ## Searching a whole directory
 
@@ -166,7 +166,7 @@ Some tests worth knowing:
 | `-mmin -10` | Changed in the last 10 minutes |
 | `-maxdepth 1` | Only look this many levels down |
 
-When you search from `/` as an ordinary user, `find` prints `Permission denied` for every directory you cannot read. Add `2>/dev/null` to the end to hide those messages; the *Pipes and text* topic explains how that works.
+When you search from `/` as an ordinary user, `find` prints `Permission denied` for every directory you cannot read. Add `2>/dev/null` to the end to hide those messages; the *Pipes and text processing* topic explains how that works.
 
 `find` can also act on what it finds, for example `-delete`, or `-exec` to run a command on each file. Always run the same `find` without the action first and read the list. A wrong test followed by `-delete` removes files just as quickly as `rm -r`.
 
@@ -260,7 +260,7 @@ The order of `.log` files may differ on your machine. If the first command print
 <details>
 <summary>Show answer</summary>
 
-`find /var -type f -size +500M`. If you are not root, add `2>/dev/null` to hide the `Permission denied` messages. The *Disks and space* topic shows how to see which directories use the most space.
+`find /var -type f -size +500M`. If you are not root, add `2>/dev/null` to hide the `Permission denied` messages. The *Disks and disk space* topic shows how to see which directories use the most space.
 
 </details>
 

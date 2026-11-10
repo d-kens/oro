@@ -1,6 +1,6 @@
 A monitoring system can only act on what a check tells it. In this project you write `health-check.sh`, a script that looks at disk use, free memory, the load average and a list of processes, prints a short table of OK, WARN and FAIL lines, and exits with 0, 1 or 2 so that cron, a monitor or another script knows how worried to be.
 
-It uses *Arguments and input* for `getopts` and the usage message, *Functions* and *Arrays* for the structure, *Arithmetic and strings* for the sums and `printf`, *Exit codes and errors* for the status it returns, *Robust scripts* for `set -euo pipefail` and a trap, and *Real-world scripts* for the config file, logging and cron. From the Linux skill it draws on *Disks and space*, *Watching a machine*, *Processes* and *Running things on a schedule*.
+It uses *Arguments and input* for `getopts` and the usage message, *Functions* and *Arrays* for the structure, *Arithmetic and strings* for the sums and `printf`, *Exit codes and errors* for the status it returns, *Robust scripts* for `set -euo pipefail` and a trap, and *Real-world scripts* for the config file, logging and cron. From the Linux skill it draws on *Disks and disk space*, *Monitoring CPU, memory and load*, *Processes* and *Scheduling jobs with cron*.
 
 ## What you need
 

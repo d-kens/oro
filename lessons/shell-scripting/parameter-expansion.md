@@ -182,7 +182,7 @@ disk_full_on_web-01,_disk_check_failed
  full on web-01,  check failed
 ```
 
-`${msg// /_}` turning spaces into underscores is a quick way to make a value safe to use as a file name. `old` can be a pattern, so `${version//[^0-9.]}` deletes everything that is not a digit or a dot. For anything more involved, such as replacing across many lines of a file, `sed` from the Linux skill's *Pipes and text* topic is the better tool.
+`${msg// /_}` turning spaces into underscores is a quick way to make a value safe to use as a file name. `old` can be a pattern, so `${version//[^0-9.]}` deletes everything that is not a digit or a dot. For anything more involved, such as replacing across many lines of a file, `sed` from the Linux skill's *Pipes and text processing* topic is the better tool.
 
 ## Changing case
 

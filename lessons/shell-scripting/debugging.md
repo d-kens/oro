@@ -15,7 +15,7 @@ Syntax errors are different, because the line number can point well past the rea
 
 ```bash
 #!/bin/bash
-# check-disk.sh: warn when the root filesystem is nearly full.
+# check-disk.sh: warn when the root file system is nearly full.
 used=$(df --output=pcent / | tail -n 1 | tr -dc '0-9')
 if [ "$used" -gt 80 ]; then
     echo "Disk is ${used}% full"

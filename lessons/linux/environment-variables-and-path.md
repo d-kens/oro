@@ -148,7 +148,7 @@ Everything above disappears when you close the shell. To keep it, put it in a fi
 
 On Ubuntu, `~/.profile` also reads `~/.bashrc`, so a login shell gets both. If a `~/.bash_profile` exists, Bash reads it instead of `~/.profile`, which is a common reason for settings that seem to be ignored.
 
-Scripts and **cron jobs read neither file**. A command that works in your terminal because of something in `~/.bashrc` can fail when cron runs it. The *Running things on a schedule* topic deals with this.
+Scripts and **cron jobs read neither file**. A command that works in your terminal because of something in `~/.bashrc` can fail when cron runs it. The *Scheduling jobs with cron* topic deals with this.
 
 Editing the file changes nothing in shells that are already running. `source` reads a file into the current shell, so you can apply a change without logging out:
 

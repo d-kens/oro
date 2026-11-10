@@ -332,14 +332,14 @@ If every user is reported as missing, check the last line is `main "$@"` and not
 
 ### Task 2: Use a library
 
-Using the `lib.sh` from this topic, write `disk-check.sh`. It takes an optional mount point (default `/`) and an optional limit in percent (default 80). It sources `lib.sh`, has a function `disk_percent` that prints how full a filesystem is as a bare number (`df --output=pcent MOUNT` gives `Use%` and a value such as ` 5%`), and logs `OK` or `WARN` with `log`. If the mount point is not a directory, it stops with `die`.
+Using the `lib.sh` from this topic, write `disk-check.sh`. It takes an optional mount point (default `/`) and an optional limit in percent (default 80). It sources `lib.sh`, has a function `disk_percent` that prints how full a file system is as a bare number (`df --output=pcent MOUNT` gives `Use%` and a value such as ` 5%`), and logs `OK` or `WARN` with `log`. If the mount point is not a directory, it stops with `die`.
 
 <details>
 <summary>Check your work</summary>
 
 ```bash
 #!/bin/bash
-# disk-check.sh: warn when a filesystem is fuller than a limit.
+# disk-check.sh: warn when a file system is fuller than a limit.
 # Usage: ./disk-check.sh [MOUNT] [LIMIT]
 
 # shellcheck source=lib.sh

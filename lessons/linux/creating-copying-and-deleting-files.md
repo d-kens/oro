@@ -12,7 +12,7 @@ $ ls -l notes.txt
 -rw-r--r-- 1 root root 0 Oct 24 11:18 notes.txt
 ```
 
-You will more often create a file by writing into it with `>`, as in the first topic, or with an editor, which the *Editing files* topic covers.
+You will more often create a file by writing into it with `>`, as in the first topic, or with an editor, which the *Editing files with nano and vim* topic covers.
 
 `mkdir` (*make directory*) creates a directory:
 
@@ -156,7 +156,7 @@ $ rm "my notes.txt"
 
 ## Working with many files at once
 
-The `*` pattern from the *Looking at files* topic works with all of these commands. `rm *.log` deletes every file ending in `.log` in the current directory.
+The `*` pattern from the *Listing files* topic works with all of these commands. `rm *.log` deletes every file ending in `.log` in the current directory.
 
 Because the shell expands the pattern before the command runs, you can check it first. Run `ls` with the same pattern, read the list, then swap `ls` for `rm`:
 

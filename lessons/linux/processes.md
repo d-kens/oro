@@ -61,7 +61,7 @@ $ pgrep -a sleep
 14 sleep 600
 ```
 
-`top` shows the same list, sorted by CPU use and updated every few seconds. The *Watching a machine* topic covers it.
+`top` shows the same list, sorted by CPU use and updated every few seconds. The *Monitoring CPU, memory and load* topic covers it.
 
 ## Foreground and background
 
@@ -195,7 +195,7 @@ The shell reports a finished job just before it shows the next prompt, so the `T
 
 ### Task 2: Deal with a stubborn process
 
-Create `stubborn.sh` from the script above with the editor from the *Editing files* topic, make it executable with `chmod u+x stubborn.sh`, and start it in the background. Try to stop it with a plain `kill`, confirm it is still running, then stop it for good.
+Create `stubborn.sh` from the script above with the editor from the *Editing files with nano and vim* topic, make it executable with `chmod u+x stubborn.sh`, and start it in the background. Try to stop it with a plain `kill`, confirm it is still running, then stop it for good.
 
 <details>
 <summary>Check your work</summary>

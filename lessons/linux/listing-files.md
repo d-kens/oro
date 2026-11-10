@@ -77,7 +77,7 @@ The **permissions** are nine letters in three groups of three: for the owner, fo
 
 The **modified time** shows the year instead of the time of day for files older than about six months, as in `Apr 22  2024`.
 
-The size of a directory, usually `4096`, is the space its list of names takes up, not the size of what is inside. To find out how much a directory holds, use `du`, which the *Disks and space* topic covers. The `total` line at the top is the disk space used by the listed files, in blocks; you can ignore it.
+The size of a directory, usually `4096`, is the space its list of names takes up, not the size of what is inside. To find out how much a directory holds, use `du`, which the *Disks and disk space* topic covers. The `total` line at the top is the disk space used by the listed files, in blocks; you can ignore it.
 
 Some entries are **links**: a name that points at another file or directory. They start with `l` and show where they point:
 
@@ -86,7 +86,7 @@ $ ls -l /bin
 lrwxrwxrwx 1 root root 7 Apr 22  2024 /bin -> usr/bin
 ```
 
-The *Links* topic covers these.
+The *Hard and symbolic links* topic covers these.
 
 ## Options that change the listing
 
@@ -151,7 +151,7 @@ $ ls -l *.conf
 -rw-r--r-- 1 root root 10 Oct 20 08:00 app.conf
 ```
 
-`*` does not match hidden files. You will use these patterns again with `cp`, `mv` and `rm` in the *Creating and moving files* topic.
+`*` does not match hidden files. You will use these patterns again with `cp`, `mv` and `rm` in the *Creating, copying and deleting files* topic.
 
 ## Tasks
 
@@ -238,7 +238,7 @@ drwxr-xr-x 2 root root   4096 Oct 24 11:16 archive
 <details>
 <summary>Show answer</summary>
 
-`ls -lhS /var/log/app`. `-l` gives the details, `-h` shows sizes as K, M and G, and `-S` sorts largest first. For whole directories you need `du`, from the *Disks and space* topic.
+`ls -lhS /var/log/app`. `-l` gives the details, `-h` shows sizes as K, M and G, and `-S` sorts largest first. For whole directories you need `du`, from the *Disks and disk space* topic.
 
 </details>
 

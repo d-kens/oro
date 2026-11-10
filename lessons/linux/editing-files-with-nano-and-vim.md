@@ -4,7 +4,7 @@ By the end you can open a file in nano, change it and save it, do the same in vi
 
 ## Get the editors and a file to practise on
 
-The Docker Ubuntu image leaves out both editors to stay small. Install them; the *Installing software* topic explains what these commands do.
+The Docker Ubuntu image leaves out both editors to stay small. Install them; the *Installing software with apt* topic explains what these commands do.
 
 ```bash
 $ apt update && apt install -y nano vim

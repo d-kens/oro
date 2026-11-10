@@ -41,7 +41,7 @@ site/css/main.css
 site/index.html
 ```
 
-The order of the names depends on the filesystem, so yours may differ. List what is inside without extracting it. Add `v` to see sizes, owners and dates:
+The order of the names depends on the file system, so yours may differ. List what is inside without extracting it. Add `v` to see sizes, owners and dates:
 
 ```bash
 $ tar -tvf site.tar
