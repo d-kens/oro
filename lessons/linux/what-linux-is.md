@@ -1,60 +1,71 @@
-Almost every server you will touch as a cloud engineer runs Linux. Web servers, databases, containers and the machines that build your code all run it, and you work on them by typing commands. This topic gets a Linux shell running on your own computer and takes you through your first commands.
+## What Linux is
 
-By the end you can open a shell, read the prompt, run a command, find out what a command does, and save its output to a file.
+**Linux** is a free, open-source operating system core (kernel) created by Linus Torvalds in 1991.
 
-## Linux, the kernel and distributions
+A **kernel** is the core of an operating system. It controls the computer's hardware: the processor (CPU), the memory, the disks, the network card and other devices. It acts as a bridge between the hardware and the applications you run: when an application needs to read a file or send data over the network, it asks the kernel, and the kernel does it.
 
-**Linux** is strictly the name of a *kernel*: the program that starts first when a machine boots and that controls the hardware. It decides which program gets the CPU next, hands out memory, and talks to disks and network cards. Programs never touch the hardware themselves; they ask the kernel.
+## Linux distributions
 
-A kernel on its own is not much use, so it is packaged with everything else you need: a shell, the basic commands, a package manager, and system services. That package is a **distribution**, or *distro*. The ones you will meet most often:
+On its own, the kernel gives you no way to type commands, install software or open a window. To get an operating system you can use, the kernel is combined with:
 
-| Distribution | Where you meet it |
+- **system libraries**: shared code that programs need in order to run
+- **a shell**, for typing commands
+- **a package manager**, for installing and updating software
+- on desktop distros, **a graphical interface** with windows and menus, and apps such as a web browser
+
+A **Linux distribution**, or *distro*, is the Linux kernel packaged together with system libraries, a shell, a package manager and other programs into a complete operating system that you can install and use.
+
+Companies and communities build distros for different uses, from small devices and laptops to cloud servers and supercomputers. The ones you are most likely to meet:
+
+| Distribution | What it is used for |
 | --- | --- |
-| Ubuntu | The most common choice on cloud servers and in tutorials |
-| Debian | The base Ubuntu is built on; popular for container images |
-| Amazon Linux, Red Hat Enterprise Linux, Rocky Linux | Company servers and AWS |
-| Alpine | Very small container images |
+| Ubuntu | The most common distro on cloud servers. Also a popular desktop for beginners. Made by Canonical and built on Debian. |
+| Debian | A stable, community-run distro. Ubuntu and many container images are built on it. |
+| Red Hat Enterprise Linux (RHEL) | Company servers. You pay Red Hat for support and updates. |
+| Rocky Linux | A free copy of RHEL, for people who want RHEL without paying for it. |
+| Fedora | Desktops for developers. Gets new software first and is where Red Hat tests what later goes into RHEL. |
+| Amazon Linux | Servers on AWS. Made by Amazon. |
+| Alpine | Container images. It is very small, a few megabytes. |
+| Linux Mint | Desktops for people moving from Windows. Built on Ubuntu. |
+| Arch Linux | Experienced users who want to choose and set up every part of the system themselves. |
+| Kali Linux | Security testing. Comes with hundreds of tools for testing systems for weaknesses. Built on Debian. |
 
-The commands in this skill work the same on all of them. Where they differ, mostly in how software is installed, the topic says so.
+The commands in this skill work the same on all of them. Where they differ, mostly in how software is installed, the topic says so. This skill uses Ubuntu.
 
-Servers run Linux because it is free to run on as many machines as you like, it is stable enough to run for years without a restart, and it can be run with no screen at all and managed over the network.
+## What a shell is
 
-## The shell
+A **shell** is a text-based user interface that lets you interact with the operating system. It accepts commands you type on the keyboard and passes them to the kernel to run.
 
-You do not talk to the kernel directly. You type into a **shell**, a program that reads a line of text, works out which program you mean, runs it, and shows you what it printed. The shell on most Linux machines is **Bash**. A **terminal** is the window the shell runs in.
+A **graphical user interface (GUI)** uses windows, icons and menus. A shell uses a **command-line interface (CLI)** instead, where you type instructions to move between folders, run programs and manage files.
 
-When the shell is ready for a command it shows a **prompt**, for example:
+Servers usually have no GUI at all, so the shell is how you work on them.
 
-```text
-sam@web-01:~$
-```
+To use a shell on your own computer, you open a **terminal**: an app that gives you a window where you type commands and see what they print. The shell runs inside it. On macOS the app is called Terminal, on Windows it is Windows Terminal, and on Linux it is usually called Terminal too.
 
-Read it from left to right:
+There are several shells. The common ones:
 
-- `sam` is the user you are logged in as.
-- `web-01` is the name of the machine. This matters when you have several machines open.
-- `~` is the directory you are in. `~` is short for your home directory.
-- `$` means you are an ordinary user. A `#` instead means you are `root`, the administrator, and every command can change anything on the machine.
-
-In this skill, a line starting with `$` is a command for you to type, without the `$`. Lines without it are what the command prints.
+| Shell | What it is |
+| --- | --- |
+| Bash (Bourne Again Shell) | The default on most Linux distros, and the one this skill uses. |
+| Zsh (Z Shell) | The default on macOS, also available on Linux. Works much like Bash and adds better completion, themes and spelling correction. |
+| Fish (Friendly Interactive Shell) | Built to be easy to use: it suggests commands as you type and colours them. Its scripts do not run in Bash. |
+| sh (Bourne Shell) | The original Unix shell. It is small, and scripts written for it run on every Linux distro and on macOS. |
 
 ## Get a Linux shell
 
 You need a Linux shell to follow along. Pick the option for your computer.
 
-**Any computer with Docker.** This starts a fresh Ubuntu machine in a container and puts you in its shell. When you type `exit` the container is deleted, so nothing you do can break your computer.
+In this skill, a line starting with `$` is a command for you to type, without the `$`. Lines without it are what the command prints.
 
-```bash
-$ docker run -it --rm --hostname lab ubuntu:24.04
-```
+**Windows.** Install the Windows Subsystem for Linux (WSL), which runs Linux inside Windows. Open PowerShell as an administrator and run this command. It is a PowerShell command, so it has no `$` in front of it:
 
-**Windows.** Install the Windows Subsystem for Linux. Open PowerShell as an administrator, run the command below, restart, then open *Ubuntu* from the Start menu.
-
-```bash
+```powershell
 wsl --install
 ```
 
-**macOS.** The macOS Terminal runs a shell, and most commands look the same, but macOS is not Linux and some commands behave differently. Use Docker, or run an Ubuntu virtual machine with Multipass:
+Restart your computer, then open *Ubuntu* from the Start menu.
+
+**macOS.** The macOS Terminal also runs a shell, and many commands look the same, but macOS is not Linux and some commands behave differently. Run Ubuntu in a **virtual machine** instead: a complete computer simulated in software, running inside your Mac. Multipass sets one up for you. Install it with [Homebrew](https://brew.sh), a tool for installing software on macOS, then start the virtual machine and open its shell:
 
 ```bash
 $ brew install --cask multipass
@@ -64,11 +75,34 @@ $ multipass shell lab
 
 **Linux.** Open the Terminal app. You are already there.
 
+**Any computer with Docker.** [Docker](https://www.docker.com) runs programs in **containers**: small, isolated Linux systems that start in seconds. This command starts a fresh Ubuntu container and puts you in its shell. When you type `exit`, the container is deleted, so nothing you do can break your computer.
+
+```bash
+$ docker run -it --rm --hostname lab ubuntu:24.04
+```
+
+## Reading the prompt
+
+When the shell is ready for a command it shows a **prompt**. Yours looks something like this:
+
+```text
+sam@web-01:~$
+```
+
+Read it from left to right:
+
+- `sam` is the user you are logged in as.
+- `web-01` is the name of the machine. This matters when you have several machines open.
+- `~` is the **directory** (folder) you are in. `~` is short for your **home directory**, the folder where you keep your own files.
+- `$` means you are an ordinary user. A `#` instead means you are `root`, the administrator, and every command can change anything on the machine.
+
 The Docker container logs you in as `root`, so your prompt ends in `#`. That is fine for practice. On a real server you log in as an ordinary user and only become root when you need to, which the *Users and permissions* topic covers.
 
 ## Your first commands
 
-A command is a program name, sometimes followed by **options** that change what it does and **arguments** that tell it what to work on. Separate each part with spaces.
+A command is a program name, sometimes followed by **options** that change what it does and **arguments** that tell it what to work on. Separate each part with spaces. In `uname -r`, `uname` is the program and `-r` is an option. In `echo Hello`, `Hello` is an argument.
+
+Start with four commands that need neither. The output below is from the Docker container; yours will show your own user and machine.
 
 ```bash
 $ whoami
@@ -84,9 +118,9 @@ $ pwd
 - `whoami` prints the user you are logged in as.
 - `hostname` prints the machine's name.
 - `date` prints the date and time.
-- `pwd` (*print working directory*) prints the directory you are in. The Docker container starts you in `/`, the top of the filesystem. Your home directory, `/root`, is where you keep your own files; the *Moving around* topic explains both.
+- `pwd` (*print working directory*) prints the directory you are in. The Docker container starts you in `/`, the top of the **filesystem**: all the directories and files on the machine. Your home directory is `/root`. The *Moving around* topic explains both.
 
-`echo` prints its arguments back. It sounds useless, but you will use it constantly in scripts:
+`echo` prints its arguments back to you:
 
 ```bash
 $ echo Hello from Linux
@@ -102,7 +136,7 @@ $ uname -a
 Linux lab 6.12.54-linuxkit #1 SMP Tue Nov  4 21:21:47 UTC 2025 aarch64 aarch64 aarch64 GNU/Linux
 ```
 
-Your version numbers will differ. To see which distribution you are on, read the file that describes it:
+Your version numbers will differ. To see which distribution you are on, use `cat`, which prints what is in a file. The file `/etc/os-release` describes the distribution:
 
 ```bash
 $ cat /etc/os-release
@@ -132,7 +166,7 @@ Some keys that save a lot of typing:
 
 ## Getting help
 
-Nobody remembers every option. Two ways to look them up:
+There are two ways to look up a command's options:
 
 ```bash
 $ date --help
@@ -176,7 +210,7 @@ Do these in your Linux shell.
 
 ### Task 1: Describe the machine
 
-Create a file called `machine.txt` in your home directory that holds, in this order, one line each:
+Create a file called `machine.txt` in your home directory. First run `cd ~` to go there (`cd` changes directory; the *Moving around* topic covers it). The file should hold, in this order, one line each:
 
 1. the user you are logged in as
 2. the machine's name
@@ -240,7 +274,7 @@ You are on `db-02`, in `/var/log`. The `#` means you are root, so any command ca
 <details>
 <summary>Show answer</summary>
 
-Linux is the kernel. Ubuntu is a distribution: the Linux kernel packaged with a shell, commands, a package manager and services.
+Linux is the kernel. Ubuntu is a distribution: the Linux kernel combined with a shell, commands, a package manager and other software.
 
 </details>
 
