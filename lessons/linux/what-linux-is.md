@@ -1,6 +1,6 @@
 ## What Linux is
 
-**Linux** is a free, open-source operating system kernel, first released by Linus Torvalds in 1991.
+**Linux** is a free, open-source operating system core (kernel) created by Linus Torvalds in 1991.
 
 A **kernel** is the core of an operating system. It controls the computer's hardware: the processor (CPU), the memory, the disks, the network card and other devices. It acts as a bridge between the hardware and the applications you run: when an application needs to read a file or send data over the network, it asks the kernel, and the kernel does it.
 
