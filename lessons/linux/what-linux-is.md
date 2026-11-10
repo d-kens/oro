@@ -49,7 +49,7 @@ There are several shells. The common ones:
 | Bash (Bourne Again Shell) | The default on most Linux distros, and the one this skill uses. |
 | Zsh (Z Shell) | The default on macOS, also available on Linux. Works much like Bash and adds better completion, themes and spelling correction. |
 | Fish (Friendly Interactive Shell) | Built to be easy to use: it suggests commands as you type and colours them. Its scripts do not run in Bash. |
-| sh (Bourne Shell) | The original Unix shell. It is small, and scripts written for it run on almost any system. |
+| sh (Bourne Shell) | The original Unix shell. It is small, and scripts written for it run on every Linux distro and on macOS. |
 
 ## Get a Linux shell
 
