@@ -119,7 +119,7 @@ UUID=2c1f8a4e-5b0d-4e1a-9f2c-7d3e6b8a1c40  /data  xfs  defaults,nofail  0  2
 
 `lsblk -f` shows each device's UUID. Be careful with this file: a mistake in it can stop a server from booting. After you change it, run `mount -a` to mount everything it lists, and fix any error before you reboot. The Docker container has an empty `fstab`, because the container does not boot.
 
-## A full disk
+## Fixing a full disk
 
 When a file system fills up, programs fail when they try to write:
 

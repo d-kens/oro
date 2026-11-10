@@ -63,7 +63,7 @@ This matters most before anything destructive. If `BUILD_DIR` were empty, `rm -r
 
 Each of these also has a form without the colon, such as `${var-default}`, which only applies when `var` is unset, not when it is set but empty. The colon forms are what you want almost every time.
 
-## Length
+## String length with ${#var}
 
 **`${#var}`** gives the number of characters in the value:
 
@@ -206,7 +206,7 @@ Priya
 
 Lower-casing a value before you compare it saves listing every spelling. `case "${answer,,}" in yes|y) ...` accepts `Yes`, `YES` and `y` alike. These forms are Bash 4 and later; macOS still ships Bash 3.2 as `/bin/bash`, so they fail there, but they work on any current Linux server.
 
-## Substrings
+## Substrings with ${var:offset:length}
 
 **`${var:offset:length}`** gives `length` characters starting at `offset`, counting from 0. Leave out `:length` to take everything to the end:
 
@@ -231,7 +231,7 @@ Wrong: 20261025-143005
 
 A negative offset counts from the end, but it needs a space after the colon. Without it, `${stamp:-2}` is the default-value form from the start of this topic: `stamp` is set, so you get the whole value.
 
-## All forms at a glance
+## Parameter expansion summary
 
 | Expansion | Gives | Example, with `f="/srv/app.tar.gz"` |
 | --- | --- | --- |

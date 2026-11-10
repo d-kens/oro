@@ -100,7 +100,7 @@ $ mv app.conf backup/
 mv: cannot move 'app.conf' to 'backup/': Not a directory
 ```
 
-## Overwriting without warning
+## How cp and mv overwrite files
 
 `cp` and `mv` replace an existing destination file without asking. This copy silently wipes out whatever was in `app.conf`:
 
@@ -154,7 +154,7 @@ rm: cannot remove 'notes.txt': No such file or directory
 $ rm "my notes.txt"
 ```
 
-## Working with many files at once
+## Wildcards with cp, mv and rm
 
 The `*` pattern from the *Listing files* topic works with all of these commands. `rm *.log` deletes every file ending in `.log` in the current directory.
 

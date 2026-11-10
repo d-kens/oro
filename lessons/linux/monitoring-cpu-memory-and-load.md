@@ -75,7 +75,7 @@ The column that matters is **available**: how much memory programs can still get
 
 **Swap** is disk space used as overflow when memory is full. It keeps the machine alive, but disk is far slower than memory, so heavy swap use makes everything slow. When memory and swap run out, the kernel's **OOM killer** (*out of memory*) stops a process to free memory, usually the largest one. You see it in the kernel log with `journalctl -k | grep -i oom`.
 
-## Over time: vmstat
+## Watching over time with vmstat
 
 `top` shows a moment. `vmstat` prints one line per interval, so you can see a trend. `vmstat 2 5` prints five lines, two seconds apart:
 
@@ -96,7 +96,7 @@ Ignore the first line, an average since boot. Then read:
 - `si` and `so`: memory swapped in and out per second. They should be zero.
 - `us`, `sy`, `id`, `wa`: the same CPU fields as in `top`.
 
-## The heaviest processes: ps
+## Finding the heaviest processes with ps
 
 `top` is interactive. For a quick answer, or in a script, sort `ps` output instead. `-eo` chooses the columns and `--sort=-%cpu` sorts by CPU with the largest first:
 
@@ -121,7 +121,7 @@ $ ps -eo pid,user,%mem,rss,comm --sort=-%mem | head -4
 
 `%CPU` in `ps` is the average since the process started, not the current moment, so a process that just became busy can rank lower here than in `top`.
 
-## Where the numbers come from: /proc
+## Reading /proc
 
 All these tools read **`/proc`**, a directory the kernel fills with live information. Its files take no disk space and are made fresh each time you read them.
 
@@ -138,7 +138,7 @@ $ grep -c ^processor /proc/cpuinfo
 
 Each process has a directory named after its PID. `/proc/2214/status` shows its name, state and memory, and `/proc/2214/cmdline` the full command it was started with.
 
-## Busy or broken
+## Telling a busy server from a broken one
 
 A busy server is doing its job with no room to spare. A broken one is stuck. The signs:
 

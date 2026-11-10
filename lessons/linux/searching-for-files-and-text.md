@@ -29,7 +29,7 @@ When nothing matches, `grep` prints nothing. That is not an error; there is simp
 
 Like everything else in Linux, `grep` is case-sensitive. `ERROR` does not match `error`.
 
-## Useful grep options
+## grep options
 
 | Option | What it does |
 | --- | --- |
@@ -72,7 +72,7 @@ $ grep -v INFO logs/app.log
 
 `grep` can do far more than match fixed text. The pattern is a *regular expression*, where some characters have special meanings. For now, keep to plain words; the *Pipes and text processing* topic goes further.
 
-## Searching a whole directory
+## Searching a directory with grep -r
 
 `-r` (*recursive*) searches every file under a directory. Each match is printed with the file it came from:
 
@@ -131,7 +131,7 @@ $ find . -type f -name "app*"
 ./config/app.conf
 ```
 
-## Finding by size and age
+## Finding files by size and age
 
 Two more tests answer the questions you ask when a disk is filling up.
 

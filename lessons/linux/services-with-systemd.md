@@ -2,7 +2,7 @@ A **service** is a program that runs in the background with no terminal attached
 
 By the end you can check, start, stop, restart and enable a service, read its logs with `journalctl`, and write a unit file that turns your own script into a service.
 
-## Where to practise this topic
+## Setting up a machine to practise on
 
 systemd does not run in a plain Docker container. A container starts only the one program you asked for, here your shell, and that program is PID 1 instead of systemd. In the container `systemctl` is either missing or refuses to work:
 

@@ -17,7 +17,7 @@ In the Docker container your shell is PID 1, because it is the first and only th
 
 The kernel shows every process as a directory under `/proc`, named after its PID. Tools such as `ps` read their information from there.
 
-## Seeing what is running
+## Listing processes with ps
 
 `ps` on its own lists the processes started from this terminal:
 
@@ -121,7 +121,7 @@ $ kill 4312
 bash: kill: (4312) - No such process
 ```
 
-## Stopping a process that will not stop
+## Force-stopping a process with kill -9
 
 Work up from polite to forceful:
 

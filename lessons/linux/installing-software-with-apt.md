@@ -139,7 +139,7 @@ Some upgrades only take effect after a restart: a new kernel needs a reboot, and
 
 Most security fixes arrive in `noble-security`. Ubuntu servers install those automatically through the `unattended-upgrades` package, which runs on a schedule. The *Scheduling jobs with cron* topic shows how that kind of job works.
 
-## What a package put where
+## Finding the files a package installed
 
 `dpkg` answers questions about installed packages. `dpkg -L` lists every file a package installed:
 

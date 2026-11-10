@@ -112,7 +112,7 @@ The link looks for `enabled/conf/site.conf`, which does not exist. The target sh
 | Across file systems | No | Yes |
 | If the target name is deleted | Still works | Breaks |
 
-## When the target moves or goes away
+## Broken symbolic links
 
 A symlink only stores a path. It does not notice when the file at that path is renamed or deleted. The link stays, but now it points at nothing. This is a **dangling** or **broken** link:
 
@@ -138,7 +138,7 @@ The second one is the `enabled/site.conf` link from the previous section, which 
 
 `rm` on a symlink removes the link and leaves the target alone.
 
-## Where you meet symlinks
+## Where symbolic links are used
 
 **System directories.** On current Ubuntu, `/bin` and `/sbin` are links into `/usr`:
 

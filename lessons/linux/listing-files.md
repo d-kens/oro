@@ -47,7 +47,7 @@ There is nothing secret about hidden files. The dot only keeps them out of the w
 
 `.` and `..` appear in every directory. They are the same `.` and `..` you used in paths: this directory and its parent.
 
-## The long listing
+## Reading the long listing (ls -l)
 
 `-l` (*long*) prints one line per file with the details:
 
@@ -88,7 +88,7 @@ lrwxrwxrwx 1 root root 7 Apr 22  2024 /bin -> usr/bin
 
 The *Hard and symbolic links* topic covers these.
 
-## Options that change the listing
+## Sorting and other ls options
 
 Options can be combined behind one dash. `ls -la` is the same as `ls -l -a`.
 
@@ -132,7 +132,7 @@ $ ls -ld logs
 drwxr-xr-x 2 root root 4096 Oct 24 11:15 logs
 ```
 
-## Listing some files, not all
+## Matching files with wildcards
 
 You can name exactly the files you want details for:
 

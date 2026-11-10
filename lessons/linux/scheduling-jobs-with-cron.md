@@ -37,7 +37,7 @@ no crontab for root
 
 Besides personal crontabs there are system-wide ones: `/etc/crontab` and the files in `/etc/cron.d/`. Their lines have an extra field, the user to run the job as. Scripts dropped into `/etc/cron.daily/`, `/etc/cron.weekly/` and similar directories run once a day or once a week.
 
-## The schedule
+## Writing a cron schedule
 
 Each line of a crontab is one job: five time fields, then the command.
 
@@ -70,7 +70,7 @@ A `*` means "every". The job runs when all the fields match the current time. Wi
 
 Times are in the server's time zone, which on cloud servers is usually UTC. Check with `date`. Two common mistakes: `* 2 * * *` runs every minute from 02:00 to 02:59, not once, and the minute comes **before** the hour.
 
-## The job's environment and its output
+## A cron job's environment and output
 
 Cron does not run your job the way your terminal would. It starts it with `/bin/sh`, from your home directory, with very few environment variables, and without reading `~/.bashrc` or `~/.profile`. The *Environment variables and PATH* topic explains those files. In practice:
 

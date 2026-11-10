@@ -98,7 +98,7 @@ Read it from left to right:
 
 The Docker container logs you in as `root`, so your prompt ends in `#`. That is fine for practice. On a real server you log in as an ordinary user and only become root when you need to, which the *Users and permissions* topic covers.
 
-## Your first commands
+## Running your first commands
 
 A command is a program name, sometimes followed by **options** that change what it does and **arguments** that tell it what to work on. Separate each part with spaces. In `uname -r`, `uname` is the program and `-r` is an option. In `echo Hello`, `Hello` is an argument.
 
@@ -164,7 +164,7 @@ Some keys that save a lot of typing:
 
 `history` lists the commands you have run in this shell.
 
-## Getting help
+## Getting help with --help and man
 
 There are two ways to look up a command's options:
 

@@ -53,7 +53,7 @@ $ cat /etc/hostname
 lab
 ```
 
-## Where you are
+## The working directory and pwd
 
 The **working directory** is the directory you are in right now. Commands that work on files look there unless you give them a different location.
 
@@ -110,7 +110,7 @@ $ echo ~
 
 Use an absolute path when you want to be sure, such as in scripts and in instructions for other people. Use a relative path when you are working nearby and want to type less.
 
-## Moving with cd
+## Changing directory with cd
 
 `cd` (*change directory*) moves you to another directory. Give it a path, absolute or relative:
 
@@ -149,7 +149,7 @@ $ cd -
 /var/log
 ```
 
-## When cd fails
+## Common cd errors
 
 Paths are **case-sensitive**: `/var` exists, `/Var` does not. The shell tells you when a path is wrong:
 

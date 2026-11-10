@@ -203,7 +203,7 @@ Unknown environment: 'test'
 
 `case` is the usual way to handle a fixed set of words, such as `start`, `stop` and `status`, which you will use in the *Arguments and input* topic.
 
-## The classic mistakes
+## Common mistakes with if and tests
 
 **Missing spaces in `[ ]`.** `[` is a command, so it needs spaces around it like any other command:
 

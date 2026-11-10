@@ -2,7 +2,7 @@ Most of what you look at on a server is text: logs, config files, the output of 
 
 By the end you can send output and errors where you want them, chain commands with pipes, and cut, count, sort and rewrite lines until a log file tells you what you need to know.
 
-## A sample log
+## Creating a sample log
 
 The examples in this topic use a small web server access log. Create it in your home directory so you can follow along. Everything between the first line and `EOF` goes into the file:
 
@@ -32,7 +32,7 @@ Each line is one request. Split on spaces, the fields you care about are:
 | 9 | `200` | The status code |
 | 10 | `512` | The response size in bytes |
 
-## Three streams
+## stdin, stdout and stderr
 
 Every program starts with three **streams** already open:
 
@@ -254,7 +254,7 @@ $ echo "access.log has $(wc -l < access.log) requests"
 access.log has 10 requests
 ```
 
-## Answering a question with a pipeline
+## Building a pipeline step by step
 
 Say you want to know which client caused the most errors. Build the answer one step at a time.
 

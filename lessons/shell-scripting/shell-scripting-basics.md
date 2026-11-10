@@ -21,7 +21,7 @@ Anything you save in `~/scripts` on your computer appears in the container strai
 
 To edit inside the container instead, install nano once per session with `apt update && apt install -y nano`.
 
-## Your first script
+## Writing your first script
 
 A script is a plain text file. Create `hello.sh` with these three lines:
 

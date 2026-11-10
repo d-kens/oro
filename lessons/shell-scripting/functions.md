@@ -96,7 +96,7 @@ Working in /root/scripts
 
 Make every variable in a function `local` unless you mean the function to change something outside it. Notice that `total` is declared on one line and set on the next. `local total=$(…)` works, but `local` then hides whether the command inside `$( )` failed, because the status you get back is that of `local` itself. ShellCheck warns about this; the *Exit codes and errors* topic explains statuses.
 
-## Getting a result back
+## Returning a result from a function
 
 A function can hand back two different things, and they are easy to mix up.
 
@@ -144,7 +144,7 @@ Size: 888 bytes
 
 This means everything the function prints to standard output ends up in the variable. If a function needs to print a message as well as its value, send the message to standard error with `>&2`, so it shows on the screen but is not captured.
 
-## Functions that test something
+## Functions that return true or false
 
 Because `if` runs a command and checks its status, a function that succeeds or fails can be used directly in `if`. You do not need `[ ]` around it or `$?` after it:
 

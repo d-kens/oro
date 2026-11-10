@@ -281,7 +281,7 @@ root@lab:~/scripts# Done
 
 Avoid the home-made version, `if [ -e lockfile ]; then exit; fi; touch lockfile`. Two copies can both pass the check before either creates the file, and if the script is killed, the file stays and blocks every later run until someone deletes it.
 
-## Safe to run twice
+## Making a script safe to run twice
 
 A script is **idempotent** when running it a second time does no harm and changes nothing that is already right. Setup and deploy scripts get re-run all the time: after a failure halfway, by a colleague who is not sure it ran, or by a tool that runs it on every change. Three habits cover most cases.
 

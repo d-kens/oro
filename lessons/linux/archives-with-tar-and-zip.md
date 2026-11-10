@@ -124,7 +124,7 @@ GET /api/orders 200 2
 
 `xz` and `unxz` work the same way, and `xzcat` is their `zcat`.
 
-## Choosing where files go
+## Extracting to another directory
 
 **`-C`** changes to a directory before `tar` does anything else. When extracting, it puts the files somewhere other than where you are standing. The directory must already exist:
 
@@ -163,7 +163,7 @@ site/index.html
 
 A pattern can also use wildcards: `--exclude="*.log"` skips every file ending in `.log` wherever it is, but keeps the empty `logs/` directory. You can give `--exclude` several times.
 
-## Check before you extract
+## Listing an archive before extracting
 
 Extracting writes files with whatever names the archive holds, and quietly replaces files that already exist. Before you extract something you did not make, list it first:
 
@@ -218,7 +218,7 @@ $ unzip -q site.zip -d /tmp/unzipped
 
 `-q` stops `unzip` printing every file. To leave files out, use `-x` with a pattern: `zip -r site.zip site -x "site/logs/*"`. zip does not keep Linux owners, so prefer tar for backups of a Linux system.
 
-## Checking a download
+## Verifying a download with a checksum
 
 A **checksum** is a short fingerprint of a file's contents. Change one byte and the checksum changes completely. Projects publish a SHA-256 checksum next to each download so you can confirm the file arrived intact and is the one they released.
 
