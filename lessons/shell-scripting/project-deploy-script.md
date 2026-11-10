@@ -1,6 +1,6 @@
 Copying new files over a live site works until the day a copy stops halfway or the new version is broken, and then there is no quick way back. In this project you write `deploy.sh`, a script that puts each release in its own timestamped directory, switches the live site to it in one step with a symlink, checks it, and switches back by itself if the check fails. It keeps the last five releases, refuses to run twice at once, and can roll back on request.
 
-It uses *Arguments and input* for `getopts` and the usage message, *Functions* and *Arrays* for the structure and the release list, *Exit codes and errors* for the status it returns, *Robust scripts* for `set -euo pipefail`, a trap and a lock file, and *Real-world scripts* for logging. From the Linux skill it draws on *Links* for symlinks and *Creating and moving files* for `cp` and `mv`.
+It uses *Arguments and input* for `getopts` and the usage message, *Functions* and *Arrays* for the structure and the release list, *Exit codes and errors* for the status it returns, *Robust scripts* for `set -euo pipefail`, a trap and a lock file, and *Real-world scripts* for logging. From the Linux skill it draws on *Hard and symbolic links* for symlinks and *Creating, copying and deleting files* for `cp` and `mv`.
 
 ## What you need
 

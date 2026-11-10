@@ -137,9 +137,9 @@ $ apt upgrade -y
 
 Some upgrades only take effect after a restart: a new kernel needs a reboot, and a new library needs the services that use it restarted. On Ubuntu, the file `/var/run/reboot-required` exists when a reboot is needed.
 
-Most security fixes arrive in `noble-security`. Ubuntu servers install those automatically through the `unattended-upgrades` package, which runs on a schedule. The *Running things on a schedule* topic shows how that kind of job works.
+Most security fixes arrive in `noble-security`. Ubuntu servers install those automatically through the `unattended-upgrades` package, which runs on a schedule. The *Scheduling jobs with cron* topic shows how that kind of job works.
 
-## What a package put where
+## Finding the files a package installed
 
 `dpkg` answers questions about installed packages. `dpkg -L` lists every file a package installed:
 
@@ -181,7 +181,7 @@ $ which cd
 $
 ```
 
-Both print nothing and return an error if the command is not found, so they are a quick test of whether something is installed. `command -v` is built into the shell, works on every system, and also knows about built-in commands like `cd`, which `which` does not. Use `command -v` in scripts. The *Your shell* topic explains how the shell searches for commands.
+Both print nothing and return an error if the command is not found, so they are a quick test of whether something is installed. `command -v` is built into the shell, works on every system, and also knows about built-in commands like `cd`, which `which` does not. Use `command -v` in scripts. The *Environment variables and PATH* topic explains how the shell searches for commands.
 
 ## Tasks
 

@@ -240,7 +240,7 @@ PIPESTATUS: 2 0 0
 
 `grep` failed with 2, but `uniq` worked, so the pipeline reported 0. Bash keeps every command's status from the most recent pipeline in the array `PIPESTATUS`, one entry per command, left to right. Like `$?`, it is replaced by the next command, so read it immediately. The *Robust scripts* topic shows `set -o pipefail`, which makes a pipeline fail when any part of it fails.
 
-## Worked example: grep's three answers
+## Example: grep's three exit codes
 
 `grep` uses its exit status to say more than "worked" or "failed":
 

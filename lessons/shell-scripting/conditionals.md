@@ -121,7 +121,7 @@ The same pattern with numbers turns the output of a command into an alert:
 
 ```bash
 #!/bin/bash
-# disk-alert.sh: warn when the root filesystem is getting full.
+# disk-alert.sh: warn when the root file system is getting full.
 used=$(df --output=pcent / | tail -n 1 | tr -dc '0-9')
 if [[ $used -ge 90 ]]; then
     echo "CRITICAL: / is ${used}% full"
@@ -203,7 +203,7 @@ Unknown environment: 'test'
 
 `case` is the usual way to handle a fixed set of words, such as `start`, `stop` and `status`, which you will use in the *Arguments and input* topic.
 
-## The classic mistakes
+## Common mistakes with if and tests
 
 **Missing spaces in `[ ]`.** `[` is a command, so it needs spaces around it like any other command:
 

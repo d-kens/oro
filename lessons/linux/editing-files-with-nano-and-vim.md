@@ -2,9 +2,9 @@ Sooner or later you need to change a file on a server: a port number in a config
 
 By the end you can open a file in nano, change it and save it, do the same in vim, and get out of vim when you are stuck.
 
-## Get the editors and a file to practise on
+## Installing nano and vim
 
-The Docker Ubuntu image leaves out both editors to stay small. Install them; the *Installing software* topic explains what these commands do.
+The Docker Ubuntu image leaves out both editors to stay small. Install them; the *Installing software with apt* topic explains what these commands do.
 
 ```bash
 $ apt update && apt install -y nano vim
@@ -30,7 +30,7 @@ Before you edit a real config file, copy it. If your change breaks something, yo
 $ cp app.conf app.conf.bak
 ```
 
-## nano
+## Editing with nano
 
 Open the file by giving its name. If the file does not exist, nano creates it when you save.
 
@@ -174,7 +174,7 @@ E486: Pattern not found: nothere
 
 You will also see `h`, `j`, `k` and `l` used to move left, down, up and right. They come from keyboards that had no arrow keys, and many people still use them because their hands stay on the letters.
 
-## Editing files you do not own
+## Editing files as root with sudo
 
 Most config files live under `/etc` and belong to root. As an ordinary user you can open them but not save them; nano says `Permission denied` when you try to write. Open the file as root instead, with `sudo nano /etc/...` or `sudo vim /etc/...`. The *Users and permissions* topic explains owners and `sudo`.
 

@@ -42,7 +42,7 @@ $ printenv HOME
 
 By convention, environment variables are written in capitals.
 
-## export
+## Passing variables on with export
 
 A plain variable belongs to the current shell only. A program you start from it, including another shell, does not see it. `export` moves the variable into the environment, so every program started afterwards receives a copy:
 
@@ -136,7 +136,7 @@ $ unalias ports
 
 Ubuntu already defines several, such as `ll`, `la`, and `ls` with colours. Aliases only work in an interactive shell you are typing into. Scripts ignore them, so do not rely on one inside a script; write the full command there.
 
-## The files your shell reads
+## Shell startup files
 
 Everything above disappears when you close the shell. To keep it, put it in a file the shell reads when it starts. Which file depends on how the shell was started:
 
@@ -148,7 +148,7 @@ Everything above disappears when you close the shell. To keep it, put it in a fi
 
 On Ubuntu, `~/.profile` also reads `~/.bashrc`, so a login shell gets both. If a `~/.bash_profile` exists, Bash reads it instead of `~/.profile`, which is a common reason for settings that seem to be ignored.
 
-Scripts and **cron jobs read neither file**. A command that works in your terminal because of something in `~/.bashrc` can fail when cron runs it. The *Running things on a schedule* topic deals with this.
+Scripts and **cron jobs read neither file**. A command that works in your terminal because of something in `~/.bashrc` can fail when cron runs it. The *Scheduling jobs with cron* topic deals with this.
 
 Editing the file changes nothing in shells that are already running. `source` reads a file into the current shell, so you can apply a change without logging out:
 
@@ -163,7 +163,7 @@ c is aliased to `clear'
 
 `. ~/.bashrc`, with a dot, does the same thing. Running the file as a script instead, with `bash ~/.bashrc`, would load it into a child shell that exits straight away.
 
-## The prompt
+## Changing the prompt
 
 The prompt is the value of the variable **`PS1`**. Ubuntu sets it in `~/.bashrc`. Special sequences stand for live values: `\u` the user, `\h` the host name, `\w` the current directory, `\t` the time, and `\$` a `$`, or `#` for root.
 

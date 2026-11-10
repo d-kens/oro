@@ -17,7 +17,7 @@ In the Docker container your shell is PID 1, because it is the first and only th
 
 The kernel shows every process as a directory under `/proc`, named after its PID. Tools such as `ps` read their information from there.
 
-## Seeing what is running
+## Listing processes with ps
 
 `ps` on its own lists the processes started from this terminal:
 
@@ -61,7 +61,7 @@ $ pgrep -a sleep
 14 sleep 600
 ```
 
-`top` shows the same list, sorted by CPU use and updated every few seconds. The *Watching a machine* topic covers it.
+`top` shows the same list, sorted by CPU use and updated every few seconds. The *Monitoring CPU, memory and load* topic covers it.
 
 ## Foreground and background
 
@@ -121,7 +121,7 @@ $ kill 4312
 bash: kill: (4312) - No such process
 ```
 
-## Stopping a process that will not stop
+## Force-stopping a process with kill -9
 
 Work up from polite to forceful:
 
@@ -195,7 +195,7 @@ The shell reports a finished job just before it shows the next prompt, so the `T
 
 ### Task 2: Deal with a stubborn process
 
-Create `stubborn.sh` from the script above with the editor from the *Editing files* topic, make it executable with `chmod u+x stubborn.sh`, and start it in the background. Try to stop it with a plain `kill`, confirm it is still running, then stop it for good.
+Create `stubborn.sh` from the script above with the editor from the *Editing files with nano and vim* topic, make it executable with `chmod u+x stubborn.sh`, and start it in the background. Try to stop it with a plain `kill`, confirm it is still running, then stop it for good.
 
 <details>
 <summary>Check your work</summary>

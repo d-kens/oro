@@ -2,7 +2,7 @@ Shell scripts fail in quiet ways. A file name with a space splits into two words
 
 This topic gives you the tools to see what a script is actually doing. By the end you can check a script's syntax without running it, trace every command it runs with line numbers, use ShellCheck to find bugs before they happen, and follow a steady method to track a fault down to one line.
 
-## Read the error, then check the syntax
+## Reading the error and checking the syntax
 
 Start with the message Bash gives you. It names the script and the line, and that is usually where to look first:
 
@@ -15,7 +15,7 @@ Syntax errors are different, because the line number can point well past the rea
 
 ```bash
 #!/bin/bash
-# check-disk.sh: warn when the root filesystem is nearly full.
+# check-disk.sh: warn when the root file system is nearly full.
 used=$(df --output=pcent / | tail -n 1 | tr -dc '0-9')
 if [ "$used" -gt 80 ]; then
     echo "Disk is ${used}% full"
@@ -277,7 +277,7 @@ Total: 11455 bytes
 
 `DEBUG=1 ./sum-sizes.sh` sets the variable for that one run. The mistake to avoid is debug `echo`s on stdout: in a script whose output is captured with `$( )`, they become part of the result and cause a second bug while you hunt the first.
 
-## A method that works
+## A step-by-step debugging method
 
 Staring at a script rarely finds the bug. A steady routine does:
 

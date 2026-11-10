@@ -37,7 +37,7 @@ no crontab for root
 
 Besides personal crontabs there are system-wide ones: `/etc/crontab` and the files in `/etc/cron.d/`. Their lines have an extra field, the user to run the job as. Scripts dropped into `/etc/cron.daily/`, `/etc/cron.weekly/` and similar directories run once a day or once a week.
 
-## The schedule
+## Writing a cron schedule
 
 Each line of a crontab is one job: five time fields, then the command.
 
@@ -70,9 +70,9 @@ A `*` means "every". The job runs when all the fields match the current time. Wi
 
 Times are in the server's time zone, which on cloud servers is usually UTC. Check with `date`. Two common mistakes: `* 2 * * *` runs every minute from 02:00 to 02:59, not once, and the minute comes **before** the hour.
 
-## The job's environment and its output
+## A cron job's environment and output
 
-Cron does not run your job the way your terminal would. It starts it with `/bin/sh`, from your home directory, with very few environment variables, and without reading `~/.bashrc` or `~/.profile`. The *Your shell* topic explains those files. In practice:
+Cron does not run your job the way your terminal would. It starts it with `/bin/sh`, from your home directory, with very few environment variables, and without reading `~/.bashrc` or `~/.profile`. The *Environment variables and PATH* topic explains those files. In practice:
 
 - Use **full paths** for scripts and files: `/root/bin/report.sh`, not `report.sh` or `~/bin/report.sh`.
 - Do not count on variables or aliases from your startup files. Set what the job needs in the script.
@@ -84,7 +84,7 @@ Anything a job prints has nowhere to go. Cron tries to email it to the user, and
 30 2 * * * /usr/local/bin/backup.sh >> /var/log/backup.log 2>&1
 ```
 
-`>>` adds to the file each time instead of replacing it, and `2>&1` sends error messages to the same place as normal output. The *Pipes and text* topic explains both. Without `2>&1`, the one message you need when a job fails is the one you lose.
+`>>` adds to the file each time instead of replacing it, and `2>&1` sends error messages to the same place as normal output. The *Pipes and text processing* topic explains both. Without `2>&1`, the one message you need when a job fails is the one you lose.
 
 ## Checking that a job ran
 

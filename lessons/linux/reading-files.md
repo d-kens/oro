@@ -118,9 +118,9 @@ request 104 handled
 request 105 handled
 ```
 
-The `|` sends what `head` prints into `tail` instead of to the screen. It is called a **pipe**, and the *Pipes and text* topic covers it.
+The `|` sends what `head` prints into `tail` instead of to the screen. It is called a **pipe**, and the *Pipes and text processing* topic covers it.
 
-## Following a log as it grows
+## Following a log with tail -f
 
 When a service is running, its log keeps growing. `tail -f` (*follow*) prints the last lines and then waits, printing each new line as it is written:
 

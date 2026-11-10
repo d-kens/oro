@@ -2,9 +2,9 @@ A script you run by hand can be rough: you watch it, read its output and fix thi
 
 This topic builds one such script, section by section: a clean-up job that deletes old files from an upload folder. By the end you can add logging, a config file, environment overrides, `--dry-run` and `--help` to a script, run it safely from cron, and raise an alert when it fails.
 
-## The starting point
+## The script to improve
 
-The core of the job is one `find` command, which the Linux skill's *Finding things* topic introduced:
+The core of the job is one `find` command, which the Linux skill's *Searching for files and text* topic introduced:
 
 ```bash
 #!/bin/bash
@@ -24,7 +24,7 @@ root@lab:/var/tmp/uploads# touch -d "3 days ago" report-3.csv && touch today.csv
 root@lab:/var/tmp/uploads# cd ~/scripts
 ```
 
-## Logging
+## Adding logging
 
 A log line needs three things: **when** it happened, **how serious** it is, and **what** happened. A small function gives every line the same shape:
 
@@ -188,7 +188,7 @@ END
 
 ## Running from cron
 
-The Linux skill's *Running things on a schedule* topic showed how to write a crontab line. Scripts that work by hand and fail under cron almost always fail for one of three reasons.
+The Linux skill's *Scheduling jobs with cron* topic showed how to write a crontab line. Scripts that work by hand and fail under cron almost always fail for one of three reasons.
 
 **A different environment.** Cron starts jobs with almost nothing set: no aliases, none of your shell settings, and a short `PATH`, often just `/usr/bin:/bin`. A command in `/usr/local/bin` or `/usr/sbin` is then "not found". Set `PATH` near the top of the script, so it no longer depends on who started it:
 
@@ -270,7 +270,7 @@ root@lab:~/scripts# cat /var/log/alerts.log
 
 Monitoring tools that watch for a job, rather than wait for an alert, also work from the exit status, so getting it right matters more than any single message.
 
-## The whole script
+## The finished script
 
 ```bash
 #!/bin/bash

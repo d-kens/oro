@@ -21,7 +21,7 @@ Anything you save in `~/scripts` on your computer appears in the container strai
 
 To edit inside the container instead, install nano once per session with `apt update && apt install -y nano`.
 
-## Your first script
+## Writing your first script
 
 A script is a plain text file. Create `hello.sh` with these three lines:
 
@@ -119,7 +119,7 @@ A script is read far more often than it is written. A few habits from the start:
 
 ```bash
 #!/bin/bash
-# disk-report.sh: show how full the root filesystem is.
+# disk-report.sh: show how full the root file system is.
 # Usage: ./disk-report.sh
 
 echo "Disk use on $(hostname), $(date +%F)"

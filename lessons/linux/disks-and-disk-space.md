@@ -1,12 +1,12 @@
 A full disk is one of the most common reasons a server stops working. Logs stop being written, databases refuse new data, and programs fail with errors that do not mention disk space at all. Knowing how to see what is using the space, and where, is a skill you will use often.
 
-By the end you can check how full each filesystem is, find the directories that are using the space, list the disks a machine has, read what is mounted where, and work through a full disk calmly.
+By the end you can check how full each file system is, find the directories that are using the space, list the disks a machine has, read what is mounted where, and work through a full disk calmly.
 
-## Disks, filesystems and mounting
+## Disks, file systems and mounting
 
-A **disk** is raw storage: a physical drive, or on a cloud server a virtual volume. Before it can hold files, it is usually split into **partitions** and each partition is formatted with a **filesystem**, the structure that keeps track of files, directories and free space. Common filesystems on Linux are **ext4** and **xfs**.
+A **disk** is raw storage: a physical drive, or on a cloud server a virtual volume. Before it can hold files, it is usually split into **partitions** and each partition is formatted with a **file system**, the structure that keeps track of files, directories and free space. Common file systems on Linux are **ext4** and **xfs**.
 
-Windows gives each disk a letter. Linux has a single directory tree that starts at `/`, and each filesystem is attached to a directory in it. Attaching it is called **mounting**, and the directory is its **mount point**. A server might have its system disk mounted at `/` and a second disk for data mounted at `/var/lib/postgresql`. You move between them with `cd` and never notice the boundary, but each one has its own size and fills up on its own.
+Windows gives each disk a letter. Linux has a single directory tree that starts at `/`, and each file system is attached to a directory in it. Attaching it is called **mounting**, and the directory is its **mount point**. A server might have its system disk mounted at `/` and a second disk for data mounted at `/var/lib/postgresql`. You move between them with `cd` and never notice the boundary, but each one has its own size and fills up on its own.
 
 `lsblk` lists the block devices, which means disks and partitions, as a tree:
 
@@ -19,11 +19,11 @@ nvme0n1      259:0    0   20G  0 disk
 nvme1n1      259:3    0  100G  0 disk /data
 ```
 
-This server has two disks. The first has two partitions, mounted at `/` and `/boot/efi`. The second disk is used whole, with no partitions, and is mounted at `/data`. In a Docker container `lsblk` shows the host's disks, which can look confusing; the container's own files sit on a layered filesystem called `overlay`.
+This server has two disks. The first has two partitions, mounted at `/` and `/boot/efi`. The second disk is used whole, with no partitions, and is mounted at `/data`. In a Docker container `lsblk` shows the host's disks, which can look confusing; the container's own files sit on a layered file system called `overlay`.
 
-## How full is each filesystem: df
+## How full is each file system: df
 
-`df` (*disk free*) shows each mounted filesystem, how big it is, and how much is used. `-h` prints sizes in K, M and G instead of blocks:
+`df` (*disk free*) shows each mounted file system, how big it is, and how much is used. `-h` prints sizes in K, M and G instead of blocks:
 
 ```bash
 $ df -h
@@ -34,9 +34,9 @@ tmpfs           1.9G     0  1.9G   0% /dev/shm
 /dev/nvme1n1     98G   41G   53G  44% /data
 ```
 
-Read the `Use%` and `Mounted on` columns first. `tmpfs` lines are filesystems held in memory, not on disk, and you can usually ignore them.
+Read the `Use%` and `Mounted on` columns first. `tmpfs` lines are file systems held in memory, not on disk, and you can usually ignore them.
 
-To check only the filesystem that holds a particular directory, pass it as an argument. `-T` adds the filesystem type:
+To check only the file system that holds a particular directory, pass it as an argument. `-T` adds the file system type:
 
 ```bash
 $ df -hT /var/log
@@ -44,13 +44,13 @@ Filesystem     Type  Size  Used Avail Use% Mounted on
 /dev/nvme0n1p1 ext4   20G   15G  4.2G  78% /
 ```
 
-`/var/log` is not a mount point of its own, so `df` reports the filesystem it lives on, which is `/`.
+`/var/log` is not a mount point of its own, so `df` reports the file system it lives on, which is `/`.
 
-A filesystem can also run out of **inodes**, the entries that record each file, while it still has space. That happens with millions of tiny files. `df -i` shows inode use in the same layout; if `IUse%` is at 100%, nothing new can be created, whatever `df -h` says.
+A file system can also run out of **inodes**, the entries that record each file, while it still has space. That happens with millions of tiny files. `df -i` shows inode use in the same layout; if `IUse%` is at 100%, nothing new can be created, whatever `df -h` says.
 
 ## What is using the space: du
 
-`df` tells you a filesystem is full. `du` (*disk usage*) tells you which files and directories are filling it. `-s` gives one total per argument and `-h` makes it readable:
+`df` tells you a file system is full. `du` (*disk usage*) tells you which files and directories are filling it. `-s` gives one total per argument and `-h` makes it readable:
 
 ```bash
 $ du -sh /var/log
@@ -68,7 +68,7 @@ $ du -sh /var/* 2>/dev/null | sort -rh | head -5
 4.0K	/var/spool
 ```
 
-`2>/dev/null` throws away the error messages for directories you cannot read; the *Pipes and text* topic explains it. Then repeat the same command one level down, into the largest directory, until you reach the files themselves:
+`2>/dev/null` throws away the error messages for directories you cannot read; the *Pipes and text processing* topic explains it. Then repeat the same command one level down, into the largest directory, until you reach the files themselves:
 
 ```bash
 $ du -sh /var/log/* 2>/dev/null | sort -rh | head -3
@@ -77,7 +77,7 @@ $ du -sh /var/log/* 2>/dev/null | sort -rh | head -3
 1.2M	/var/log/apt
 ```
 
-To stay on one filesystem and not wander into other disks mounted below the directory you are measuring, add `-x`. `find` can also look for large files directly, as the *Finding things* topic showed:
+To stay on one file system and not wander into other disks mounted below the directory you are measuring, add `-x`. `find` can also look for large files directly, as the *Searching for files and text* topic showed:
 
 ```bash
 $ find / -xdev -type f -size +100M 2>/dev/null
@@ -86,7 +86,7 @@ $ find / -xdev -type f -size +100M 2>/dev/null
 
 ## Mounting and /etc/fstab
 
-`mount` with no arguments lists every mounted filesystem. The list is long, so `findmnt` is easier to read for one mount point:
+`mount` with no arguments lists every mounted file system. The list is long, so `findmnt` is easier to read for one mount point:
 
 ```bash
 $ findmnt /data
@@ -94,7 +94,7 @@ TARGET SOURCE       FSTYPE OPTIONS
 /data  /dev/nvme1n1 xfs    rw,relatime
 ```
 
-To attach a filesystem, give `mount` the device and the mount point, which must be an existing directory. `umount` (no *n*) detaches it:
+To attach a file system, give `mount` the device and the mount point, which must be an existing directory. `umount` (no *n*) detaches it:
 
 ```bash
 $ mkdir -p /mnt/backup
@@ -112,16 +112,16 @@ UUID=2c1f8a4e-5b0d-4e1a-9f2c-7d3e6b8a1c40  /data  xfs  defaults,nofail  0  2
 | --- | --- | --- |
 | Device | `UUID=2c1f…` | What to mount. A UUID is used because device names can change between boots |
 | Mount point | `/data` | Where to attach it |
-| Type | `xfs` | The filesystem type |
+| Type | `xfs` | The file system type |
 | Options | `defaults,nofail` | How to mount it; `nofail` lets the machine boot even if this disk is missing |
 | Dump | `0` | Used by an old backup tool; almost always `0` |
-| Check order | `2` | When to check the filesystem at boot: `1` for `/`, `2` for others, `0` for never |
+| Check order | `2` | When to check the file system at boot: `1` for `/`, `2` for others, `0` for never |
 
 `lsblk -f` shows each device's UUID. Be careful with this file: a mistake in it can stop a server from booting. After you change it, run `mount -a` to mount everything it lists, and fix any error before you reboot. The Docker container has an empty `fstab`, because the container does not boot.
 
-## A full disk
+## Fixing a full disk
 
-When a filesystem fills up, programs fail when they try to write:
+When a file system fills up, programs fail when they try to write:
 
 ```bash
 $ echo test > /data/test.txt
@@ -130,7 +130,7 @@ bash: echo: write error: No space left on device
 
 Work through it in order:
 
-1. `df -h` to see which filesystem is full.
+1. `df -h` to see which file system is full.
 2. `du -sh <mount point>/* | sort -rh | head` to find the largest directory, and repeat one level down until you find the files.
 3. Decide what can go. Old, rotated logs like `app.log.1` are usually safe to delete. A database's data files are not.
 
@@ -175,7 +175,7 @@ $ dd if=/dev/zero of=~/data/cache/blob bs=1M count=50 status=none
 $ echo "remember the milk" > ~/data/notes/todo.txt
 ```
 
-`fallocate` and `dd` both create a file of a given size. Now use `du` and `sort` to list the directories in `~/data` with the largest first, and find the single largest file. Then use `df` to see how much space is free on the filesystem that holds `~/data`.
+`fallocate` and `dd` both create a file of a given size. Now use `du` and `sort` to list the directories in `~/data` with the largest first, and find the single largest file. Then use `df` to see how much space is free on the file system that holds `~/data`.
 
 <details>
 <summary>Check your work</summary>
@@ -198,7 +198,7 @@ Your sizes on `df` will differ. If the order comes out as `8.0K`, `51M`, `301M`,
 
 ### Task 2: Fill a disk and recover
 
-This task needs a container that is allowed to mount filesystems. Exit your container and start one with `--privileged`:
+This task needs a container that is allowed to mount file systems. Exit your container and start one with `--privileged`:
 
 ```bash
 $ docker run -it --rm --privileged --hostname lab ubuntu:24.04
@@ -214,7 +214,7 @@ $ mkdir -p /mnt/data
 $ mount -o loop disk.img /mnt/data
 ```
 
-Now create `/mnt/data/logs`, write a 60 MB `app.log` and a 60 MB `app.log.1` into it with `dd`, and see what happens. Find out which filesystem is full and which file is largest, free the space by deleting the old log, and confirm with `df`. Finish with `umount /mnt/data`.
+Now create `/mnt/data/logs`, write a 60 MB `app.log` and a 60 MB `app.log.1` into it with `dd`, and see what happens. Find out which file system is full and which file is largest, free the space by deleting the old log, and confirm with `df`. Finish with `umount /mnt/data`.
 
 <details>
 <summary>Check your work</summary>
@@ -240,7 +240,7 @@ Filesystem      Size  Used Avail Use% Mounted on
 $ umount /mnt/data
 ```
 
-The filesystem is smaller than 100 MB because ext4 keeps some of the space for its own records. The second file stopped at 28 MB, when the disk filled. If `mount` fails with `mount failed: No such file or directory`, the container was not started with `--privileged`.
+The file system is smaller than 100 MB because ext4 keeps some of the space for its own records. The second file stopped at 28 MB, when the disk filled. If `mount` fails with `mount failed: No such file or directory`, the container was not started with `--privileged`.
 
 </details>
 
@@ -251,7 +251,7 @@ The filesystem is smaller than 100 MB because ext4 keeps some of the space for i
 <details>
 <summary>Show answer</summary>
 
-`df` reports how full each mounted filesystem is, as a whole. `du` adds up the size of the files and directories you point it at. Use `df` to find which filesystem is full, then `du` to find what is filling it.
+`df` reports how full each mounted file system is, as a whole. `du` adds up the size of the files and directories you point it at. Use `df` to find which file system is full, then `du` to find what is filling it.
 
 </details>
 
@@ -260,7 +260,7 @@ The filesystem is smaller than 100 MB because ext4 keeps some of the space for i
 <details>
 <summary>Show answer</summary>
 
-Check the filesystem the application actually writes to, with `df -h` on its directory, because it may be a separate mount that is full. Then check inodes with `df -i`: a filesystem with no free inodes reports the same error even when it has space.
+Check the file system the application actually writes to, with `df -h` on its directory, because it may be a separate mount that is full. Then check inodes with `df -i`: a file system with no free inodes reports the same error even when it has space.
 
 </details>
 
@@ -278,6 +278,6 @@ A running program still has the file open, so the space is not freed until the p
 <details>
 <summary>Show answer</summary>
 
-Device names are given out in the order disks are found at boot, and they can change when a disk is added or removed. A UUID belongs to the filesystem itself, so the line always points at the same filesystem.
+Device names are given out in the order disks are found at boot, and they can change when a disk is added or removed. A UUID belongs to the file system itself, so the line always points at the same file system.
 
 </details>
