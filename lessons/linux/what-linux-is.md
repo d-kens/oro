@@ -215,9 +215,8 @@ Create a file called `machine.txt` in your home directory. First run `cd ~` to g
 1. the user you are logged in as
 2. the machine's name
 3. the kernel version
-4. the `PRETTY_NAME` line from `/etc/os-release`
 
-Use `>` for the first line and `>>` for the rest. You can find a single line of a file with `grep PRETTY_NAME /etc/os-release`; the *Searching for files and text* topic explains `grep`.
+Use `>` for the first line and `>>` for the rest.
 
 <details>
 <summary>Check your work</summary>
@@ -227,15 +226,13 @@ $ cd ~
 $ whoami > machine.txt
 $ hostname >> machine.txt
 $ uname -r >> machine.txt
-$ grep PRETTY_NAME /etc/os-release >> machine.txt
 $ cat machine.txt
 root
 lab
 6.12.54-linuxkit
-PRETTY_NAME="Ubuntu 24.04.5 LTS"
 ```
 
-You should see four lines. If you see only the last one, you used `>` where you meant `>>`, and each command replaced the file.
+You should see three lines. If you see only the last one, you used `>` where you meant `>>`, and each command replaced the file.
 
 </details>
 
