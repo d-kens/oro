@@ -1,57 +1,74 @@
 ## The Linux file system
 
-A **file** is a named piece of data, such as a document, a program or a log.
+The Linux **file system** is how Linux organises, stores and manages files and directories (folders).
 
-A **directory** is a container that holds files and other directories. Windows and macOS call it a folder. A directory inside another one is a *subdirectory*.
+## Key characteristics
 
-A **file system** is the way the files and directories on a machine are organised and stored.
+- **A single root directory, `/`.** Everything starts from one top-level directory called the root directory. Unlike Windows, which uses separate drive letters such as `C:\` and `D:\`, Linux organises its directory structure as one tree. Disks, partitions and USB drives are mounted at specific directories within this tree.
+- **Everything is a file.** Linux follows the philosophy that many system resources can be accessed through file-like interfaces. For example, devices are represented in `/dev`, such as `/dev/sda`, while information about the kernel and running processes is exposed through `/proc`, such as `/proc/cpuinfo`. This allows you to interact with many system resources using familiar file operations and commands.
+- **The Filesystem Hierarchy Standard (FHS).** The FHS defines the standard directory structure and specifies where different types of files should be located. Most distributions follow it, so the layout looks much the same on each one.
 
-Linux keeps everything in a single tree of directories. The tree starts at the **root directory**, written as `/`, and every file and directory on the machine sits somewhere below it.
+## Core directory structure
 
-Windows gives each disk its own letter, such as `C:` and `D:`. Linux has no drive letters. A second disk is attached to a directory inside the tree, such as `/data`, and you open it like any other directory. The *Disks and disk space* topic covers this.
+1. **`/` (root)**
+   - The top-level directory from which the entire Linux directory hierarchy begins.
+   - Every file and directory exists somewhere under it.
 
-Run `ls /` to see the top of the tree:
+2. **`/bin` and `/sbin`**
+   - Contain essential commands.
+   - `/bin`: essential commands available to all users, such as `ls`, `cp` and `cat`.
+   - `/sbin`: essential system administration commands, such as `useradd` and `reboot`.
+   - On modern distributions such as Ubuntu, these directories are typically symbolic links to `/usr/bin` and `/usr/sbin`, respectively.
 
-```bash
-$ ls /
-bin   dev  home  media  opt   root  sbin  sys  usr
-boot  etc  lib   mnt    proc  run   srv   tmp  var
-```
+3. **`/boot`**
+   - Contains files required to boot the system, including the Linux kernel and boot loader files.
 
-## What each directory holds
+4. **`/dev`**
+   - Contains device files representing hardware and virtual devices, such as disks (`/dev/sda`) and terminals (`/dev/tty`).
 
-The layout follows the **Filesystem Hierarchy Standard (FHS)**, so it is much the same on every distribution. Once you know where logs and config files live on one server, you know where they live on the next.
+5. **`/etc`**
+   - Contains system-wide configuration files for the operating system and installed applications.
 
-The directories you will use most:
+6. **`/home`**
+   - Contains the personal directories of regular users.
+   - For example, `/home/sam` is Sam's home directory.
 
-| Directory | What lives there |
-| --- | --- |
-| `/etc` | Configuration files for the system and for installed software |
-| `/home` | One home directory per ordinary user, such as `/home/sam` |
-| `/root` | The home directory of the `root` user |
-| `/var` | Files that change while the machine runs. Logs are in `/var/log` |
-| `/tmp` | Temporary files that anyone can write, which may be deleted on restart |
-| `/usr` | Installed programs. Most commands you run, such as `ls`, are in `/usr/bin` |
-| `/opt` | Software installed outside the package manager |
+7. **`/root`**
+   - The home directory of the `root` user (the system administrator).
+   - `/` is the top of the whole file system, `/root` is the root user's home, and `/home` holds the home directories of everyone else.
 
-The rest are used by the system, and you will open them less often:
+8. **`/lib` and `/lib64`**
+   - Contain essential shared libraries and kernel modules required by system programs.
+   - On modern distributions, these may be symbolic links into `/usr`.
 
-| Directory | What lives there |
-| --- | --- |
-| `/bin`, `/sbin`, `/lib` | Commands and the libraries they need. On Ubuntu these point to the same directories under `/usr` |
-| `/boot` | The kernel and the files needed to start the machine |
-| `/dev` | Devices, such as disks, shown as files |
-| `/proc`, `/sys` | Information about running processes and hardware, created by the kernel. They are not stored on disk |
-| `/run` | Data that running programs keep until the next restart |
-| `/media`, `/mnt` | Where USB drives and other disks are attached |
-| `/srv` | Data the machine serves, such as website files. Often empty |
+9. **`/media`**
+   - Commonly used as a mount point for removable storage devices, such as USB drives and external disks.
 
-`/etc/hostname` is a file that holds the machine's name. Print it with `cat`:
+10. **`/mnt`**
+   - A conventional mount point for temporarily mounting file systems, often manually by an administrator.
 
-```bash
-$ cat /etc/hostname
-lab
-```
+11. **`/opt`**
+   - Used for installing optional or third-party software packages that are typically self-contained.
+
+12. **`/proc`**
+   - A virtual file system that exposes information about running processes and the kernel.
+   - For example, `/proc/cpuinfo` provides information about the system's CPU.
+
+13. **`/sys`**
+   - A virtual file system that exposes information about hardware devices, device drivers and the kernel through the sysfs interface.
+   - Both `/proc` and `/sys` are virtual, but `/proc` is mainly about processes and the kernel, while `/sys` is about devices and drivers.
+
+14. **`/tmp`**
+   - Stores temporary files created by applications and users.
+   - Its contents may be deleted when the system restarts.
+
+15. **`/usr`**
+   - Contains user-space applications, utilities, libraries, documentation and other shared resources.
+   - Examples include `/usr/bin`, `/usr/lib` and `/usr/share`.
+
+16. **`/var`**
+   - Contains variable data that changes during system operation, such as logs (`/var/log`), application caches (`/var/cache`) and application data.
+   - When a service fails, its logs in `/var/log` are usually the first place to look.
 
 ## The working directory and pwd
 
@@ -64,21 +81,9 @@ $ pwd
 /root
 ```
 
-Your **home directory** is the directory that belongs to you, where you keep your own files. When you log in, you start there.
-
-- For an ordinary user called `sam`, it is `/home/sam`.
-- For `root`, it is `/root`.
-
-The Docker container from the first topic is an exception: it starts you in `/`.
+Your **home directory** is the directory that belongs to you, where you keep your own files: `/home/<your name>` for an ordinary user and `/root` for `root`, as in the list above. When you log in, you start there. The Docker container from the first topic is an exception: it starts you in `/`.
 
 The prompt shows your home directory as `~`, and usually shows where you are, so you rarely need `pwd`. It is still useful when the prompt is short or when a script needs to know.
-
-The shell keeps the path of your home directory in a variable called `HOME`. A **variable** is a name that holds a value. `echo` prints it:
-
-```bash
-$ echo $HOME
-/root
-```
 
 ## Absolute and relative paths
 
@@ -132,8 +137,7 @@ Shortcuts you will use often:
 
 | Command | Where it takes you |
 | --- | --- |
-| `cd` | Your home directory |
-| `cd ~` | Your home directory |
+| `cd` or `cd ~` | Your home directory |
 | `cd ..` | One level up |
 | `cd -` | The directory you were in before this one |
 | `cd /` | The root directory |
@@ -151,37 +155,46 @@ $ cd -
 
 ## Common cd errors
 
-Paths are **case-sensitive**: `/var` exists, `/Var` does not. The shell tells you when a path is wrong:
+1. **Wrong case**
+   - Paths are **case-sensitive**: `/var` exists, `/Var` does not.
 
-```bash
-$ cd /Var
-bash: cd: /Var: No such file or directory
-$ cd /etc/hostname
-bash: cd: /etc/hostname: Not a directory
-```
+   ```bash
+   $ cd /Var
+   bash: cd: /Var: No such file or directory
+   ```
 
-- `No such file or directory` means nothing exists at that path.
-- `Not a directory` means the path exists, but it is a file. You can read a file, but you cannot move into it.
+   - `No such file or directory` means nothing exists at that path. Check the spelling and the case.
 
-The most common mistake is using a relative path from the wrong place. `cd root` means "the `root` directory inside where I am", so it only works from `/`:
+2. **A file instead of a directory**
 
-```bash
-$ cd /tmp
-$ cd root
-bash: cd: root: No such file or directory
-$ cd /root
-$ pwd
-/root
-```
+   ```bash
+   $ cd /etc/hostname
+   bash: cd: /etc/hostname: Not a directory
+   ```
 
-Names with spaces also cause errors, because the shell splits a command into parts at each space. Put the path in quotes, or put a backslash (`\`) before each space:
+   - `Not a directory` means the path exists, but it is a file. You can read a file, but you cannot move into it.
 
-```bash
-$ cd my files
-bash: cd: too many arguments
-$ cd "my files"
-$ cd ../my\ files
-```
+3. **A relative path from the wrong place**
+   - This is the most common mistake. `cd root` means "the `root` directory inside where I am", so it only works from `/`. Use the absolute path, `/root`, instead:
+
+   ```bash
+   $ cd /tmp
+   $ cd root
+   bash: cd: root: No such file or directory
+   $ cd /root
+   $ pwd
+   /root
+   ```
+
+4. **Spaces in names**
+   - The shell splits a command into parts at each space, so `cd my files` looks like two paths. Put the path in quotes, or put a backslash (`\`) before each space:
+
+   ```bash
+   $ cd my files
+   bash: cd: too many arguments
+   $ cd "my files"
+   $ cd ../my\ files
+   ```
 
 The <kbd>Tab</kbd> key prevents most of these mistakes:
 
