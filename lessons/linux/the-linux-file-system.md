@@ -1,74 +1,75 @@
 ## The Linux file system
 
-The Linux **file system** is how Linux organises, stores and manages files and directories (folders).
+Unlike Windows, which uses drive letters like `C:\` and `D:\`, the Linux file system is organized as a single, unified hierarchical tree structure starting from a single root directory represented by a forward slash (`/`). Everything on a Linux system—including files, directories, hard drives, USB sticks, and even peripheral devices—lives somewhere under this root directory.
 
-## Key characteristics
+![The root directory, /, with the main directories directly under it: /bin, /boot, /dev, /etc, /home, /lib, /media, /mnt, /opt, /proc, /root, /run, /sbin, /srv, /sys, /tmp, /usr and /var](/images/linux/file-system-tree.png)
 
-- **A single root directory, `/`.** Everything starts from one top-level directory called the root directory. Unlike Windows, which uses separate drive letters such as `C:\` and `D:\`, Linux organises its directory structure as one tree. Disks, partitions and USB drives are mounted at specific directories within this tree.
-- **Everything is a file.** Linux follows the philosophy that many system resources can be accessed through file-like interfaces. For example, devices are represented in `/dev`, such as `/dev/sda`, while information about the kernel and running processes is exposed through `/proc`, such as `/proc/cpuinfo`. This allows you to interact with many system resources using familiar file operations and commands.
-- **The Filesystem Hierarchy Standard (FHS).** The FHS defines the standard directory structure and specifies where different types of files should be located. Most distributions follow it, so the layout looks much the same on each one.
+## Key Directories in the Linux Hierarchy
 
-## Core directory structure
+According to the Filesystem Hierarchy Standard (FHS), standard directories serve specific purposes across almost all Linux distributions:
 
 1. **`/` (root)**
-   - The top-level directory from which the entire Linux directory hierarchy begins.
-   - Every file and directory exists somewhere under it.
+   - The topmost level of the entire file system. Every file and folder branches off here.
+     - Every file's location can be written starting from `/`. For example, `/etc/hosts` means: start at `/`, go into the `etc` directory, then find the file `hosts`.
+     - A location that starts with `/` points to the same place no matter which directory you are in.
+     - `cd /` takes you to the top of the tree, and `ls /` lists the directories in this section.
+     - You rarely create files directly in `/`. It holds the system directories below.
 
-2. **`/bin` and `/sbin`**
-   - Contain essential commands.
-   - `/bin`: essential commands available to all users, such as `ls`, `cp` and `cat`.
-   - `/sbin`: essential system administration commands, such as `useradd` and `reboot`.
-   - On modern distributions such as Ubuntu, these directories are typically symbolic links to `/usr/bin` and `/usr/sbin`, respectively.
+2. **`/bin`**
+   - Basic commands that every user needs, such as `ls`, `cp` and `cat`. On most modern distributions, `/bin` is a link to `/usr/bin`.
+     - When you type `ls`, the shell looks through the directories listed in your `PATH` variable, finds the `ls` program and runs it.
+     - `which ls` shows where a command is stored.
 
 3. **`/boot`**
-   - Contains files required to boot the system, including the Linux kernel and boot loader files.
+   - Boot loader files, Linux kernel images, and RAM disks needed during the computer's startup process (`vmlinuz`, `grub`).
 
 4. **`/dev`**
-   - Contains device files representing hardware and virtual devices, such as disks (`/dev/sda`) and terminals (`/dev/tty`).
+   - Device files. Linux treats hardware devices as files (e.g., hard drives like `/dev/sda`, terminals like `/dev/tty`).
 
 5. **`/etc`**
-   - Contains system-wide configuration files for the operating system and installed applications.
+   - System-wide configuration files (e.g., network settings, and the list of user accounts in `/etc/passwd`).
 
 6. **`/home`**
-   - Contains the personal directories of regular users.
-   - For example, `/home/sam` is Sam's home directory.
+   - Home directories for normal users (e.g., `/home/username`). Personal documents, downloads, and configs live here.
+     - This is where you work every day. Your home directory is the folder inside `/home` with your username, such as `/home/sam`. Your own files, downloads and scripts go there.
+     - You own everything in it, so you can change anything there without `sudo` (the command that runs another command with administrator rights).
+     - When you open a terminal or log in, you start in your home directory, and `~` is a shortcut for it.
+     - Many programs keep your personal settings here in files whose names start with a dot, such as `~/.bashrc`, which holds your shell settings. These files are hidden from a normal `ls`. Run `ls -a` in your home directory to see them.
 
 7. **`/root`**
    - The home directory of the `root` user (the system administrator).
    - `/` is the top of the whole file system, `/root` is the root user's home, and `/home` holds the home directories of everyone else.
+     - It keeps the root user's files apart from the home directories of regular users.
+     - You only use it when you are working as the root user, for example after running `sudo -i`, which opens a shell as root.
+     - Regular users cannot open it.
+     - While you are working as root, `~` means `/root`, so a file you save to `~` ends up in `/root`, not in your own home.
 
-8. **`/lib` and `/lib64`**
-   - Contain essential shared libraries and kernel modules required by system programs.
-   - On modern distributions, these may be symbolic links into `/usr`.
+8. **`/lib`**
+   - Essential shared libraries and kernel modules needed by binaries in `/bin` and `/sbin`.
 
 9. **`/media`**
-   - Commonly used as a mount point for removable storage devices, such as USB drives and external disks.
+   - Mount points for removable media like USB flash drives, external hard drives, and optical discs.
 
 10. **`/mnt`**
-   - A conventional mount point for temporarily mounting file systems, often manually by an administrator.
+   - Temporary mount points for administrators to attach secondary file systems manually.
 
 11. **`/opt`**
-   - Used for installing optional or third-party software packages that are typically self-contained.
+   - Optional or third-party software packages installed outside the default package manager.
 
 12. **`/proc`**
-   - A virtual file system that exposes information about running processes and the kernel.
-   - For example, `/proc/cpuinfo` provides information about the system's CPU.
+   - A virtual/pseudo-file system providing detailed information about running processes and kernel parameters in real-time.
 
-13. **`/sys`**
-   - A virtual file system that exposes information about hardware devices, device drivers and the kernel through the sysfs interface.
-   - Both `/proc` and `/sys` are virtual, but `/proc` is mainly about processes and the kernel, while `/sys` is about devices and drivers.
+13. **`/sbin`**
+   - Essential system administration binaries meant for root use (e.g., `fdisk`, `iptables`, `reboot`).
 
 14. **`/tmp`**
-   - Stores temporary files created by applications and users.
-   - Its contents may be deleted when the system restarts.
+   - Temporary files created by the system or applications; typically cleared on reboot.
 
 15. **`/usr`**
-   - Contains user-space applications, utilities, libraries, documentation and other shared resources.
-   - Examples include `/usr/bin`, `/usr/lib` and `/usr/share`.
+   - Secondary hierarchy for user-accessible read-only data, containing user binaries (`/usr/bin`), libraries, and documentation.
 
 16. **`/var`**
-   - Contains variable data that changes during system operation, such as logs (`/var/log`), application caches (`/var/cache`) and application data.
-   - When a service fails, its logs in `/var/log` are usually the first place to look.
+   - Variable data files that constantly change, such as system logs (`/var/log`), mail spools, and web server files (`/var/www`).
 
 ## The working directory and pwd
 
