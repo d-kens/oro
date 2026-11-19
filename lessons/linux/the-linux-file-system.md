@@ -10,8 +10,7 @@ According to the Filesystem Hierarchy Standard (FHS), standard directories serve
 
 1. **`/` (root)**
    - The topmost level of the entire file system. Every file and folder branches off here.
-     - Every file's location can be written starting from `/`. For example, `/etc/hosts` means: start at `/`, go into the `etc` directory, then find the file `hosts`.
-     - A location that starts with `/` points to the same place no matter which directory you are in.
+     - Every file's location can be written starting from `/`, such as `/etc/hosts`. The *Absolute and relative paths* section below explains how to read these.
      - `cd /` takes you to the top of the tree, and `ls /` lists the directories in this section.
      - You rarely create files directly in `/`. It holds the system directories below.
 
@@ -71,6 +70,20 @@ According to the Filesystem Hierarchy Standard (FHS), standard directories serve
 16. **`/var`**
    - Variable data files that constantly change, such as system logs (`/var/log`), mail spools, and web server files (`/var/www`).
 
+## Core Concepts of the Linux File System
+
+1. **Everything is a File**
+   - In Linux, hardware devices, network sockets, and directories are all represented and interacted with as files or streams of bytes.
+
+2. **Case Sensitivity**
+   - Linux paths and filenames are strictly case-sensitive. `File.txt`, `file.txt`, and `FILE.TXT` are three completely different files.
+
+3. **No File Extensions Required**
+   - While extensions like `.txt` or `.sh` are common for human convenience or script execution, Linux determines file types based on file headers/magic numbers rather than extensions.
+
+4. **Permissions & Ownership**
+   - Every file and directory is bound to an owner, a group, and specific permission sets determining Read, Write, and Execute rights.
+
 ## The working directory and pwd
 
 The **working directory** is the directory you are in right now. Commands that work on files look there unless you give them a different location.
@@ -82,7 +95,7 @@ $ pwd
 /root
 ```
 
-Your **home directory** is the directory that belongs to you, where you keep your own files: `/home/<your name>` for an ordinary user and `/root` for `root`, as in the list above. When you log in, you start there. The Docker container from the first topic is an exception: it starts you in `/`.
+When you log in, your working directory is your home directory (`/home/<your name>`, or `/root` for `root`, as in points 6 and 7 above). The Docker container from the first topic is an exception: it starts you in `/`.
 
 The prompt shows your home directory as `~`, and usually shows where you are, so you rarely need `pwd`. It is still useful when the prompt is short or when a script needs to know.
 
@@ -157,7 +170,7 @@ $ cd -
 ## Common cd errors
 
 1. **Wrong case**
-   - Paths are **case-sensitive**: `/var` exists, `/Var` does not.
+   - `/var` exists, `/Var` does not. Paths are case-sensitive, as covered in *Core Concepts* above.
 
    ```bash
    $ cd /Var
