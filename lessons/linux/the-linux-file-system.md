@@ -1,57 +1,88 @@
 ## The Linux file system
 
-A **file** is a named piece of data, such as a document, a program or a log.
+Unlike Windows, which uses drive letters like `C:\` and `D:\`, the Linux file system is organized as a single, unified hierarchical tree structure starting from a single root directory represented by a forward slash (`/`). Everything on a Linux system—including files, directories, hard drives, USB sticks, and even peripheral devices—lives somewhere under this root directory.
 
-A **directory** is a container that holds files and other directories. Windows and macOS call it a folder. A directory inside another one is a *subdirectory*.
+![The root directory, /, with the main directories directly under it: /bin, /boot, /dev, /etc, /home, /lib, /media, /mnt, /opt, /proc, /root, /run, /sbin, /srv, /sys, /tmp, /usr and /var](/images/linux/file-system-tree.png)
 
-A **file system** is the way the files and directories on a machine are organised and stored.
+## Key Directories in the Linux Hierarchy
 
-Linux keeps everything in a single tree of directories. The tree starts at the **root directory**, written as `/`, and every file and directory on the machine sits somewhere below it.
+According to the Filesystem Hierarchy Standard (FHS), standard directories serve specific purposes across almost all Linux distributions:
 
-Windows gives each disk its own letter, such as `C:` and `D:`. Linux has no drive letters. A second disk is attached to a directory inside the tree, such as `/data`, and you open it like any other directory. The *Disks and disk space* topic covers this.
+1. **`/` (root)**
+   - The topmost level of the entire file system. Every file and folder branches off here.
+     - Every file's location can be written starting from `/`, such as `/etc/hosts`. The *Absolute and relative paths* section below explains how to read these.
+     - `cd /` takes you to the top of the tree, and `ls /` lists the directories in this section.
+     - You rarely create files directly in `/`. It holds the system directories below.
 
-Run `ls /` to see the top of the tree:
+2. **`/bin`**
+   - Basic commands that every user needs, such as `ls`, `cp` and `cat`. On most modern distributions, `/bin` is a link to `/usr/bin`.
+     - When you type `ls`, the shell looks through the directories listed in your `PATH` variable, finds the `ls` program and runs it.
+     - `which ls` shows where a command is stored.
 
-```bash
-$ ls /
-bin   dev  home  media  opt   root  sbin  sys  usr
-boot  etc  lib   mnt    proc  run   srv   tmp  var
-```
+3. **`/boot`**
+   - Boot loader files, Linux kernel images, and RAM disks needed during the computer's startup process (`vmlinuz`, `grub`).
 
-## What each directory holds
+4. **`/dev`**
+   - Device files. Linux treats hardware devices as files (e.g., hard drives like `/dev/sda`, terminals like `/dev/tty`).
 
-The layout follows the **Filesystem Hierarchy Standard (FHS)**, so it is much the same on every distribution. Once you know where logs and config files live on one server, you know where they live on the next.
+5. **`/etc`**
+   - System-wide configuration files (e.g., network settings, and the list of user accounts in `/etc/passwd`).
 
-The directories you will use most:
+6. **`/home`**
+   - Home directories for normal users (e.g., `/home/username`). Personal documents, downloads, and configs live here.
+     - This is where you work every day. Your home directory is the folder inside `/home` with your username, such as `/home/sam`. Your own files, downloads and scripts go there.
+     - You own everything in it, so you can change anything there without `sudo` (the command that runs another command with administrator rights).
+     - When you open a terminal or log in, you start in your home directory, and `~` is a shortcut for it.
+     - Many programs keep your personal settings here in files whose names start with a dot, such as `~/.bashrc`, which holds your shell settings. These files are hidden from a normal `ls`. Run `ls -a` in your home directory to see them.
 
-| Directory | What lives there |
-| --- | --- |
-| `/etc` | Configuration files for the system and for installed software |
-| `/home` | One home directory per ordinary user, such as `/home/sam` |
-| `/root` | The home directory of the `root` user |
-| `/var` | Files that change while the machine runs. Logs are in `/var/log` |
-| `/tmp` | Temporary files that anyone can write, which may be deleted on restart |
-| `/usr` | Installed programs. Most commands you run, such as `ls`, are in `/usr/bin` |
-| `/opt` | Software installed outside the package manager |
+7. **`/root`**
+   - The home directory of the `root` user (the system administrator).
+   - `/` is the top of the whole file system, `/root` is the root user's home, and `/home` holds the home directories of everyone else.
+     - It keeps the root user's files apart from the home directories of regular users.
+     - You only use it when you are working as the root user, for example after running `sudo -i`, which opens a shell as root.
+     - Regular users cannot open it.
+     - While you are working as root, `~` means `/root`, so a file you save to `~` ends up in `/root`, not in your own home.
 
-The rest are used by the system, and you will open them less often:
+8. **`/lib`**
+   - Essential shared libraries and kernel modules needed by binaries in `/bin` and `/sbin`.
 
-| Directory | What lives there |
-| --- | --- |
-| `/bin`, `/sbin`, `/lib` | Commands and the libraries they need. On Ubuntu these point to the same directories under `/usr` |
-| `/boot` | The kernel and the files needed to start the machine |
-| `/dev` | Devices, such as disks, shown as files |
-| `/proc`, `/sys` | Information about running processes and hardware, created by the kernel. They are not stored on disk |
-| `/run` | Data that running programs keep until the next restart |
-| `/media`, `/mnt` | Where USB drives and other disks are attached |
-| `/srv` | Data the machine serves, such as website files. Often empty |
+9. **`/media`**
+   - Mount points for removable media like USB flash drives, external hard drives, and optical discs.
 
-`/etc/hostname` is a file that holds the machine's name. Print it with `cat`:
+10. **`/mnt`**
+   - Temporary mount points for administrators to attach secondary file systems manually.
 
-```bash
-$ cat /etc/hostname
-lab
-```
+11. **`/opt`**
+   - Optional or third-party software packages installed outside the default package manager.
+
+12. **`/proc`**
+   - A virtual/pseudo-file system providing detailed information about running processes and kernel parameters in real-time.
+
+13. **`/sbin`**
+   - Essential system administration binaries meant for root use (e.g., `fdisk`, `iptables`, `reboot`).
+
+14. **`/tmp`**
+   - Temporary files created by the system or applications; typically cleared on reboot.
+
+15. **`/usr`**
+   - Secondary hierarchy for user-accessible read-only data, containing user binaries (`/usr/bin`), libraries, and documentation.
+
+16. **`/var`**
+   - Variable data files that constantly change, such as system logs (`/var/log`), mail spools, and web server files (`/var/www`).
+
+## Core Concepts of the Linux File System
+
+1. **Everything is a File**
+   - In Linux, hardware devices, network sockets, and directories are all represented and interacted with as files or streams of bytes.
+
+2. **Case Sensitivity**
+   - Linux paths and filenames are strictly case-sensitive. `File.txt`, `file.txt`, and `FILE.TXT` are three completely different files.
+
+3. **No File Extensions Required**
+   - While extensions like `.txt` or `.sh` are common for human convenience or script execution, Linux determines file types based on file headers/magic numbers rather than extensions.
+
+4. **Permissions & Ownership**
+   - Every file and directory is bound to an owner, a group, and specific permission sets determining Read, Write, and Execute rights.
 
 ## The working directory and pwd
 
@@ -64,21 +95,9 @@ $ pwd
 /root
 ```
 
-Your **home directory** is the directory that belongs to you, where you keep your own files. When you log in, you start there.
-
-- For an ordinary user called `sam`, it is `/home/sam`.
-- For `root`, it is `/root`.
-
-The Docker container from the first topic is an exception: it starts you in `/`.
+When you log in, your working directory is your home directory (`/home/<your name>`, or `/root` for `root`, as in points 6 and 7 above). The Docker container from the first topic is an exception: it starts you in `/`.
 
 The prompt shows your home directory as `~`, and usually shows where you are, so you rarely need `pwd`. It is still useful when the prompt is short or when a script needs to know.
-
-The shell keeps the path of your home directory in a variable called `HOME`. A **variable** is a name that holds a value. `echo` prints it:
-
-```bash
-$ echo $HOME
-/root
-```
 
 ## Absolute and relative paths
 
@@ -132,8 +151,7 @@ Shortcuts you will use often:
 
 | Command | Where it takes you |
 | --- | --- |
-| `cd` | Your home directory |
-| `cd ~` | Your home directory |
+| `cd` or `cd ~` | Your home directory |
 | `cd ..` | One level up |
 | `cd -` | The directory you were in before this one |
 | `cd /` | The root directory |
@@ -151,37 +169,46 @@ $ cd -
 
 ## Common cd errors
 
-Paths are **case-sensitive**: `/var` exists, `/Var` does not. The shell tells you when a path is wrong:
+1. **Wrong case**
+   - `/var` exists, `/Var` does not. Paths are case-sensitive, as covered in *Core Concepts* above.
 
-```bash
-$ cd /Var
-bash: cd: /Var: No such file or directory
-$ cd /etc/hostname
-bash: cd: /etc/hostname: Not a directory
-```
+   ```bash
+   $ cd /Var
+   bash: cd: /Var: No such file or directory
+   ```
 
-- `No such file or directory` means nothing exists at that path.
-- `Not a directory` means the path exists, but it is a file. You can read a file, but you cannot move into it.
+   - `No such file or directory` means nothing exists at that path. Check the spelling and the case.
 
-The most common mistake is using a relative path from the wrong place. `cd root` means "the `root` directory inside where I am", so it only works from `/`:
+2. **A file instead of a directory**
 
-```bash
-$ cd /tmp
-$ cd root
-bash: cd: root: No such file or directory
-$ cd /root
-$ pwd
-/root
-```
+   ```bash
+   $ cd /etc/hostname
+   bash: cd: /etc/hostname: Not a directory
+   ```
 
-Names with spaces also cause errors, because the shell splits a command into parts at each space. Put the path in quotes, or put a backslash (`\`) before each space:
+   - `Not a directory` means the path exists, but it is a file. You can read a file, but you cannot move into it.
 
-```bash
-$ cd my files
-bash: cd: too many arguments
-$ cd "my files"
-$ cd ../my\ files
-```
+3. **A relative path from the wrong place**
+   - This is the most common mistake. `cd root` means "the `root` directory inside where I am", so it only works from `/`. Use the absolute path, `/root`, instead:
+
+   ```bash
+   $ cd /tmp
+   $ cd root
+   bash: cd: root: No such file or directory
+   $ cd /root
+   $ pwd
+   /root
+   ```
+
+4. **Spaces in names**
+   - The shell splits a command into parts at each space, so `cd my files` looks like two paths. Put the path in quotes, or put a backslash (`\`) before each space:
+
+   ```bash
+   $ cd my files
+   bash: cd: too many arguments
+   $ cd "my files"
+   $ cd ../my\ files
+   ```
 
 The <kbd>Tab</kbd> key prevents most of these mistakes:
 

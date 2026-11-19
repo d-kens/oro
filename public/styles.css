@@ -272,6 +272,17 @@ button { font-family: inherit; }
 .md strong { font-weight: 700; }
 .md ul, .md ol { padding-left: 24px; }
 .md li + li { margin-top: 6px; }
+/* a numbered item with bullets under it (a term and its details) gets room above it, so each reads as its own block */
+.md ol > li:has(> ul) + li { margin-top: 30px; }
+/* points nested under a bullet: the details that follow a definition, in the serif at a smaller size, each led by a short gold dash */
+/* bullets under a numbered item stay solid dots; browsers would otherwise draw them as hollow circles, like a sub-level */
+.md ol ul { list-style: disc; }
+/* They are pulled back to line up with the bullets above, so they read as a group about the whole item, not as children of the last bullet. */
+.md ul ul { list-style: none; padding-left: 0; margin: 12px 0 0 -24px; font-family: var(--f-display); font-size: 17.5px; line-height: 1.6; }
+.md ul ul li { position: relative; padding-left: 24px; }
+.md ul ul li::before { content: ""; position: absolute; left: 10px; top: calc(.8em - 1px); width: 8px; height: 2px; background: var(--gold); }
+.md ul ul li + li { margin-top: 8px; }
+.md ul ul code { font-size: .82em; }
 .md blockquote { margin-inline: 0; padding: 4px 0 4px 18px; border-left: 2px solid var(--accent); color: var(--muted); }
 .md hr { border: 0; border-top: 1px solid var(--line); margin-block: 40px; }
 .md :not(pre) > code { font-family: var(--f-mono); font-size: .86em; background: var(--bg-2); padding: 2px 6px; border-radius: 2px; }
@@ -283,6 +294,14 @@ button { font-family: inherit; }
 .md th, .md td { text-align: left; padding: 10px 16px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 .md th { font: 500 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .md img { max-width: 100%; height: auto; }
+/* a diagram on its own line sits on a white panel, since the images are drawn on white and the page is not */
+.md p:has(> img:only-child) { max-width: none; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+.md p > img:only-child { display: block; width: 100%; }
+/* on phones a wide diagram keeps a readable size and scrolls sideways */
+@media (max-width: 640px) {
+  .md p:has(> img:only-child) { overflow-x: auto; padding: 14px; }
+  .md p > img:only-child { max-width: none; width: 640px; }
+}
 .hljs-keyword, .hljs-built_in, .hljs-selector-tag { color: var(--accent); }
 .hljs-string, .hljs-attr, .hljs-addition { color: var(--accent-dark); }
 .hljs-comment, .hljs-quote, .hljs-meta { color: var(--muted); font-style: italic; }
