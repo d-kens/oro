@@ -1,6 +1,9 @@
-So far every machine in the lab has been on one network, where hosts reach each other directly. Real systems are made of several networks: an office and a data centre, a public subnet and a private one, your home and the internet. Packets get from one to another through routers, and every host decides where to send each packet by looking at its **routing table**.
+## What routing is
 
-This topic reads that table, then builds a second lab network with a router between the two. By the end you can read and change a host's routes, explain how it picks one, connect two networks through a router, and follow a packet's path with traceroute.
+**Routing** is choosing where to send each packet so it reaches a network the sender is not on. So far every machine in the lab has been on one network, where hosts reach each other directly. Real systems are made of several networks: an office and a data centre, a public subnet and a private one, your home and the internet.
+
+- Packets get from one network to another through routers.
+- Every host decides where to send each packet by looking at its **routing table**, the list of routes it knows.
 
 ## The routing table
 
@@ -24,11 +27,15 @@ Each line is a **route**: a range of destination addresses, and how to reach it.
 | `dev eth0` | The interface to send it out of |
 | `src 10.10.0.2` | The source address to use for new connections |
 
-`via` is the key idea. alpha does not know the whole path to a distant host. It only knows the next machine to give the packet to, and every router along the way makes the same kind of decision with its own table.
+`via` is the key idea:
+
+- alpha does not know the whole path to a distant host.
+- It only knows the next machine to give the packet to.
+- Every router along the way makes the same kind of decision with its own table.
 
 ## Choosing a route
 
-When several routes match a destination, the host uses the most specific one, the one with the longest prefix. This is called **longest prefix match**. `default` matches everything but has a prefix of 0, so it always loses to any other match.
+**Longest prefix match** is the rule a host uses when several routes match a destination: it picks the most specific one, the one with the longest prefix. `default` matches everything but has a prefix of 0, so it always loses to any other match.
 
 `ip route get` asks the kernel which route it would use for an address, without sending anything:
 
@@ -41,13 +48,17 @@ root@alpha:/# ip route get 203.0.113.10
     cache
 ```
 
-beta's address is on the lab network, so it goes direct. The documentation address `203.0.113.10` only matches `default`, so it goes to the gateway. You will see longest prefix match at work once the second network exists.
+- beta's address is on the lab network, so it goes direct.
+- The documentation address `203.0.113.10` only matches `default`, so it goes to the gateway.
+- You will see longest prefix match at work once the second network exists.
 
 ## The default gateway
 
-The next hop in the `default` route is the **default gateway**: the router a host sends everything to when it has no better route. On a home network it is the home router. In a cloud network, it is a virtual router the provider runs at a fixed address in each subnet.
+The next hop in the `default` route is the **default gateway**: the router a host sends everything to when it has no better route.
 
-In the lab, `10.10.0.1` is Docker itself. It forwards traffic from the containers out to the internet through your computer, which is how `curl https://example.com/` has worked in earlier topics.
+- On a home network it is the home router.
+- In a cloud network, it is a virtual router the provider runs at a fixed address in each subnet.
+- In the lab, `10.10.0.1` is Docker itself. It forwards traffic from the containers out to the internet through your computer, which is how `curl https://example.com/` has worked in earlier topics.
 
 A host can only hand a packet to a next hop it can reach directly, on one of its own networks. Asking alpha to use a router on a network it is not connected to fails at once:
 
@@ -76,7 +87,7 @@ $ docker network connect --ip 10.20.0.254 lab2 router
 ```
 
 - `--ip` fixes the address, so it does not depend on which machines you started first. `.254` is a common choice for a router: out of the way of hosts numbered from the bottom.
-- `--sysctl net.ipv4.ip_forward=1` turns on **IP forwarding**. Without it, Linux drops packets that arrive for some other address instead of passing them on, so a machine with two interfaces is not a router. On an ordinary Linux server it is off by default; Docker often turns it on in containers anyway, but setting it makes sure.
+- `--sysctl net.ipv4.ip_forward=1` turns on **IP forwarding**: passing on packets that arrive for some other address. Without it, Linux drops them, so a machine with two interfaces is not a router. On an ordinary Linux server it is off by default; Docker often turns it on in containers anyway, but setting it makes sure.
 
 Last, start a host called `delta` on `lab2` in another terminal:
 
@@ -99,7 +110,10 @@ root@router:/# sysctl net.ipv4.ip_forward
 net.ipv4.ip_forward = 1
 ```
 
-router has a directly connected route to each network, so it can reach both. Its default route now points at Docker's gateway on lab2; that does not matter here.
+- router has a directly connected route to each network, so it can reach both.
+- Its default route now points at Docker's gateway on lab2. That does not matter here.
+
+## Adding routes between the networks
 
 delta is at `10.20.0.2`. Try to reach it from alpha:
 
@@ -123,7 +137,9 @@ root@alpha:/# ip route get 10.20.0.2
     cache
 ```
 
-That is longest prefix match: `10.20.0.0/24` beats `default`. delta needs the matching route back, or its replies would go to its own default gateway:
+That is longest prefix match: `10.20.0.0/24` beats `default`.
+
+delta needs the matching route back, or its replies would go to its own default gateway. A route has to exist in both directions for two hosts to talk:
 
 ```bash
 root@delta:/# ip route add 10.10.0.0/24 via 10.20.0.254
@@ -147,13 +163,24 @@ PING 10.20.0.2 (10.20.0.2) 56(84) bytes of data.
 rtt min/avg/max/mdev = 0.138/0.168/0.222/0.038 ms
 ```
 
-Compare `ttl=63` with the `ttl=64` you saw when pinging beta in the *What a network is* topic. Every router that forwards a packet lowers its **TTL** (time to live) by one, and drops it if it reaches zero, so a looping packet cannot circle forever. One lower means one router in between.
+Compare `ttl=63` with the `ttl=64` you saw when pinging beta in the *What a network is* topic.
 
-Use the address, not the name: Docker's DNS only answers for containers on the same network, so `ping delta` from alpha says `Name or service not known`. Routes added with `ip route add` last until the container stops. On a real server you make them permanent in the network configuration.
+- A packet's **TTL** (*time to live*) is a counter in its IP header.
+- Every router that forwards a packet lowers its TTL by one, and drops it if it reaches zero, so a looping packet cannot circle forever.
+- One lower means one router in between.
+
+Two more things to know:
+
+- Use the address, not the name. Docker's DNS only answers for containers on the same network, so `ping delta` from alpha says `Name or service not known`.
+- Routes added with `ip route add` last until the container stops. On a real server you make them permanent in the network configuration.
 
 ## Following the path with traceroute
 
-**traceroute** shows each router on the path. It sends packets with a TTL of 1, then 2, then 3, and so on. Each router that drops one for reaching zero sends back an ICMP "time exceeded" message, which reveals its address. The destination itself answers the last one.
+**traceroute** shows each router on the path to a host. Each router on the path is called a **hop**.
+
+1. It sends packets with a TTL of 1, then 2, then 3, and so on.
+2. Each router that drops one for reaching zero sends back an ICMP "time exceeded" message, which reveals its address.
+3. The destination itself answers the last one.
 
 ```bash
 root@alpha:/# traceroute 10.20.0.2
@@ -162,7 +189,10 @@ traceroute to 10.20.0.2 (10.20.0.2), 30 hops max, 60 byte packets
  2  10.20.0.2 (10.20.0.2)  0.045 ms  0.030 ms  0.030 ms
 ```
 
-Hop 1 is router, on its lab address, and hop 2 is delta. Each hop is tried three times, so there are three times. From delta the path runs the other way, through router's lab2 address:
+- Hop 1 is router, on its lab address, and hop 2 is delta.
+- Each hop is tried three times, so there are three times on each line.
+
+From delta the path runs the other way, through router's lab2 address:
 
 ```bash
 root@delta:/# traceroute 10.10.0.2
@@ -171,7 +201,13 @@ traceroute to 10.10.0.2 (10.10.0.2), 30 hops max, 60 byte packets
  2  10.10.0.2 (10.10.0.2)  0.060 ms  0.036 ms  0.030 ms
 ```
 
-A row of `* * *` means no answer came back for that hop within the time limit. That does not always mean a fault: many routers do not send time exceeded messages, or limit how many they send. Run traceroute again, or use `-n` to skip the name lookups and go faster. On the internet you would usually see a dozen or more hops. Inside Docker Desktop, the hops past Docker's gateway are often hidden. The address of example.com may differ for you:
+A row of `* * *` means no answer came back for that hop within the time limit.
+
+- That does not always mean a fault. Many routers do not send time exceeded messages, or limit how many they send.
+- Run traceroute again, or use `-n` to skip the name lookups and go faster.
+- On the internet you would usually see a dozen or more hops. Inside Docker Desktop, the hops past Docker's gateway are often hidden.
+
+The address of example.com may differ for you:
 
 ```bash
 root@alpha:/# traceroute example.com
@@ -183,7 +219,9 @@ traceroute to example.com (104.20.23.154), 30 hops max, 60 byte packets
 ...
 ```
 
-Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop it. On a Linux server with a direct connection, the same command shows the real path. `mtr`, also in the lab image, runs traceroute continuously and shows the delay and packet loss at each hop, which makes it the usual tool for finding where on a path a connection slows down.
+- Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop it.
+- On a Linux server with a direct connection, the same command shows the real path.
+- `mtr`, also in the lab image, runs traceroute continuously and shows the delay and packet loss at each hop. That makes it the usual tool for finding where on a path a connection slows down.
 
 ## Tasks
 

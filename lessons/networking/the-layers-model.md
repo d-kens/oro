@@ -1,21 +1,27 @@
-So far you have met IP addresses and port numbers, and each one does a different job. Networking splits the work of sending data into **layers**, each handling one job and relying on the one below it. People talk about networks in these terms all the time: "a layer 2 problem", "a layer 4 load balancer", "it works at layer 3 but not layer 7".
+## What a layer is
 
-This topic covers the two layer models in use, how each layer wraps the data from the one above, and which tools look at which layer. By the end you can name the layers, read the layers of a real packet in a capture, and follow a `curl` request down through them and back up.
+Networking splits the work of sending data into **layers**. Each layer handles one job and relies on the one below it. So far you have met IP addresses and port numbers; each one belongs to a different layer.
+
+People talk about networks in these terms all the time: "a layer 2 problem", "a layer 4 load balancer", "it works at layer 3 but not layer 7".
 
 ## Why layers
 
 Each layer solves one problem and does not care how the others solve theirs:
 
-- Getting a frame from one machine to the next on a single network.
+- Getting data from one machine to the next on a single network.
 - Getting a packet from the original sender to the final destination, across many networks.
 - Getting data to the right program on that machine, and if needed, making sure it all arrives in order.
 - The conversation the programs actually want to have, such as "give me this web page".
 
-Because of this split, a web browser does not need to know whether it is on Wi-Fi or a cable, and a switch does not need to know whether it is carrying a web page or a database query. It also gives you a method for troubleshooting: check each layer in turn, from the bottom up, and the first one that fails is where the problem is. The topic *The debugging playbook* is built on that idea.
+Because of this split:
+
+- A web browser does not need to know whether it is on Wi-Fi or a cable.
+- A switch does not need to know whether it is carrying a web page or a database query.
+- You get a method for troubleshooting: check each layer in turn, from the bottom up, and the first one that fails is where the problem is. The topic *The debugging playbook* is built on that idea.
 
 ## The OSI model
 
-The **OSI model** has seven layers. Hardly any real software follows it exactly, but engineers use its layer numbers when they talk about networks:
+The **OSI model** (*Open Systems Interconnection*) divides networking into seven layers. Hardly any real software follows it exactly, but engineers use its layer numbers when they talk about networks:
 
 | Number | Name | What it covers | Example |
 | --- | --- | --- | --- |
@@ -27,11 +33,14 @@ The **OSI model** has seven layers. Hardly any real software follows it exactly,
 | 2 | Data link | Delivery on one local network | Ethernet, MAC addresses, ARP, switches |
 | 1 | Physical | Signals on a wire or radio | Cables, Wi-Fi radio, fibre |
 
-When someone says "layer 2", they mean MACs and switches. "Layer 3" means IP and routers. A "layer 4 load balancer" spreads connections by address and port without reading their content; a "layer 7 load balancer" reads the HTTP request and can route by path or header.
+- "Layer 2" means MAC addresses and switches.
+- "Layer 3" means IP and routers.
+- A "layer 4 load balancer" spreads connections by address and port without reading their content.
+- A "layer 7 load balancer" reads the HTTP request and can route by path or header.
 
 ## The TCP/IP model
 
-The model the internet is actually built on, the **TCP/IP model**, has four layers. It folds OSI's top three into one, and its bottom two into one:
+The **TCP/IP model** is the layer model the internet is actually built on. It has four layers, folding OSI's top three into one and its bottom two into one:
 
 | TCP/IP layer | OSI layers | Address it uses | Unit of data |
 | --- | --- | --- | --- |
@@ -40,11 +49,15 @@ The model the internet is actually built on, the **TCP/IP model**, has four laye
 | Internet | 3 | IP address | Packet |
 | Link | 1, 2 | MAC address | Frame |
 
-The names of the units are not used strictly, and "packet" is often used for all of them. The useful point is that each layer has its own kind of address: the port picks the program, the IP address picks the machine anywhere in the world, and the MAC address picks the next machine on the local link.
+The names of the units are not used strictly, and "packet" is often used for all of them. The useful point is that each layer has its own kind of address:
+
+- The port picks the program.
+- The IP address picks the machine, anywhere in the world.
+- The MAC address picks the next machine on the local link.
 
 ## Encapsulation
 
-When a program sends data, each layer on the way down wraps what it is given in its own header. This is **encapsulation**:
+**Encapsulation** is how layers pass data down: when a program sends data, each layer on the way down wraps what it is given in its own header.
 
 ```text
                                        [ HTTP request          ]   application
@@ -53,9 +66,21 @@ When a program sends data, each layer on the way down wraps what it is given in 
 [ Ethernet | IP header | TCP header | HTTP request          ]   link
 ```
 
-On the receiving machine, each layer reads and removes its own header and hands the rest up. Routers along the way only unwrap as far as the IP header: they take the packet out of the incoming frame, decide where it goes next, and put it in a new frame with new MAC addresses. The IP header and everything inside it travels unchanged from end to end.
+- On the receiving machine, each layer reads and removes its own header and hands the rest up.
+- Routers along the way only unwrap as far as the IP header. They take the packet out of the incoming frame, decide where it goes next, and put it in a new frame with new MAC addresses.
+- The IP header and everything inside it travels unchanged from end to end.
 
-The link layer uses its own addresses. A **MAC address** is a 48-bit hardware address, written as six pairs of hex digits like `36:c0:c2:4d:58:0c`, that identifies an interface on its local network; `ip link` shows it as `link/ether`. To send to an IP address on its own network, a machine needs the MAC address behind it, and finds it with **ARP** (Address Resolution Protocol): it broadcasts "who has `10.10.0.3`?", and the owner replies with its MAC. The answers are kept in the **neighbour table**, which `ip neigh` shows.
+## MAC addresses and ARP
+
+The link layer uses its own addresses.
+
+- A **MAC address** (*media access control*) is a 48-bit hardware address that identifies an interface on its local network. It is written as six pairs of hex digits, like `36:c0:c2:4d:58:0c`. `ip link` shows it as `link/ether`.
+- **ARP** (*Address Resolution Protocol*) is how a machine finds the MAC address behind an IP address on its own network. It asks every host "who has `10.10.0.3`?", and the owner replies with its MAC.
+- The **neighbour table** keeps the answers. `ip neigh` shows it.
+
+## Seeing the layers in a capture
+
+A **packet capture** is a record of the packets passing through an interface. `tcpdump` makes one; the *tcpdump* topic covers it properly.
 
 You can see the wrapping in a real capture. On alpha, capture one ping to beta. `-e` adds the Ethernet header to the output:
 
@@ -74,7 +99,9 @@ Read the first line left to right, from the outside in:
 - `10.10.0.2 > 10.10.0.3`: the internet layer, the IP header.
 - `ICMP echo request … length 64`: the ICMP message inside the IP packet.
 
-The sizes add up: a 14-byte Ethernet header, a 20-byte IP header, and 64 bytes of ICMP (8 of header and the 56 bytes of data `ping` sends by default) make 98. Ping has no transport layer: ICMP sits directly on IP, which is why ping uses no port.
+- The sizes add up: a 14-byte Ethernet header, a 20-byte IP header, and 64 bytes of ICMP (8 of header and the 56 bytes of data `ping` sends by default) make 98.
+- **ICMP** (*Internet Control Message Protocol*) carries control messages such as ping's echo request and reply.
+- Ping has no transport layer. ICMP sits directly on IP, which is why ping uses no port.
 
 ## Which tools work at which layer
 
@@ -87,9 +114,8 @@ Each tool you use answers a question about one layer. Knowing which is which tel
 | Transport | Is anything listening on the port? Does a connection open? | `ss`, `nc` |
 | Application | Does the service answer correctly? | `curl`, `dig`, `openssl s_client`, `ssh` |
 
-`tcpdump` is the exception: it sees every layer at once, which is why it is the tool of last resort when the others disagree.
-
-The table also explains a mistake from the first topic. A successful `ping` proves the link and internet layers work between two machines. It says nothing about the transport and application layers, so it cannot tell you whether a web server is running.
+- `tcpdump` is the exception. It sees every layer at once, which is why it is the tool of last resort when the others disagree.
+- A successful `ping` proves the link and internet layers work between two machines. It says nothing about the transport and application layers, so it cannot tell you whether a web server is running.
 
 ## A curl request through the layers
 
@@ -138,9 +164,10 @@ The capture shows the same steps from the wire:
 07:28:11.922700 8e:2c:e5:59:e6:6e > 36:c0:c2:4d:58:0c, ethertype IPv4 (0x0800), length 928: 10.10.0.3.80 > 10.10.0.2.33344: Flags [P.], seq 1:863, ack 68, win 509, options [nop,nop,TS val 1639321437 ecr 3135746928], length 862: HTTP: HTTP/1.1 200 OK
 ```
 
-The first three lines are the TCP connection opening, with no application data (`length 0`). The fourth carries the request: `HTTP: GET / HTTP/1.1`. Now the addresses have a third part. `10.10.0.2.33344 > 10.10.0.3.80` is IP address and port together: port 80 on beta, and a temporary port, 33344, on alpha. The *Ports and sockets* topic explains where that number comes from.
-
-The fourth frame's 133 bytes are all four layers stacked: 14 of Ethernet, 20 of IP, 32 of TCP (20 plus 12 of options) and 67 of HTTP.
+- The first three lines are the TCP connection opening, with no application data (`length 0`).
+- The fourth carries the request: `HTTP: GET / HTTP/1.1`.
+- Now the addresses have a third part. `10.10.0.2.33344 > 10.10.0.3.80` is IP address and port together: port 80 on beta, and a temporary port, 33344, on alpha. The *Ports and sockets* topic explains where that number comes from.
+- The fourth frame's 133 bytes are all four layers stacked: 14 of Ethernet, 20 of IP, 32 of TCP (20 plus 12 of options) and 67 of HTTP.
 
 ## Tasks
 

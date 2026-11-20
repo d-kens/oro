@@ -1,10 +1,14 @@
-Every IP address comes with a number after a slash, like the `/24` in `10.10.0.2/24`. That number decides which other addresses a machine thinks are on its own network, and so whether it sends a packet straight to the destination or hands it to a router. Get it wrong and two machines that look like neighbours cannot talk.
+## What a subnet is
 
-This topic explains network masks and CIDR notation from the binary up, without needing much maths. By the end you can work out the range of a network by hand, check it with Python, tell whether two addresses are on the same network, and split a range into smaller subnets.
+A **subnet** is a range of IP addresses that form one network. Every IP address comes with a number after a slash, like the `/24` in `10.10.0.2/24`, that says how big its subnet is.
+
+- That number decides which other addresses a machine thinks are on its own network.
+- So it decides whether the machine sends a packet straight to the destination or hands it to a router.
+- Get it wrong and two machines that look like neighbours cannot talk.
 
 ## The network part and the host part
 
-The *IP addresses* topic said that an address has a network part and a host part. The **network mask**, or netmask, says where the split falls. It is a 32-bit number like the address itself: a run of 1s for the network part, followed by 0s for the host part.
+The *IP addresses* topic said that an address has a network part and a host part. The **network mask**, or *netmask*, says where the split falls. It is a 32-bit number like the address itself: a run of 1s for the network part, followed by 0s for the host part.
 
 Here is alpha's address with the mask `255.255.255.0` under it:
 
@@ -14,7 +18,9 @@ mask      255.255.255.0   11111111 11111111 11111111 00000000
                           |--------- network --------| host |
 ```
 
-Wherever the mask has a 1, that bit of the address belongs to the network. Wherever it has a 0, the bit belongs to the host. So every address whose first 24 bits match `10.10.0` is on the same network as alpha, and the last 8 bits number the hosts on it.
+- Wherever the mask has a 1, that bit of the address belongs to the network.
+- Wherever it has a 0, the bit belongs to the host.
+- So every address whose first 24 bits match `10.10.0` is on the same network as alpha, and the last 8 bits number the hosts on it.
 
 You only ever need a handful of values to read a mask. An octet of the mask is always one of these, because the 1s always come first:
 
@@ -34,7 +40,10 @@ A mask like `255.255.0.255` cannot exist. The 1s must form one unbroken run from
 
 ## CIDR notation
 
-Writing out the mask is long-winded, so it is shortened to the count of 1s in it. `255.255.255.0` has 24 ones, so it is written `/24`. This is **CIDR notation**, and the number is the **prefix length**. `10.10.0.0/24` means "the network whose first 24 bits are those of `10.10.0.0`".
+**CIDR notation** (*Classless Inter-Domain Routing*) writes the mask as the count of 1s in it, after a slash. The number is the **prefix length**.
+
+- `255.255.255.0` has 24 ones, so it is written `/24`.
+- `10.10.0.0/24` means "the network whose first 24 bits are those of `10.10.0.0`".
 
 Each extra bit in the prefix halves the network. Each bit fewer doubles it. These are the sizes you will meet most:
 
@@ -53,16 +62,24 @@ Each extra bit in the prefix halves the network. Each bit fewer doubles it. Thes
 
 The number of addresses is 2 to the power of the host bits. A `/26` has 32 − 26 = 6 host bits, and 2⁶ = 64.
 
+## Reserved addresses
+
 **Usable hosts** is two fewer than the total, because two addresses in each network are reserved:
 
 - The first, with all host bits 0, is the **network address**. It names the network itself, as in `10.10.0.0/24`.
 - The last, with all host bits 1, is the **broadcast address**, used to send to every host on the network at once. On the lab it is `10.10.0.255`, which is the `brd` you saw in `ip addr`.
 
-Cloud providers reserve a few more in each subnet, usually the first few and the last, for their own router, DNS and future use. So a `/28` in a cloud network may give you only 11 usable addresses, not 14. Check your provider's documentation before sizing subnets tightly.
+Cloud providers reserve a few more in each subnet, usually the first few and the last, for their own router, DNS and future use.
+
+- So a `/28` in a cloud network may give you only 11 usable addresses, not 14.
+- Check your provider's documentation before sizing subnets tightly.
 
 ## Working out a range by hand
 
-You can find the range for any address and prefix without writing out binary. The trick is the **block size**: in the octet where the mask stops being 255, take 256 minus that octet of the mask. Networks always start at a multiple of the block size.
+You can find the range for any address and prefix without writing out binary, using the block size.
+
+- The **block size** is 256 minus the mask's value in the octet where the mask stops being 255.
+- Networks always start at a multiple of the block size.
 
 Take `192.168.10.77/26`:
 
@@ -102,7 +119,7 @@ True
 False
 ```
 
-To check the worked example, give the address with its prefix as an **interface**, which is an address plus the network it sits on:
+To check the worked example, give the address with its prefix as an *interface*, which in Python means an address plus the network it sits on:
 
 ```bash
 >>> ipaddress.ip_interface('192.168.10.77/26').network
@@ -128,7 +145,7 @@ Type `exit()` or press <kbd>Ctrl</kbd>+<kbd>D</kbd> to leave Python.
 This is where the prefix matters in practice. When a machine sends a packet, it checks whether the destination is inside its own network:
 
 - If it is, the machine sends the packet directly, on the local link.
-- If it is not, the machine sends it to its default gateway, a router, and lets that deal with it.
+- If it is not, the machine sends it to its **default gateway**, the router it sends everything else to, and lets that deal with it.
 
 You can watch the decision in the lab. Give alpha and beta each an extra address on a network that exists only between them:
 
@@ -159,13 +176,18 @@ PING 192.168.77.1 (192.168.77.1) 56(84) bytes of data.
 2 packets transmitted, 0 received, 100% packet loss, time 1008ms
 ```
 
-Now beta believes `192.168.77.1` is somewhere else, so it sends the packets `via 10.10.0.1`, Docker's gateway, which has no idea where that network is. The cable is the same; only the arithmetic changed. Remove the extra addresses with `ip addr del` when you are done.
+- Now beta believes `192.168.77.1` is somewhere else, so it sends the packets `via 10.10.0.1`, Docker's gateway, which has no idea where that network is.
+- The cable is the same; only the arithmetic changed.
+- Remove the extra addresses with `ip addr del` when you are done.
 
 A mismatched prefix causes the same kind of fault in real networks. A server configured as `/16` when its neighbours use `/24` will try to reach far-away addresses directly instead of through the router, and some of its traffic will vanish.
 
 ## Splitting a range
 
-Networks are planned by taking a large block and cutting it into **subnets**. A cloud virtual network might be `10.0.0.0/16`, cut into `/24` subnets for different purposes. Each extra bit of prefix splits a block in two, so a `/24` becomes two `/25`s or four `/26`s:
+Networks are planned by taking a large block and cutting it into subnets.
+
+- A cloud virtual network might be `10.0.0.0/16`, cut into `/24` subnets for different purposes.
+- Each extra bit of prefix splits a block in two, so a `/24` becomes two `/25`s or four `/26`s:
 
 ```bash
 >>> for s in ipaddress.ip_network('10.10.0.0/24').subnets(new_prefix=26): print(s, s.num_addresses)
@@ -176,7 +198,15 @@ Networks are planned by taking a large block and cutting it into **subnets**. A 
 10.10.0.192/26 64
 ```
 
-When you plan subnets, keep two rules in mind. Subnets that will ever be connected must not **overlap**, or machines cannot tell which one an address belongs to; this is a common problem when joining two networks that were planned separately. And leave room to grow, because resizing a subnet that is full of running machines is hard. Picking a larger range than you need now costs nothing in private address space.
+When you plan subnets, keep two rules in mind:
+
+1. **Do not let subnets overlap**
+   - Subnets **overlap** when they share some addresses. Subnets that will ever be connected must not overlap, or machines cannot tell which one an address belongs to.
+   - This is a common problem when joining two networks that were planned separately.
+
+2. **Leave room to grow**
+   - Resizing a subnet that is full of running machines is hard.
+   - Picking a larger range than you need now costs nothing in private address space.
 
 ## Tasks
 

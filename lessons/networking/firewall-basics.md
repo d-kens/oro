@@ -1,10 +1,17 @@
-A server on a network can be reached by anything that can reach its address. A **firewall** decides which of those packets are let in and which are thrown away, so that only the services you mean to offer can be reached. Most "it works from here but not from there" problems end at a firewall rule somewhere.
+## What a firewall is
 
-This topic explains how a Linux firewall looks at packets, using iptables on beta, and then locks beta down one step at a time. By the end you can read a rule set, say which rule a packet will hit, build a default-deny rule set that allows only SSH and HTTP, avoid the order mistakes that lock you out, and save the rules so they can be restored.
+A **firewall** decides which packets are let in to a machine and which are thrown away, so that only the services you mean to offer can be reached. A server on a network can be reached by anything that can reach its address, unless a firewall says otherwise.
+
+Most "it works from here but not from there" problems end at a firewall rule somewhere.
 
 ## Packet filtering
 
-A **packet filter** looks at each packet's headers, compares them with a list of **rules**, and acts on the first rule that matches. The headers carry everything earlier topics introduced: source and destination IP address, protocol (TCP, UDP or ICMP), source and destination port, and the interface the packet came in on or is going out of.
+A **packet filter** looks at each packet's headers, compares them with a list of **rules**, and acts on the first rule that matches. The headers carry everything earlier topics introduced:
+
+- source and destination IP address
+- protocol (TCP, UDP or ICMP)
+- source and destination port
+- the interface the packet came in on or is going out of
 
 Each rule pairs a **match** on some of those fields with a **target**, which is what to do with a matching packet:
 
@@ -15,13 +22,17 @@ Each rule pairs a **match** on some of those fields with a **target**, which is 
 | `REJECT` | Discard it and send an error back | `Connection refused` or similar, at once |
 | `LOG` | Record it and carry on to the next rule | No change |
 
-On Linux the filtering is done by the kernel, in a part called **netfilter**. `iptables` is the long-standing command for managing its rules. You used it already for NAT in the *NAT* topic.
+- On Linux the filtering is done by the kernel, in a part called **netfilter**.
+- `iptables` is the long-standing command for managing its rules. You used it already in the *NAT* topic.
 
 ## Tables and chains
 
-iptables groups rules into **tables** by purpose. The two you need are `filter`, for deciding whether a packet passes, and `nat`, for rewriting addresses. When you leave out `-t`, you get `filter`.
+A **table** is a group of rules for one purpose. The two you need are:
 
-Inside each table, rules are kept in **chains**, and each chain is checked at a different point on a packet's way through the machine:
+- `filter`, for deciding whether a packet passes. When you leave out `-t`, you get `filter`.
+- `nat`, for rewriting addresses.
+
+A **chain** is a list of rules inside a table, checked at one point on a packet's way through the machine:
 
 | Chain | Checks packets that are | Example |
 | --- | --- | --- |
@@ -29,11 +40,18 @@ Inside each table, rules are kept in **chains**, and each chain is checked at a 
 | `OUTPUT` | Created by this machine | beta running `curl example.com` |
 | `FORWARD` | Passing through, from one interface to another | router moving a packet from `lab2` to `lab` |
 
-A packet goes through exactly one of these in the `filter` table. On a server you mostly care about `INPUT`. On a router, `FORWARD` is the one that matters.
+- A packet goes through exactly one of these in the `filter` table.
+- On a server you mostly care about `INPUT`. On a router, `FORWARD` is the one that matters.
 
 ## Reading and changing rules
 
-`iptables -L -n -v` lists beta's `filter` table: `-L` lists, `-n` shows numbers instead of looking up names, and `-v` adds counters and interfaces. On a fresh container it shows three empty chains, each with a **policy** of `ACCEPT`. The policy is what happens to a packet that reaches the end of a chain without matching any rule. With no rules and `ACCEPT`, everything is allowed.
+`iptables -L -n -v` lists beta's `filter` table:
+
+- `-L` lists.
+- `-n` shows numbers instead of looking up names.
+- `-v` adds counters and interfaces.
+
+On a fresh container it shows three empty chains, each with a **policy** of `ACCEPT`. The policy is what happens to a packet that reaches the end of a chain without matching any rule. With no rules and `ACCEPT`, everything is allowed.
 
 Add two rules: refuse TCP port 8000, and silently drop pings from alpha. `-A` appends a rule to the end of a chain, and `-j` names the target:
 
@@ -47,7 +65,10 @@ num   pkts bytes target     prot opt in     out     source               destina
 2        0     0 DROP       1    --  *      *       10.10.0.2            0.0.0.0/0
 ```
 
-`prot` shows protocol numbers with `-n`: 6 is TCP, 1 is ICMP, 0 is any. `0.0.0.0/0` means any address, and `*` any interface. `-S` prints the same rules as the commands that would create them, which is the better view when you want to copy or delete one:
+- `prot` shows protocol numbers with `-n`: 6 is TCP, 1 is ICMP, 0 is any.
+- `0.0.0.0/0` means any address, and `*` any interface.
+
+`-S` prints the same rules as the commands that would create them, which is the better view when you want to copy or delete one:
 
 ```bash
 root@beta:/# iptables -S INPUT
@@ -65,7 +86,10 @@ root@alpha:/# ping -c 2 -W 1 beta | grep loss
 2 packets transmitted, 0 received, 100% packet loss, time 1012ms
 ```
 
-REJECT gives an instant, clear answer. DROP gives silence. Run `iptables -L INPUT -n -v` again and the `pkts` counters show which rule each packet hit. To delete a rule, give `-D` either its line number or the same spec you added it with. `-F` flushes a whole chain:
+- REJECT gives an instant, clear answer. DROP gives silence.
+- Run `iptables -L INPUT -n -v` again, and the `pkts` counters show which rule each packet hit.
+
+To delete a rule, give `-D` either its line number or the same spec you added it with. `-F` **flushes** a whole chain, deleting every rule in it:
 
 ```bash
 root@beta:/# iptables -D INPUT 1
@@ -74,7 +98,10 @@ root@beta:/# iptables -D INPUT -s 10.10.0.2 -p icmp -j DROP
 
 ## Rule order and default policies
 
-Rules are checked from the top, and the **first match wins**. Once a packet hits `ACCEPT`, `DROP` or `REJECT`, no later rule sees it. `LOG` is the exception: it records the packet and lets it carry on down the list.
+Rules are checked from the top, and the **first match wins**.
+
+- Once a packet hits `ACCEPT`, `DROP` or `REJECT`, no later rule sees it.
+- `LOG` is the exception: it records the packet and lets it carry on down the list.
 
 So order matters. With these two rules, port 80 is open, because the `ACCEPT` comes first:
 
@@ -83,7 +110,8 @@ So order matters. With these two rules, port 80 is open, because the `ACCEPT` co
 -A INPUT -p tcp -j DROP
 ```
 
-Swap them, and port 80 is closed: every TCP packet matches the `DROP` first. `-A` always adds to the end, and `-I INPUT 1` inserts at the top, or at any line number you give.
+- Swap them, and port 80 is closed: every TCP packet matches the `DROP` first.
+- `-A` always adds to the end. `-I INPUT 1` inserts at the top, or at any line number you give.
 
 There are two ways to build a rule set:
 
@@ -92,7 +120,10 @@ There are two ways to build a rule set:
 
 ## The rule for established connections
 
-With a default-deny `INPUT` chain, you might allow port 22 and port 80 and think you are done. Then beta tries `curl example.com` and it hangs. The request leaves through `OUTPUT`, which allows it. The reply comes back through `INPUT`, and no rule allows a packet from `example.com`'s port 80 to some random high port on beta.
+With a default-deny `INPUT` chain, you might allow port 22 and port 80 and think you are done. Then beta tries `curl example.com` and it hangs:
+
+- The request leaves through `OUTPUT`, which allows it.
+- The reply comes back through `INPUT`, and no rule allows a packet from `example.com`'s port 80 to some random high port on beta.
 
 You cannot list every reply port in advance. Instead, use **connection tracking**, the same table the *NAT* topic read from `/proc`. The kernel knows which packets belong to connections that are already set up, and a rule can match on that state:
 
@@ -103,7 +134,10 @@ root@beta:/# iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACC
 - `ESTABLISHED` matches packets of a connection that has already seen traffic both ways, including replies to connections beta started.
 - `RELATED` matches packets that belong to an existing connection without being part of it, such as an ICMP error about it.
 
-A firewall that tracks connections like this is called **stateful**. With this rule near the top, you only need to write rules for the first packet of connections you want to accept. It also makes the rule set faster, because most packets match here and stop.
+A **stateful** firewall is one that tracks connections like this.
+
+- With this rule near the top, you only need to write rules for the first packet of connections you want to accept.
+- It also makes the rule set faster, because most packets match here and stop.
 
 ## Lock down a server
 
@@ -118,35 +152,45 @@ root@beta:/# python3 -m http.server 8000 > /dev/null 2>&1 &
 
 From alpha, `nc -zv -w 2 beta 22`, `80` and `8000` all succeed. The goal: 22 and 80 stay open, 8000 and anything else get dropped, and beta itself can still reach the outside.
 
-Before you touch the rules of a remote server, make sure you have a way in that does not depend on them. In this lab, the terminal you started beta in is a console, not a network connection, so rules cannot cut it. A cloud server usually has a serial console in the provider's web interface. Otherwise, schedule an undo before you start. This line clears the rules in five minutes unless you stop it with `kill %1`:
+Before you touch the rules of a remote server, make sure you have a way in that does not depend on them:
 
-```bash
-root@beta:/# (sleep 300; iptables -P INPUT ACCEPT; iptables -F INPUT) &
-```
+- In this lab, the terminal you started beta in is a console, not a network connection, so rules cannot cut it.
+- A cloud server usually has a **serial console**, a direct terminal to the machine, in the provider's web interface.
+- Otherwise, schedule an undo before you start. This line clears the rules in five minutes unless you stop it with `kill %1`:
+
+   ```bash
+   root@beta:/# (sleep 300; iptables -P INPUT ACCEPT; iptables -F INPUT) &
+   ```
 
 The safe order is: allow rules first, then the rule that drops, then the default policy. Until the last step, nothing is blocked, so a mistake cannot lock you out.
 
-**Step 1. Loopback and established connections.** Programs on beta talk to each other over `lo`, including the lab's DNS resolver. On a real server you are connected over SSH while you type this, and the established rule is what keeps that session alive when the policy changes:
+1. **Loopback and established connections**
+   - Programs on beta talk to each other over `lo`, including the lab's DNS resolver.
+   - On a real server you are connected over SSH while you type this, and the established rule is what keeps that session alive when the policy changes:
 
-```bash
-root@beta:/# iptables -A INPUT -i lo -j ACCEPT
-root@beta:/# iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-```
+   ```bash
+   root@beta:/# iptables -A INPUT -i lo -j ACCEPT
+   root@beta:/# iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+   ```
 
-**Step 2. The services you offer.** SSH and HTTP, plus ICMP so that `ping` and the error messages that path MTU discovery relies on still work:
+2. **The services you offer**
+   - SSH and HTTP, plus ICMP, so that `ping` and the error messages that path MTU discovery relies on still work:
 
-```bash
-root@beta:/# iptables -A INPUT -p tcp --dport 22 -j ACCEPT
-root@beta:/# iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-root@beta:/# iptables -A INPUT -p icmp -j ACCEPT
-```
+   ```bash
+   root@beta:/# iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+   root@beta:/# iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+   root@beta:/# iptables -A INPUT -p icmp -j ACCEPT
+   ```
 
-**Step 3. Drop the rest.** Add a final rule that drops everything that got this far, and set the policy to `DROP` as a backstop in case the rule is ever deleted:
+3. **Drop the rest**
+   - Add a final rule that drops everything that got this far, and set the policy to `DROP` as a backstop in case the rule is ever deleted:
 
-```bash
-root@beta:/# iptables -A INPUT -j DROP
-root@beta:/# iptables -P INPUT DROP
-```
+   ```bash
+   root@beta:/# iptables -A INPUT -j DROP
+   root@beta:/# iptables -P INPUT DROP
+   ```
+
+## Testing the rules
 
 Now test each service from alpha:
 
@@ -159,24 +203,36 @@ root@alpha:/# curl http://beta
 hello from beta
 ```
 
-`nc` only shows that a port accepts connections. `curl` shows the service behind it actually answers. Test both. From beta, `curl -sI http://example.com` still works, thanks to the established rule.
+- `nc` only shows that a port accepts connections. `curl` shows the service behind it actually answers. Test both.
+- From beta, `curl -sI http://example.com` still works, thanks to the established rule.
 
-To see what is being dropped, add a `LOG` rule just before the drop rule: `iptables -I INPUT 6 -m limit --limit 10/min -j LOG --log-prefix "INPUT DROP: "`. The messages go to the kernel log, which you read with `journalctl -k` or `dmesg`, and `-m limit` stops a flood of blocked packets filling the disk. The kernel does not write `LOG` messages from inside a container, so in the lab the `pkts` counters in `iptables -L INPUT -n -v` are the way to see which rule a packet hit.
+To see what is being dropped, add a `LOG` rule just before the drop rule: `iptables -I INPUT 6 -m limit --limit 10/min -j LOG --log-prefix "INPUT DROP: "`.
+
+- The messages go to the kernel log, which you read with `journalctl -k` or `dmesg`.
+- `-m limit` stops a flood of blocked packets filling the disk.
+- The kernel does not write `LOG` messages from inside a container, so in the lab the `pkts` counters in `iptables -L INPUT -n -v` are the way to see which rule a packet hit.
 
 ## The mistakes that lock you out
 
-**Adding a rule after the drop.** Someone asks for port 8000 to be opened. `-A` appends, so the new rule lands below the drop rule and is never reached:
+1. **Adding a rule after the drop**
+   - Someone asks for port 8000 to be opened. `-A` appends, so the new rule lands below the drop rule and is never reached:
 
-```bash
-root@beta:/# iptables -A INPUT -p tcp --dport 8000 -j ACCEPT
-root@beta:/# iptables -L INPUT -n --line-numbers | tail -2
-6    DROP       0    --  0.0.0.0/0            0.0.0.0/0
-7    ACCEPT     6    --  0.0.0.0/0            0.0.0.0/0            tcp dpt:8000
-```
+   ```bash
+   root@beta:/# iptables -A INPUT -p tcp --dport 8000 -j ACCEPT
+   root@beta:/# iptables -L INPUT -n --line-numbers | tail -2
+   6    DROP       0    --  0.0.0.0/0            0.0.0.0/0
+   7    ACCEPT     6    --  0.0.0.0/0            0.0.0.0/0            tcp dpt:8000
+   ```
 
-Delete it and insert it above the drop rule instead: `iptables -D INPUT 7`, then `iptables -I INPUT 6 -p tcp --dport 8000 -j ACCEPT`. If the new rule were for SSH, this mistake would leave you unable to log in to fix it.
+   - Delete it and insert it above the drop rule instead: `iptables -D INPUT 7`, then `iptables -I INPUT 6 -p tcp --dport 8000 -j ACCEPT`.
+   - If the new rule were for SSH, this mistake would leave you unable to log in to fix it.
 
-**Setting the policy first, or flushing under it.** `iptables -P INPUT DROP` on a server with no allow rules cuts everything at once. The same happens later if you clear the rules with `iptables -F` while the policy is `DROP`: the rules go, the policy stays, and even established connections are dropped. An SSH session freezes, and on a cloud server you would now need the serial console. The habits that prevent it:
+2. **Setting the policy first, or flushing under it**
+   - `iptables -P INPUT DROP` on a server with no allow rules cuts everything at once.
+   - The same happens later if you clear the rules with `iptables -F` while the policy is `DROP`: the rules go, the policy stays, and even established connections are dropped.
+   - An SSH session freezes, and on a cloud server you would now need the serial console.
+
+The habits that prevent it:
 
 - Add allow rules before the drop rule, and set the policy last.
 - Before flushing, set the policy back: `iptables -P INPUT ACCEPT`, then `iptables -F`.
@@ -190,13 +246,22 @@ Rules made with `iptables` live in the kernel and disappear on reboot. `iptables
 root@beta:/# iptables-save > /root/rules.v4
 ```
 
-The file lists each chain's policy and every rule in `-S` form, between `*filter` and `COMMIT`. It also holds a `*nat` section with Docker's DNS rules; leave it in. `iptables-restore < /root/rules.v4` replaces the whole table at once, so there is no moment with half the rules loaded. It is a safer way to make big changes than typing rules one by one: edit the file, then restore it. On Ubuntu or Debian, the `iptables-persistent` package restores `/etc/iptables/rules.v4` at boot.
+- The file lists each chain's policy and every rule in `-S` form, between `*filter` and `COMMIT`.
+- It also holds a `*nat` section with Docker's DNS rules. Leave it in.
+- `iptables-restore < /root/rules.v4` replaces the whole table at once, so there is no moment with half the rules loaded.
+- That makes it a safer way to make big changes than typing rules one by one: edit the file, then restore it.
+- On Ubuntu or Debian, the `iptables-persistent` package restores `/etc/iptables/rules.v4` at boot.
 
 ## Other tools, same idea
 
-nftables (`nft`) is the newer interface to netfilter, and on current distributions `iptables` often writes nftables rules for you. ufw on Ubuntu (`ufw allow 22/tcp`) and firewalld on other distributions are simpler front ends that write the rules underneath.
+- **nftables** (`nft`) is the newer interface to netfilter. On current distributions, `iptables` often writes nftables rules for you.
+- **ufw** on Ubuntu (`ufw allow 22/tcp`) and **firewalld** on other distributions are simpler front ends that write the rules underneath.
 
-A **cloud security group** is the same idea, run by the cloud provider outside the server: a list of allow rules on ports, protocols and source addresses, with an implicit deny for everything else. It is stateful, so replies to allowed connections are let through without a rule, exactly like the `ESTABLISHED,RELATED` rule. A cloud network ACL, where the provider offers one, is usually stateless and needs rules for both directions.
+A **cloud security group** is the same idea, run by the cloud provider outside the server:
+
+- It is a list of allow rules on ports, protocols and source addresses, with an implicit deny for everything else.
+- It is stateful, so replies to allowed connections are let through without a rule, exactly like the `ESTABLISHED,RELATED` rule.
+- A cloud **network ACL** (*access control list*), where the provider offers one, is usually **stateless**: it does not track connections, so it needs rules for both directions.
 
 ## Tasks
 

@@ -1,12 +1,18 @@
-Most of what you do on a network runs over TCP: web pages, APIs, SSH, database connections. TCP takes the packets that IP delivers on a best-effort basis, which can arrive late, out of order or not at all, and turns them into a reliable stream of bytes between two programs.
+## What TCP is
 
-That reliability has a price, and it shows up in the packets: a handshake before any data, an acknowledgement for what arrives, and resends for what does not. By the end you can watch a TCP connection open and close with tcpdump, read its state in `ss`, and tell a closed port from a blocked one by what comes back.
+**TCP** (*Transmission Control Protocol*) is the transport protocol that turns the packets IP delivers into a reliable stream of bytes between two programs. Most of what you do on a network runs over it: web pages, APIs, SSH, database connections.
+
+- IP delivers packets on a **best-effort** basis: they can arrive late, out of order or not at all.
+- TCP fixes that, but the reliability has a price, and it shows up in the packets: a handshake before any data, an acknowledgement for what arrives, and resends for what does not.
 
 ## A connection between two sockets
 
-TCP is **connection-oriented**. Before any data moves, the two ends agree to talk, and from then on each side keeps a record of the conversation: what it has sent, what the other side has received, and what is still in flight. That record is the **connection**.
+TCP is **connection-oriented**: before any data moves, the two ends agree to talk.
 
-A connection is named by four values: the client's address and port, and the server's address and port. The *Ports and sockets* topic showed the server side, a socket in the `LISTEN` state. The client side gets a random high port, called an **ephemeral port**, picked by the kernel for each new connection. That is how one machine can hold many connections to the same server port at once: each one has a different client port.
+- A **connection** is the record each side keeps of the conversation from then on: what it has sent, what the other side has received, and what is still in flight.
+- A connection is named by four values: the client's address and port, and the server's address and port.
+- The *Ports and sockets* topic showed the server side, a socket in the `LISTEN` state.
+- The client side gets a random high port, called an **ephemeral port**, picked by the kernel for each new connection. That is how one machine can hold many connections to the same server port at once: each one has a different client port.
 
 TCP gives the programs at each end three promises:
 
@@ -54,7 +60,11 @@ The listener prints `hello` and exits. The capture shows eight packets:
 10.10.0.2.51066 > 10.10.0.3.9000: Flags [.], ack 2, win 502, options [nop,nop,TS val 549223990 ecr 427406261], length 0
 ```
 
-Each line starts with a timestamp, left off here. The client port, 51066 here, will be different for you. Ignore the `options` for now; the *tcpdump* topic reads them. The **flags** say what each packet is for:
+- Each line starts with a timestamp, left off here.
+- The client port, 51066 here, will be different for you.
+- Ignore the `options` for now; the *tcpdump* topic reads them.
+
+The **flags** are markers in the TCP header that say what each packet is for:
 
 | Flag | Name | Meaning |
 | --- | --- | --- |
@@ -64,22 +74,38 @@ Each line starts with a timestamp, left off here. The client port, 51066 here, w
 | `F` | FIN | "I have finished sending" |
 | `R` | RST | "Abort, this connection is not wanted" |
 
-The first three packets are the **three-way handshake**: alpha sends `S`, beta answers `S.` (SYN and ACK together), and alpha confirms with `.`. Only then does data move. The fourth packet carries 6 bytes, `hello` plus a newline, and beta acknowledges them. The last three close the connection: each side sends a FIN and the other acknowledges it.
+The **three-way handshake** is the three packets that open every TCP connection:
 
-So a single line of data needed eight packets and a full round trip before the first byte could leave. Across the internet, where a round trip can be 50 milliseconds or more, that setup time adds up, which is why programs reuse connections instead of opening a new one per request.
+1. Alpha sends `S`.
+2. Beta answers `S.`, SYN and ACK together.
+3. Alpha confirms with `.`.
+
+Only then does data move.
+
+- The fourth packet carries 6 bytes, `hello` plus a newline, and beta acknowledges them.
+- The last three close the connection: each side sends a FIN and the other acknowledges it.
+
+So a single line of data needed eight packets and a full round trip before the first byte could leave. Across the internet, where a round trip can be 50 milliseconds or more, that setup time adds up. That is why programs reuse connections instead of opening a new one per request.
 
 ## Sequence numbers, kept simple
 
-TCP numbers every byte it sends. In the handshake each side picks a random starting number, the `seq` in its SYN: 1083176185 for alpha and 2188652734 for beta. After that, tcpdump shows numbers **relative** to the start, so they are easy to read.
+A **sequence number** is the number TCP gives each byte it sends.
+
+- In the handshake, each side picks a random starting number, the `seq` in its SYN: 1083176185 for alpha and 2188652734 for beta.
+- After that, tcpdump shows numbers **relative** to the start, so they are easy to read.
 
 - `seq 1:7, length 6` means "these are bytes 1 to 6 of my stream". The range ends at 7 because that is the next byte to come.
 - `ack 7` from beta means "I have everything before byte 7, send byte 7 next".
 
-That pair is how TCP knows what arrived. If alpha sends bytes and never sees an `ack` that covers them, it sends them again. If packets arrive out of order, the receiver uses the numbers to put the bytes back in the right place before passing them to the program. A SYN and a FIN each count as one byte, which is why beta's first ACK is the start number plus one, and why the final `ack 8` and `ack 2` are one more than the data alone.
+That pair is how TCP knows what arrived:
+
+- If alpha sends bytes and never sees an `ack` that covers them, it sends them again.
+- If packets arrive out of order, the receiver uses the numbers to put the bytes back in the right place before passing them to the program.
+- A SYN and a FIN each count as one byte. That is why beta's first ACK is the start number plus one, and why the final `ack 8` and `ack 2` are one more than the data alone.
 
 ## Connection states in ss
 
-Each end tracks the connection through a series of **states**. `ss` shows them. Start a listener on beta again, and from alpha open a connection that stays open: `sleep 60` sends nothing for a minute, so netcat waits.
+A connection's **state** is the stage it is at, from opening to closed. Each end tracks the connection through a series of states, and `ss` shows them. Start a listener on beta again, and from alpha open a connection that stays open: `sleep 60` sends nothing for a minute, so netcat waits.
 
 ```bash
 root@beta:/# nc -l 9000
@@ -126,7 +152,9 @@ LISTEN    0      4096      127.0.0.11:36657      0.0.0.0:*
 TIME-WAIT 0      0          10.10.0.2:51066    10.10.0.3:9000 timer:(timewait,59sec,0)
 ```
 
-The `LISTEN` socket on `127.0.0.11` is Docker's DNS service inside the container; ignore it. The other line is the connection you closed. The side that closes first, alpha here, keeps it in **TIME_WAIT** for about 60 seconds on Linux. During that time, any late packet from the old connection is recognised and thrown away instead of being mistaken for part of a new one.
+- The `LISTEN` socket on `127.0.0.11` is Docker's DNS service inside the container; ignore it.
+- The other line is the connection you closed. The side that closes first, alpha here, keeps it in **TIME_WAIT** for about 60 seconds on Linux.
+- During that time, any late packet from the old connection is recognised and thrown away, instead of being mistaken for part of a new one.
 
 TIME_WAIT is normal and costs very little. You only notice it on a busy client that opens and closes thousands of short connections per second, where it can tie up ephemeral ports. The usual fix is reusing connections, not tuning the kernel.
 
@@ -144,7 +172,9 @@ nc: connect to beta (10.10.0.3) port 9999 (tcp) failed: Connection refused
 10.10.0.3.9999 > 10.10.0.2.48510: Flags [R.], seq 0, ack 4011202657, win 0, length 0
 ```
 
-Beta's kernel answers the SYN at once with a **reset** (`R`). The machine is up and reachable; there is just nothing on that port. You get the answer in under a millisecond.
+- Beta's kernel answers the SYN at once with a **reset** (`R`).
+- The machine is up and reachable; there is just nothing on that port.
+- You get the answer in under a millisecond.
 
 Now make beta silently drop packets to port 9000 with a firewall rule. The *Firewall basics* topic explains the command; for now, type it as shown, and start a listener so the port really is open behind the rule:
 
@@ -170,7 +200,11 @@ nc: connect to beta (10.10.0.3) port 9000 (tcp) timed out: Operation now in prog
 07:26:59.168303 IP 10.10.0.2.60064 > 10.10.0.3.9000: Flags [S], seq 670582728, win 64240, ...
 ```
 
-Nothing comes back, so alpha keeps **retransmitting** the same SYN, with the same sequence number, and the gap between tries grows. Without `-w`, it keeps trying for around two minutes before giving up. The exact gaps depend on the kernel version.
+**Retransmitting** means sending the same packet again because no answer came back.
+
+- Nothing comes back, so alpha keeps retransmitting the same SYN, with the same sequence number, and the gap between tries grows.
+- Without `-w`, it keeps trying for around two minutes before giving up.
+- The exact gaps depend on the kernel version.
 
 | What you see | What it means |
 | --- | --- |
@@ -178,7 +212,13 @@ Nothing comes back, so alpha keeps **retransmitting** the same SYN, with the sam
 | `timed out` after a long wait | Packets are dropped somewhere: a firewall, a security group, or a wrong route |
 | `No route to host` | The address cannot be reached at all, for example nothing has it on the local network |
 
-Retransmission works the same way for data. When a data packet goes missing, the sender sees no ACK for it and sends it again. The program never sees the gap; it just sees the data arrive a little later. That is the cost of reliable delivery: delay instead of loss. Remove the rule when you are done:
+Retransmission works the same way for data:
+
+- When a data packet goes missing, the sender sees no ACK for it and sends it again.
+- The program never sees the gap; it just sees the data arrive a little later.
+- That is the cost of reliable delivery: delay instead of loss.
+
+Remove the rule when you are done:
 
 ```bash
 root@beta:/# iptables -F

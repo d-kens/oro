@@ -1,10 +1,17 @@
-TCP spends packets on a handshake, acknowledgements and resends so that every byte arrives in order. UDP spends none of them. A program hands UDP a message, UDP puts an address and port on it and sends it, and that is the end of UDP's job.
+## What UDP is
 
-That makes UDP fast and simple, and it puts the job of coping with loss on the program. By the end you can send and receive UDP datagrams by hand, recognise what an unanswered UDP port looks like, and explain why DNS uses UDP.
+**UDP** (*User Datagram Protocol*) is a transport protocol that sends each message on its own, with no connection, no acknowledgements and no resends.
+
+- TCP spends packets on a handshake, acknowledgements and resends so that every byte arrives in order. UDP spends none of them.
+- A program hands UDP a message, UDP puts an address and port on it and sends it, and that is the end of UDP's job.
+- That makes UDP fast and simple, and it puts the job of coping with loss on the program.
 
 ## Datagrams, not connections
 
-A UDP message is a **datagram**: one packet, sent on its own, with no link to the ones before or after it. There is no handshake, so there is nothing to set up first and nothing to close afterwards. The sender does not learn whether the datagram arrived.
+A **datagram** is a UDP message: one packet, sent on its own, with no link to the ones before or after it.
+
+- There is no handshake, so there is nothing to set up first and nothing to close afterwards.
+- The sender does not learn whether the datagram arrived.
 
 | | TCP | UDP |
 | --- | --- | --- |
@@ -14,7 +21,8 @@ A UDP message is a **datagram**: one packet, sent on its own, with no link to th
 | Unit | A stream of bytes | Separate messages |
 | Header size | 20 bytes or more | 8 bytes |
 
-The 8-byte UDP header holds just four things: the source port, the destination port, a length and a checksum. Ports work exactly as they do for TCP, but the two are separate: UDP port 53 and TCP port 53 are different sockets.
+- The 8-byte UDP header holds just four things: the source port, the destination port, a length and a **checksum**, a number worked out from the data so the receiver can tell whether it was damaged.
+- Ports work exactly as they do for TCP, but the two are separate: UDP port 53 and TCP port 53 are different sockets.
 
 ## Sending a datagram by hand
 
@@ -34,7 +42,10 @@ UNCONN 0      0            0.0.0.0:9000       0.0.0.0:*
 root@beta:/# tcpdump -n -i eth0 udp port 9000
 ```
 
-UDP sockets show `UNCONN`, short for unconnected, instead of `LISTEN`; there is no connection to wait for. The socket on `127.0.0.11` is Docker's DNS service. Now send a line from alpha. `-w 1` makes netcat quit one second after its input ends, because with no connection to close it would otherwise wait for a reply forever:
+- UDP sockets show `UNCONN`, short for unconnected, instead of `LISTEN`. There is no connection to wait for.
+- The socket on `127.0.0.11` is Docker's DNS service.
+
+Now send a line from alpha. `-w 1` makes netcat quit one second after its input ends, because with no connection to close it would otherwise wait for a reply forever:
 
 ```bash
 root@alpha:/# echo hello | nc -u -w 1 beta 9000
@@ -48,11 +59,17 @@ Beta's listener prints `hello`. The capture shows a single packet:
 
 Compare that with the eight packets TCP needed for the same line in the *TCP* topic. One packet, no reply, no close.
 
-If you run `ss -uan` on beta now, the listener shows `ESTAB` with alpha's address and port. That is netcat, not UDP: after the first datagram arrives, netcat tells its socket to only accept datagrams from that sender. Datagrams from any other address or port are ignored, so start a fresh listener before each new test.
+If you run `ss -uan` on beta now, the listener shows `ESTAB` with alpha's address and port. That is netcat, not UDP:
+
+- After the first datagram arrives, netcat tells its socket to only accept datagrams from that sender.
+- Datagrams from any other address or port are ignored, so start a fresh listener before each new test.
 
 ## What can go missing
 
-On a quiet local network, almost nothing is lost, so you have to cause some loss to see the difference. `tc` with `netem` makes an interface drop a share of its outgoing packets on purpose, and can add delay in the same way. Here, alpha drops 30 percent of what it sends.
+**Packet loss** is when packets are sent but never arrive. On a quiet local network almost nothing is lost, so you have to cause some loss to see the difference.
+
+- `tc` with `netem` makes an interface drop a share of its outgoing packets on purpose, and can add delay in the same way.
+- Here, alpha drops 30 percent of what it sends.
 
 Start a fresh listener on beta, then on alpha send the numbers 1 to 20, one datagram every tenth of a second:
 
@@ -76,7 +93,10 @@ Beta receives some of them, with gaps:
 ...
 ```
 
-In this run 13 of the 20 arrived; your numbers will differ. Neither side reported an error. The sender has no idea, and the receiver only knows because the numbers skip. Now do the same over TCP, with a TCP listener on beta:
+- In this run 13 of the 20 arrived; your numbers will differ.
+- Neither side reported an error. The sender has no idea, and the receiver only knows because the numbers skip.
+
+Now do the same over TCP, with a TCP listener on beta:
 
 ```bash
 root@beta:/# nc -l 9000
@@ -117,7 +137,8 @@ root@alpha:/# echo hi | nc -u -w 1 beta 9999
 07:27:29.256396 IP 10.10.0.3 > 10.10.0.2: ICMP 10.10.0.3 udp port 9999 unreachable, length 39
 ```
 
-That ICMP message is the only way to learn a UDP port is closed, and firewalls often drop it. When they do, a closed port, a blocked port and an open port whose program chose not to reply all look the same: silence.
+- That ICMP message is the only way to learn a UDP port is closed, and firewalls often drop it.
+- When they do, a closed port, a blocked port and an open port whose program chose not to reply all look the same: silence.
 
 This makes UDP port checks unreliable. `nc -zuv` reports success unless an ICMP error comes back:
 
@@ -127,7 +148,10 @@ Connection to beta (10.10.0.3) 9000 port [udp/*] succeeded!
 root@alpha:/# nc -zuv -w 1 beta 9999
 ```
 
-The first is a real listener. The second prints nothing and exits with status 1, because the ICMP error came back. Now drop UDP to 9999 on beta with a firewall rule, so no error is sent, and try again:
+- The first is a real listener.
+- The second prints nothing and exits with status 1, because the ICMP error came back.
+
+Now drop UDP to 9999 on beta with a firewall rule, so no error is sent, and try again:
 
 ```bash
 root@beta:/# iptables -A INPUT -p udp --dport 9999 -j DROP
@@ -138,7 +162,9 @@ root@alpha:/# nc -zuv -w 1 beta 9999
 Connection to beta (10.10.0.3) 9999 port [udp/*] succeeded!
 ```
 
-Nothing listens there, yet netcat says it succeeded, because it heard no complaint. The only real test of a UDP service is to send it a proper request and get a proper answer. Clear the rule with `iptables -F` on beta.
+- Nothing listens there, yet netcat says it succeeded, because it heard no complaint.
+- The only real test of a UDP service is to send it a proper request and get a proper answer.
+- Clear the rule with `iptables -F` on beta.
 
 ## Where UDP is the right choice
 
@@ -164,7 +190,10 @@ root@alpha:/# dig @a.root-servers.net example.com +norec
 07:28:30.329523 IP 198.41.0.4.53 > 10.10.0.2.56967: 7051- 0/13/27 (836)
 ```
 
-Two packets: a 52-byte question and an 836-byte answer, with no handshake and no close. The number 7051 is a query ID, so dig can match the answer to its question. dig's own output ends with `;; SERVER: 198.41.0.4#53(a.root-servers.net) (UDP)`. If a reply is too large, or dropped, DNS can fall back to TCP, which is why DNS servers listen on TCP port 53 as well.
+- Two packets: a 52-byte question and an 836-byte answer, with no handshake and no close.
+- The number 7051 is a **query ID**, so dig can match the answer to its question.
+- dig's own output ends with `;; SERVER: 198.41.0.4#53(a.root-servers.net) (UDP)`.
+- If a reply is too large, or dropped, DNS can fall back to TCP, which is why DNS servers listen on TCP port 53 as well.
 
 When a DNS server does not answer, dig waits and retries, because UDP will not tell it anything. `+tries=1 +time=2` keeps the wait short:
 

@@ -1,10 +1,20 @@
-The Python server from the *HTTP* topic is fine for a quick test, but real sites run on a proper web server. **nginx** is one of the most widely used. It serves files, terminates HTTPS, and sits in front of applications as a reverse proxy, and you will find it on servers and in containers everywhere.
+## What a web server is
 
-This topic sets nginx up on `beta` to serve a small site, then makes it reachable from your own computer as well as from the lab. By the end you can start and reload nginx, write a server block, check a configuration before applying it, and find a problem in its logs.
+A **web server** is a program that answers HTTP requests, usually by sending back files or passing the request on to an application. The Python server from the *HTTP* topic is fine for a quick test, but real sites run on a proper web server.
+
+**nginx** is one of the most widely used. You will find it on servers and in containers everywhere. It:
+
+- serves files
+- terminates HTTPS, meaning it handles the encryption so the application behind it does not have to
+- sits in front of applications as a reverse proxy
 
 ## Start nginx on beta
 
-nginx is already in the lab image. To reach it from your own browser as well as from alpha, start `beta` with an extra option, `-p 8080:80`, which **publishes** a port: Docker forwards port 8080 on your computer to port 80 inside the container. Exit any running beta first, then:
+nginx is already in the lab image. To reach it from your own browser as well as from alpha, start `beta` with an extra option, `-p 8080:80`.
+
+- `-p` **publishes** a port: Docker forwards port 8080 on your computer to port 80 inside the container.
+
+Exit any running beta first, then:
 
 ```bash
 $ docker run -it --rm --name beta --hostname beta --network lab --cap-add NET_ADMIN -p 8080:80 netlab
@@ -32,7 +42,10 @@ LISTEN 0      511          0.0.0.0:80         0.0.0.0:*    users:(("nginx",pid=2
 LISTEN 0      511             [::]:80            [::]:*    users:(("nginx",pid=21,fd=6))
 ```
 
-`nginx` prints nothing when it starts successfully. `ps -ef` shows one **master process**, running as root, which reads the configuration and opens port 80, and several **worker processes**, running as the unprivileged `www-data` user, which handle the requests:
+`nginx` prints nothing when it starts successfully. `ps -ef` shows two kinds of process:
+
+- one **master process**, running as root, which reads the configuration and opens port 80
+- several **worker processes**, running as the unprivileged `www-data` user, which handle the requests
 
 ```bash
 root@beta:/# ps -ef | grep [n]ginx
@@ -78,12 +91,19 @@ http {
 }
 ```
 
-nginx configuration is made of **directives**, each ending in a semicolon, and **blocks** in braces that hold more directives. `include` pulls in other files. On Ubuntu and Debian, each site lives in its own file:
+nginx configuration is made of two things:
+
+- A **directive** is one setting, a name followed by values, ending in a semicolon.
+- A **block** is a group of directives in braces.
+
+`include` pulls in other files. On Ubuntu and Debian, each site lives in its own file:
 
 - `/etc/nginx/sites-available/` holds a file per site.
 - `/etc/nginx/sites-enabled/` holds symbolic links to the sites that are switched on.
 
-So you enable a site by linking it and disable it by removing the link, without deleting its configuration. The welcome page you just saw comes from the `default` site. Other distributions and the official nginx container image use `/etc/nginx/conf.d/*.conf` instead; the directives inside are the same.
+- You enable a site by linking it, and disable it by removing the link, without deleting its configuration.
+- The welcome page you just saw comes from the `default` site.
+- Other distributions and the official nginx container image use `/etc/nginx/conf.d/*.conf` instead. The directives inside are the same.
 
 ## A server block of your own
 
@@ -94,7 +114,7 @@ root@beta:/# mkdir -p /var/www/site
 root@beta:/# echo "<h1>Hello from nginx on beta</h1>" > /var/www/site/index.html
 ```
 
-Now write the site's configuration. A **server block** describes one site:
+Now write the site's configuration. A **server block** is the block that describes one site:
 
 ```bash
 root@beta:/# cat > /etc/nginx/sites-available/site <<'EOF'
@@ -143,25 +163,35 @@ Accept-Ranges: bytes
 <h1>Hello from nginx on beta</h1>
 ```
 
-Always run `nginx -t` before a reload. If the test fails, the reload would fail too and nginx would carry on with the old configuration, but on a real server the next restart, for example after a reboot, would fail to start at all. A typo in a directive name gives a precise message with the file and line:
+## Common configuration mistakes
 
-```text
-2026/10/25 07:35:07 [emerg] 87#87: unknown directive "roott" in /etc/nginx/sites-enabled/site:4
-nginx: configuration file /etc/nginx/nginx.conf test failed
-```
+Always run `nginx -t` before a reload. If the test fails, the reload would fail too and nginx would carry on with the old configuration. But on a real server, the next restart, for example after a reboot, would fail to start at all.
 
-Be careful with semicolons. A missing one does not always cause an error: nginx may read the next line as more values for the same directive. Without the semicolon after `server_name beta`, the test passes with only a warning, and the site no longer has a `root`:
+1. **A typo in a directive name**
+   - It gives a precise message with the file and line:
 
-```text
-2026/10/25 07:35:07 [warn] 94#94: server name "/var/www/site" has suspicious symbols in /etc/nginx/sites-enabled/site:4
-nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
-```
+   ```text
+   2026/10/25 07:35:07 [emerg] 87#87: unknown directive "roott" in /etc/nginx/sites-enabled/site:4
+   nginx: configuration file /etc/nginx/nginx.conf test failed
+   ```
 
-Read warnings as well as errors.
+2. **A missing semicolon**
+   - It does not always cause an error. nginx may read the next line as more values for the same directive.
+   - Without the semicolon after `server_name beta`, the test passes with only a warning, and the site no longer has a `root`:
+
+   ```text
+   2026/10/25 07:35:07 [warn] 94#94: server name "/var/www/site" has suspicious symbols in /etc/nginx/sites-enabled/site:4
+   nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+   ```
+
+   - Read warnings as well as errors.
 
 ## Several sites on one server
 
-One nginx can serve many sites on the same port. It reads the `Host` header of each request and picks the server block whose `server_name` matches, as the *HTTP* topic described. If none matches, it uses the **default server** for that port: the one marked `default_server` on its `listen` line, or else the first one it loaded.
+One nginx can serve many sites on the same port.
+
+- It reads the `Host` header of each request and picks the server block whose `server_name` matches, as the *HTTP* topic described.
+- If none matches, it uses the **default server** for that port: the one marked `default_server` on its `listen` line, or else the first one it loaded.
 
 Add a second site for `docs.example.com`:
 
@@ -190,7 +220,7 @@ root@alpha:/# curl http://beta/
 <h1>Hello from nginx on beta</h1>
 ```
 
-Same IP address, same port, different site. This is called **name-based virtual hosting**, and it is how one server or one load balancer handles many domains.
+Same IP address, same port, different site. **Name-based virtual hosting** is serving several sites from one address this way. It is how one server or one load balancer handles many domains.
 
 ## Access and error logs
 
@@ -219,13 +249,19 @@ The **error log** says *why* something went wrong, which the access log does not
 2026/10/25 07:26:59 [error] 95#95: *2 open() "/var/www/site/missing" failed (2: No such file or directory), client: 10.10.0.2, server: beta, request: "GET /missing HTTP/1.1", host: "beta"
 ```
 
-It names the exact file nginx tried to open, which tells you at once whether `root` points where you think it does. Watch both logs while you send requests:
+It names the exact file nginx tried to open, which tells you at once whether `root` points where you think it does.
+
+## Watching the logs
+
+Watch both logs while you send requests:
 
 ```bash
 root@beta:/# tail -f /var/log/nginx/access.log /var/log/nginx/error.log
 ```
 
-The docs site writes its requests to `docs.access.log`, because its server block set its own `access_log`. Separate logs per site make busy servers easier to read. The *Linux* skill's pipes topic showed how to count status codes or top clients from a file like this.
+- The docs site writes its requests to `docs.access.log`, because its server block set its own `access_log`.
+- Separate logs per site make busy servers easier to read.
+- The Linux skill's *Pipes and text processing* topic showed how to count status codes or top clients from a file like this.
 
 ## Tasks
 

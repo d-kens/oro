@@ -1,12 +1,19 @@
-Every request a cloud service handles crosses a network: a browser reaching a load balancer, an application reaching its database, a server pulling a container image. When something cannot be reached, you need to know what actually happens between the two machines to work out where it stops.
+## What a network is
 
-This topic explains what a network is made of and builds a small one on your own computer, which every later topic uses. By the end you can start the lab, name the parts of a network, and check that one machine can reach another.
+A **network** is two or more machines connected so they can send each other data.
+
+Every request a cloud service handles crosses a network: a browser reaching a load balancer, an application reaching its database, a server pulling a container image. When something cannot be reached, you need to know what happens between the two machines to work out where it stops.
 
 ## Hosts, links and packets
 
-A **network** is two or more machines connected so they can send each other data. Each machine on it is a **host**: a laptop, a server, a phone, a container. The connection between them is a **link**: a cable, a Wi-Fi signal, or a virtual link inside one computer.
+- A **host** is any machine on a network: a laptop, a server, a phone, a container.
+- A **link** is the connection between hosts: a cable, a Wi-Fi signal, or a virtual link inside one computer.
+- A **packet** is a small piece of data sent across a network on its own, usually up to about 1,500 bytes.
 
-Hosts do not send a file or a web page in one piece. They cut the data into small **packets**, usually up to about 1,500 bytes each, and send each one separately. Every packet carries a header with the address it comes from and the address it is going to, a bit like the envelope around a letter. The receiving host puts the packets back together.
+Hosts do not send a file or a web page in one piece. They cut the data into packets and send each one separately.
+
+- Every packet starts with a **header**: information about the packet, including the address it comes from and the address it is going to.
+- The receiving host puts the packets back together.
 
 Packets matter for two reasons:
 
@@ -15,30 +22,44 @@ Packets matter for two reasons:
 
 ## Switches and routers
 
-Hosts on the same local network, such as the machines in one office or one subnet in a data centre, are joined by a **switch**. A switch passes each packet to the one port where its destination is connected. Hosts on the same switch can talk to each other directly.
+A **local network** is a group of hosts connected directly to each other, such as the machines in one office or one subnet in a data centre.
 
-To reach a host on a *different* network, packets go through a **router**. A router is connected to two or more networks and moves packets between them. Your home router joins your home network to your internet provider's. The internet is many thousands of networks joined by routers, and a packet to a distant server passes through a dozen or more of them.
+- A **switch** joins the hosts on a local network. It passes each packet to the one port where its destination is connected. Hosts on the same switch can talk to each other directly.
+- A **router** is connected to two or more networks and moves packets between them. To reach a host on a *different* network, packets go through a router.
+
+Your home router joins your home network to your internet provider's. The internet is many thousands of networks joined by routers, and a packet to a distant server passes through a dozen or more of them.
 
 | Device | Joins | Decides using |
 | --- | --- | --- |
 | Switch | Hosts on the same local network | Hardware (MAC) addresses, in *The layers model* topic |
 | Router | Different networks | IP addresses and a routing table, in the *Routing and gateways* topic |
 
-In the cloud you never see the cables or the boxes, but the same parts exist. A virtual network is a set of subnets, the cloud provider's software does the switching, and route tables decide where packets go.
+In the cloud you never see the cables or the boxes, but the same parts exist:
 
-## Addresses and names
+- A virtual network is a set of subnets.
+- The cloud provider's software does the switching.
+- Route tables decide where packets go.
 
-A packet needs an address to reach its destination. On today's networks that is an **IP address**, such as `10.10.0.2` or `2001:db8::2`. The *IP addresses* topic covers them in full.
+## Addresses, names and ports
 
-People and configuration files mostly use **names** instead, such as `db-01` or `example.com`. Before a host can send anything to a name, it has to find the IP address behind it. That lookup is **DNS**, covered in the *DNS basics* topic.
+- An **IP address** is the number that identifies a host on a network, such as `10.10.0.2` or `2001:db8::2`. A packet needs one to reach its destination. The *IP addresses* topic covers them in full.
+- A **host name** is a name people and configuration files use instead, such as `db-01` or `example.com`. Before a host can send anything to a name, it has to find the IP address behind it.
+- **DNS** (*Domain Name System*) is the system that turns names into IP addresses. The *DNS basics* topic covers it.
+- A **port** is a number that says which program on a host a packet is for. A host runs many programs that use the network at once. A web server usually listens on port 80 or 443, and SSH on port 22. The *Ports and sockets* topic covers them.
 
-Last, a host runs many programs that use the network at once. A **port** number says which program a packet is for: a web server usually listens on port 80 or 443, and SSH on port 22. The *Ports and sockets* topic covers them.
+So to reach a service, three things have to work:
 
-So to reach a service you need three things to work: the name has to turn into an address, packets have to find a path to that address, and something has to be listening on the port at the other end. Most of this skill is about those three steps and how to check each one.
+1. The name has to turn into an address.
+2. Packets have to find a path to that address.
+3. Something has to be listening on the port at the other end.
+
+Most of this skill is about those three steps and how to check each one.
 
 ## Build the lab
 
-You need **Docker** on your computer. On Windows and macOS that is Docker Desktop; on Linux, Docker Engine. Everything runs in containers, so nothing changes on your own machine, and no cloud account is needed.
+A **lab** is a small practice network you can break without harm. This skill's lab runs in Docker containers on your own computer, so nothing changes on your machine, and no cloud account is needed.
+
+You need **Docker** on your computer. On Windows and macOS that is Docker Desktop; on Linux, Docker Engine.
 
 First, build an image with the networking tools this skill uses. Make a directory, and in it create a file called `Dockerfile` with this content:
 
@@ -82,9 +103,9 @@ root@beta:/#
 
 From here on, the prompt tells you which machine to type on: `root@alpha:/#` or `root@beta:/#`. When a later topic needs more machines, it starts them the same way with a different name.
 
-## Your first look
+## Listing interfaces with ip
 
-On `alpha`, list its network interfaces and their addresses. `-br` asks for a brief, one-line-each listing:
+A **network interface** is a point where a machine connects to a network. On `alpha`, list its interfaces and their addresses. `-br` asks for a brief, one-line-each listing:
 
 ```bash
 root@alpha:/# ip -br addr
@@ -97,7 +118,9 @@ You may see a few more lines marked `DOWN`, such as `tunl0`; ignore them. There 
 - `lo` is the **loopback**, a link from the machine to itself. `127.0.0.1` always means "this machine".
 - `eth0` is the link to the lab network, and `10.10.0.2` is alpha's address on it. Docker hands out addresses in order, so if you started beta first, the two are swapped.
 
-Now check that alpha can reach beta. `ping` sends a small packet and waits for an answer; `-c 3` stops after three:
+## Checking a host can be reached with ping
+
+`ping` sends a small packet to a host and waits for an answer. `-c 3` stops after three. Check that alpha can reach beta:
 
 ```bash
 root@alpha:/# ping -c 3 beta
@@ -111,7 +134,10 @@ PING beta (10.10.0.3) 56(84) bytes of data.
 rtt min/avg/max/mdev = 0.088/0.095/0.105/0.007 ms
 ```
 
-That one command used all three steps from earlier: the name `beta` was turned into `10.10.0.3`, the packets found their way there, and beta answered. `time` is the round trip, there and back. A fraction of a millisecond is normal between two containers on one computer; across the internet, tens of milliseconds is normal.
+That one command used all three steps from earlier: the name `beta` was turned into `10.10.0.3`, the packets found their way there, and beta answered.
+
+- `time` is the **round-trip time**: how long a packet took to get there and the answer to come back.
+- A fraction of a millisecond is normal between two containers on one computer. Across the internet, tens of milliseconds is normal.
 
 When you are finished for the day, type `exit` in each container. The `lab` network stays, ready for next time. To remove everything:
 

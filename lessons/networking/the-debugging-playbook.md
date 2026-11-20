@@ -1,6 +1,14 @@
-"I can't reach the service" is the most common networking problem you will be handed. It could be a stopped process, a wrong port, a name that points somewhere else, a missing route or a firewall rule, and guessing between them wastes time. The cure is to check the steps in order, from the service outward, so that each check rules out a layer before you move on.
+## Debugging a connection in order
 
-This topic puts the tools from the whole skill into one checklist. By the end you can work through it to find where a connection stops, recognise the common error messages and what usually causes them, and find two faults in a broken lab.
+"I can't reach the service" is the most common networking problem you will be handed. The cause could be any of these, and guessing between them wastes time:
+
+- a stopped process
+- a wrong port
+- a name that points somewhere else
+- a missing route
+- a firewall rule
+
+The cure is to check the steps in order, from the service outward, so that each check rules out a layer before you move on. This topic puts the tools from the whole skill into one checklist.
 
 ## The setup
 
@@ -28,49 +36,62 @@ root@gamma:/# curl alpha
 Hello from beta
 ```
 
-When it works, a request from gamma passes through two connections: gamma to alpha on port 80, and alpha to beta on port 8000. The checklist applies to each one.
+When it works, a request from gamma passes through two connections, and the checklist applies to each one:
+
+- gamma to alpha, on port 80
+- alpha to beta, on port 8000
 
 ## The checklist
 
 Start on the machine that runs the service, and move outward towards the client. Stop at the first step that fails: that is where to dig.
 
-**1. Is it running?** On the server, look for the process.
+### 1. Is it running?
+
+On the server, look for the process.
 
 ```bash
 root@beta:/# pgrep -a python3
 442 python3 -m http.server 8000
 ```
 
-Pass: the process is there. Fail: nothing printed. Start it, and read its logs to find out why it stopped. On a server with systemd, `systemctl status name` and `journalctl -u name` answer this step, as in the *Services with systemd* topic of the Linux skill.
+- **Pass:** the process is there.
+- **Fail:** nothing printed. Start it, and read its logs to find out why it stopped.
+- On a server with systemd, `systemctl status name` and `journalctl -u name` answer this step, as in the *Services with systemd* topic of the Linux skill.
 
-**2. Is it listening, and on which address and port?**
+### 2. Is it listening, and on which address and port?
 
 ```bash
 root@beta:/# ss -tlnp | grep python3
 LISTEN 0      5            0.0.0.0:8000       0.0.0.0:*    users:(("python3",pid=442,fd=3))
 ```
 
-Pass: a `LISTEN` line on the port you expect, on `0.0.0.0` (every address) or the address clients use. Fail: no line, a different port, or `127.0.0.1`, which only the machine itself can reach.
+- **Pass:** a `LISTEN` line on the port you expect, on `0.0.0.0` (every address) or the address clients use.
+- **Fail:** no line, a different port, or `127.0.0.1`, which only the machine itself can reach.
 
-**3. Can I reach it locally?**
+### 3. Can I reach it locally?
 
 ```bash
 root@beta:/# curl -s localhost:8000
 Hello from beta
 ```
 
-Pass: the expected answer. Fail: an error or a wrong answer here is a problem in the application, not the network. Fix that before looking further out.
+- **Pass:** the expected answer.
+- **Fail:** an error or a wrong answer here is a problem in the application, not the network. Fix that before looking further out.
 
-**4. Does the name resolve, to the right address?** Now move to the client, here alpha.
+### 4. Does the name resolve, to the right address?
+
+Now move to the client, here alpha.
 
 ```bash
 root@alpha:/# getent hosts beta
 10.10.0.3       beta
 ```
 
-Pass: the address you expect. `getent` uses the same lookup as most programs, including `/etc/hosts`; `dig` from the *DNS basics* topic asks the DNS server directly. Fail: no output, or an address that is not the server's, perhaps from an old `/etc/hosts` line or a stale DNS record.
+- **Pass:** the address you expect.
+- **Fail:** no output, or an address that is not the server's, perhaps from an old `/etc/hosts` line or a stale DNS record.
+- `getent` uses the same lookup as most programs, including `/etc/hosts`. `dig`, from the *DNS basics* topic, asks the DNS server directly.
 
-**5. Is there a route?**
+### 5. Is there a route?
 
 ```bash
 root@alpha:/# ip route get 10.10.0.3
@@ -81,18 +102,25 @@ root@alpha:/# ping -c 2 beta
 64 bytes from beta.lab (10.10.0.3): icmp_seq=2 ttl=64 time=0.266 ms
 ```
 
-Pass: `ip route get` names a sensible interface and gateway, and ping gets replies. Fail: `Network is unreachable`, a route through an unexpected gateway, or `Destination Host Unreachable`. Note that a failed ping alone proves little, because many networks block ping. For a longer path, `traceroute` or `mtr` shows where packets stop.
+- **Pass:** `ip route get` names a sensible interface and gateway, and ping gets replies.
+- **Fail:** `Network is unreachable`, a route through an unexpected gateway, or `Destination Host Unreachable`.
+- A failed ping alone proves little, because many networks block ping.
+- For a longer path, `traceroute` or `mtr` shows where packets stop.
 
-**6. Does a firewall drop it?** Test the actual port from the client:
+### 6. Does a firewall drop it?
+
+Test the actual port from the client:
 
 ```bash
 root@alpha:/# nc -zv -w 3 beta 8000
 Connection to beta (10.10.0.3) 8000 port [tcp/*] succeeded!
 ```
 
-Pass: `succeeded`. Fail: `timed out` means the packets vanish, nearly always a firewall dropping them, on the server (`iptables -L INPUT -n -v` and watch the counters), in between, or in a cloud security group. `Connection refused` means the server's kernel answered that nothing listens there: go back to step 2.
+- **Pass:** `succeeded`.
+- **Fail, `timed out`:** the packets vanish. That is nearly always a firewall dropping them: on the server (`iptables -L INPUT -n -v`, and watch the counters), in between, or in a cloud security group.
+- **Fail, `Connection refused`:** the server's kernel answered that nothing listens there. Go back to step 2.
 
-**7. Does the application answer correctly?**
+### 7. Does the application answer correctly?
 
 ```bash
 root@alpha:/# curl -i http://beta:8000/
@@ -103,7 +131,8 @@ Server: SimpleHTTP/0.6 Python/3.12.3
 Hello from beta
 ```
 
-Pass: the status code and body you expect. Fail: a `4xx` or `5xx` status, a redirect loop, or the wrong content. These are application and configuration problems; the logs on the server, and on any proxy in between, tell you why.
+- **Pass:** the status code and body you expect.
+- **Fail:** a `4xx` or `5xx` status, a redirect loop, or the wrong content. These are application and configuration problems. The logs on the server, and on any proxy in between, tell you why.
 
 Each step has a command that is quick to run, so going through all seven takes a couple of minutes. It is almost always faster than jumping to the step you suspect.
 
@@ -123,7 +152,10 @@ The exact words of an error point at a layer. These are the common ones, as curl
 | `502 Bad Gateway` | A proxy could not get an answer from its backend | Backend down, wrong backend port or address, backend unreachable from the proxy |
 | `504 Gateway Timeout` | A proxy connected, but the backend took too long | Slow application, stuck backend, backend behind a dropping firewall |
 
-The difference between **refused** and **timed out** is the most useful one in the table. Refused comes back at once and proves the path to the host works. Timed out takes as long as your timeout, and says only that nothing came back.
+The difference between **refused** and **timed out** is the most useful one in the table:
+
+- Refused comes back at once, and proves the path to the host works.
+- Timed out takes as long as your timeout, and says only that nothing came back.
 
 `502` and `504` come from the proxy, not the application. The user sees the proxy's error, so the first place to look is the proxy's error log, which names the backend it tried and why it failed:
 

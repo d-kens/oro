@@ -1,10 +1,14 @@
-SSH is how you get a shell on a remote server, and almost every server you manage will be reached this way. It encrypts everything, it checks that you are talking to the right machine, and it can carry other connections inside it. That last part lets you reach services that are not open to the network at all.
+## What SSH is
 
-This topic sets up SSH between the lab machines with keys instead of passwords, then uses it to hop through router to a machine on another network and to forward ports. By the end you can log in with a key, keep your connections in a config file, read a host key warning, use a jump host, and reach a service that only listens on a server's own loopback.
+**SSH** (*Secure Shell*) is a protocol for logging in to a remote machine and running commands on it over an encrypted connection. Almost every server you manage will be reached this way. SSH:
+
+- encrypts everything
+- checks that you are talking to the right machine
+- can carry other connections inside it, which lets you reach services that are not open to the network at all
 
 ## Start an SSH server
 
-The lab image includes the OpenSSH server, but nothing starts it. Start `alpha` and `beta`, then on beta start the server and create an ordinary user to log in as. Ubuntu does not allow `root` to log in with a password over SSH, and logging in as a normal user is better practice anyway:
+The lab image includes the OpenSSH server, **sshd**, but nothing starts it. Start `alpha` and `beta`, then on beta start the server and create an ordinary user to log in as. Ubuntu does not allow `root` to log in with a password over SSH, and logging in as a normal user is better practice anyway:
 
 ```bash
 root@beta:/# service ssh start
@@ -17,7 +21,10 @@ Retype new password:
 passwd: password updated successfully
 ```
 
-Outside a container you would use `systemctl start ssh`, as in the Linux skill. `/usr/sbin/sshd` also starts it directly. Either way it listens on port 22. Now log in from alpha:
+- Outside a container you would use `systemctl start ssh`, as in the Linux skill. `/usr/sbin/sshd` also starts it directly.
+- Either way it listens on port 22.
+
+Now log in from alpha:
 
 ```bash
 root@alpha:/# ssh dev@beta
@@ -34,13 +41,18 @@ logout
 Connection to beta closed.
 ```
 
-A welcome message from Ubuntu appears after the password; it is trimmed here. The question about authenticity comes up once per server, and it matters.
+- A welcome message from Ubuntu appears after the password; it is trimmed here.
+- The question about authenticity comes up once per server, and it matters.
 
 ## Host keys and known_hosts
 
-Every SSH server has a **host key**, a key pair that identifies it. When you connect, the server proves it holds the private half. The first time, your client has nothing to compare it with, so it shows the key's **fingerprint** and asks. Answering `yes` stores the server's public key in `~/.ssh/known_hosts`.
+A **host key** is the key pair that identifies an SSH server. When you connect, the server proves it holds the private half.
 
-From then on, the client checks the key on every connection. If it ever changes, SSH refuses to connect. You can see this by giving beta new host keys:
+- The first time, your client has nothing to compare it with, so it shows the key's **fingerprint**, a short summary of the key, and asks.
+- Answering `yes` stores the server's public key in `~/.ssh/known_hosts`.
+- From then on, the client checks the key on every connection. If it ever changes, SSH refuses to connect.
+
+You can see this by giving beta new host keys:
 
 ```bash
 root@beta:/# rm /etc/ssh/ssh_host_*
@@ -67,7 +79,12 @@ Host key for beta has changed and you have requested strict checking.
 Host key verification failed.
 ```
 
-The warning is loud on purpose. It means either someone is between you and the server, or the server really was rebuilt. In the cloud, the second is common: a server is replaced and comes back at the same address with new keys. Find out which before you remove the old entry. Here you know, so remove the old entries and connect again. There are three, one for each type of key beta offered:
+The warning is loud on purpose. It means one of two things:
+
+- Someone is between you and the server.
+- The server really was rebuilt. In the cloud this is common: a server is replaced and comes back at the same address with new keys.
+
+Find out which before you remove the old entry. Here you know, so remove the old entries and connect again. There are three, one for each type of key beta offered:
 
 ```bash
 root@alpha:/# ssh-keygen -R beta
@@ -82,9 +99,13 @@ One lab quirk: every machine starts from the same image, so before you changed b
 
 ## Log in with a key
 
-Passwords can be guessed, and typing them gets old. A **key pair** is better. You keep the **private key** on your own machine and never share it. You put the **public key** on every server you want to reach. The server checks that you hold the private key without it ever being sent.
+Passwords can be guessed, and typing them gets old. A **key pair** is better:
 
-Create a key pair on alpha. Press <kbd>Enter</kbd> to accept the file name. A passphrase encrypts the private key on disk, and on a real laptop you should set one; in the lab, leaving it empty is fine:
+- You keep the **private key** on your own machine and never share it.
+- You put the **public key** on every server you want to reach.
+- The server checks that you hold the private key without it ever being sent.
+
+Create a key pair on alpha. Press <kbd>Enter</kbd> to accept the file name. A **passphrase** encrypts the private key on disk. On a real laptop you should set one; in the lab, leaving it empty is fine:
 
 ```bash
 root@alpha:/# ssh-keygen -t ed25519
@@ -98,7 +119,10 @@ The key fingerprint is:
 SHA256:vHRWKoWwnQiNcc2iQCAZB5c3GqKF02VZrP7yforgfpw root@alpha
 ```
 
-`ed25519` is the modern key type, short and fast. `id_ed25519` is the private key and `id_ed25519.pub` the public one. Copy the public key to beta. `ssh-copy-id` logs in with your password one last time and appends the key to `~/.ssh/authorized_keys` in dev's home directory:
+- `ed25519` is the modern key type, short and fast.
+- `id_ed25519` is the private key and `id_ed25519.pub` the public one.
+
+Copy the public key to beta. `ssh-copy-id` logs in with your password one last time and appends the key to `~/.ssh/authorized_keys` in dev's home directory:
 
 ```bash
 root@alpha:/# ssh-copy-id dev@beta
@@ -125,7 +149,8 @@ drwxr-x--- 4 dev dev 4096 Oct 25 07:41 ..
 -rw------- 1 dev dev   92 Oct 25 07:41 authorized_keys
 ```
 
-The permissions matter. sshd ignores `authorized_keys` if the file or the `.ssh` directory can be written by anyone other than the owner, which is the usual reason key login silently falls back to a password. In the cloud, the provider puts your public key into `authorized_keys` when the server is created, which is why you never set a password there.
+- The permissions matter. sshd ignores `authorized_keys` if the file or the `.ssh` directory can be written by anyone other than the owner. That is the usual reason key login silently falls back to a password.
+- In the cloud, the provider puts your public key into `authorized_keys` when the server is created, which is why you never set a password there.
 
 ## The SSH config file
 
@@ -146,11 +171,16 @@ Host web-01
 - `HostName` is the real address, when the name you type is only a nickname.
 - `User`, `Port` and `IdentityFile` save you `dev@`, `-p 2222` and `-i ~/.ssh/web_key`.
 
-With the first block in place, `ssh beta` means `ssh dev@beta`. The file must not be writable by others; `chmod 600 ~/.ssh/config` is safe. The `web-01` block is only an example of the other settings, and there is no such host in the lab.
+- With the first block in place, `ssh beta` means `ssh dev@beta`.
+- The file must not be writable by others; `chmod 600 ~/.ssh/config` is safe.
+- The `web-01` block is only an example of the other settings, and there is no such host in the lab.
 
 ## Jump hosts
 
-In the cloud, private servers often have no public address at all. You reach them through a **jump host**, also called a bastion: one server you can reach, that can reach the private ones. `-J` tells SSH to connect to the jump host first and carry your real connection through it.
+In the cloud, private servers often have no public address at all. You reach them through a jump host.
+
+- A **jump host**, also called a *bastion*, is one server you can reach that can reach the private ones.
+- `-J` tells SSH to connect to the jump host first and carry your real connection through it.
 
 Set up the two-network lab from the *Routing and gateways* topic: `router` on `lab` and `lab2`, and `delta` on `lab2` only. alpha cannot reach delta directly, but router can. Start SSH and create the `dev` user on both router and delta as you did on beta, then copy your key to router:
 
@@ -172,7 +202,10 @@ dev@delta:~$ ip -br addr show eth0
 eth0@if85        UP             10.20.0.2/24
 ```
 
-The connection is encrypted from alpha all the way to delta. router only passes the bytes on and cannot read them, so it never needs your private key. To make this permanent, add a block to the config file:
+- The connection is encrypted from alpha all the way to delta.
+- router only passes the bytes on and cannot read them, so it never needs your private key.
+
+To make this permanent, add a block to the config file:
 
 ```text
 Host delta
@@ -190,7 +223,9 @@ Authenticated to delta (via proxy) using "publickey".
 
 ## Forwarding ports
 
-SSH can also carry other TCP connections. The most useful is **local forwarding** with `-L`: a port on your machine leads, through the SSH connection, to an address and port as seen from the server.
+SSH can also carry other TCP connections. This is called **port forwarding**, or an SSH **tunnel**.
+
+The most useful kind is **local forwarding**, with `-L`: a port on your machine leads, through the SSH connection, to an address and port as seen from the server.
 
 Admin tools and databases are often set to listen only on `127.0.0.1`, so nothing on the network can reach them. Start one on beta:
 
@@ -213,12 +248,16 @@ admin panel
 - `-N` runs no remote command, only the forward.
 - `-f` sends SSH to the background once it has logged in.
 
-alpha's port 9000 listens on its own loopback only, so other machines cannot use your tunnel. Stop it with `pkill -f 9000:localhost`, or end the SSH process any other way. The service never had to be opened in a firewall; anyone with SSH access can reach it and no one else can.
+- alpha's port 9000 listens on its own loopback only, so other machines cannot use your tunnel.
+- Stop it with `pkill -f 9000:localhost`, or end the SSH process any other way.
+- The service never had to be opened in a firewall. Anyone with SSH access can reach it, and no one else can.
+
+## Remote and dynamic forwarding
 
 Two other kinds, briefly:
 
 - **Remote forwarding**, `-R 9001:localhost:80`, is the reverse: a port on the server leads back to a port on your side. Run from alpha against beta, `curl localhost:9001` on beta reaches nginx on alpha. It is handy for showing someone a service on your machine.
-- **Dynamic forwarding**, `-D 1080`, turns the SSH connection into a SOCKS proxy. Programs that support SOCKS send their connections through it, to any address the server can reach. From alpha, `ssh -f -N -D 1080 dev@router` followed by `curl --socks5-hostname localhost:1080 http://delta` fetches delta's web page through router.
+- **Dynamic forwarding**, `-D 1080`, turns the SSH connection into a **SOCKS proxy**, a general-purpose proxy that programs can send any connection through. Programs that support SOCKS send their connections through it, to any address the server can reach. From alpha, `ssh -f -N -D 1080 dev@router` followed by `curl --socks5-hostname localhost:1080 http://delta` fetches delta's web page through router.
 
 ## Tasks
 

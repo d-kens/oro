@@ -1,10 +1,17 @@
-Most applications are not reached directly. A request from a browser lands on a server in front of them, which passes it on to one of several copies of the application and hands the answer back. That front server is a **reverse proxy**, and when it spreads requests over several copies it is a **load balancer**.
+## What a reverse proxy and a load balancer are
 
-This topic builds one in the lab with nginx on alpha and two small applications on beta and gamma. By the end you can put nginx in front of an application, spread requests across two backends, choose how they are spread, and see what happens when one of them goes down.
+Most applications are not reached directly. A request from a browser lands on a server in front of them, which passes it on to the application and hands the answer back.
+
+- A **reverse proxy** is a server that receives requests from clients and passes them on to one or more application servers behind it.
+- A **load balancer** is a reverse proxy that spreads requests over several copies of an application.
 
 ## What a reverse proxy does
 
-A client opens a connection to the proxy and sends its request. The proxy opens a *second* connection of its own to an application server, called a **backend** or **upstream**, sends the request on, waits for the answer and returns it to the client. The client never talks to the backend, and usually does not know it exists.
+1. A client opens a connection to the proxy and sends its request.
+2. The proxy opens a *second* connection of its own to an application server, called a **backend** or **upstream**, and sends the request on.
+3. The proxy waits for the answer and returns it to the client.
+
+The client never talks to the backend, and usually does not know it exists.
 
 ```text
 client ──> alpha (nginx, port 80) ──> beta:8000
@@ -18,7 +25,7 @@ Putting a proxy in front buys you several things at once:
 - **Fewer exposed ports.** Only the proxy needs to be reachable from outside. The backends can listen on a private network.
 - **One place for shared work.** HTTPS, compression, request logging and size limits can live on the proxy rather than in every application.
 
-A *forward* proxy is the opposite arrangement: it sits next to the clients, for example in an office, and makes requests out to the internet on their behalf. When people say "proxy" in front of a web service, they mean a reverse proxy.
+A **forward proxy** is the opposite arrangement. It sits next to the clients, for example in an office, and makes requests out to the internet on their behalf. When people say "proxy" in front of a web service, they mean a reverse proxy.
 
 ## Two backends to balance
 
@@ -31,7 +38,10 @@ root@beta:/srv/app# python3 -m http.server 8000 &
 Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
 ```
 
-Do the same on gamma, with `Hello from gamma` in the page. The server runs in the background and prints a log line in that terminal for every request it gets. Check both from alpha:
+- Do the same on gamma, with `Hello from gamma` in the page.
+- The server runs in the background and prints a log line in that terminal for every request it gets.
+
+Check both from alpha:
 
 ```bash
 root@alpha:/# curl beta:8000
@@ -59,7 +69,10 @@ server {
 }
 ```
 
-`proxy_pass` is the whole idea in one line: any request that matches this `location` is passed to that address. Check the file, start nginx and try it:
+- A `location` block holds the settings for requests whose path matches it. `/` matches every path.
+- `proxy_pass` is the whole idea in one line: any request that matches this `location` is passed to that address.
+
+Check the file, start nginx and try it:
 
 ```bash
 root@alpha:/# nginx -t
@@ -84,11 +97,12 @@ The `Server` header says nginx, but the body came from beta. On beta the log lin
 10.10.0.2 - - [25/Oct/2026 07:26:19] "GET / HTTP/1.0" 200 -
 ```
 
-The client is `10.10.0.2`, which is alpha, not the machine that ran `curl`. From the backend's point of view, every request comes from the proxy. The last section deals with that.
+- The client is `10.10.0.2`, which is alpha, not the machine that ran `curl`.
+- From the backend's point of view, every request comes from the proxy. The section *Passing the client's address along* deals with that.
 
 ## Upstreams and how requests are shared
 
-To use more than one backend, name a group of them with an **upstream** block and point `proxy_pass` at the group. Replace `app.conf` with:
+To use more than one backend, name a group of them with an **upstream block** and point `proxy_pass` at the group. Replace `app.conf` with:
 
 ```text
 upstream app {
@@ -106,7 +120,10 @@ server {
 }
 ```
 
-nginx runs several worker processes, and each one would otherwise keep its own count of whose turn it is. `zone app 64k;` gives the group a small piece of shared memory, so all workers share one count and the turns come out evenly. Reload and send four requests:
+- nginx runs several worker processes, and each one would otherwise keep its own count of whose turn it is.
+- `zone app 64k;` gives the group a small piece of shared memory, so all workers share one count and the turns come out evenly.
+
+Reload and send four requests:
 
 ```bash
 root@alpha:/# nginx -t && nginx -s reload
@@ -117,7 +134,11 @@ Hello from beta
 Hello from gamma
 ```
 
-That is **round robin**, the default: each backend takes the next request in turn. You can change how the choice is made:
+That is **round robin**, the default: each backend takes the next request in turn.
+
+## Choosing how requests are shared
+
+You can change how the choice is made:
 
 | Setting | Where | What it does |
 | --- | --- | --- |
@@ -140,7 +161,13 @@ Hello from gamma
 Hello from beta
 ```
 
-Six to beta, two to gamma. **Least connections** matters when requests take very different times. Round robin counts requests, not work, so one backend can end up holding all the slow ones. `least_conn` looks at what each backend is busy with right now. Against two tiny pages that answer in a millisecond you will not see a difference, but on a real application with some slow requests it usually spreads the load better.
+Six to beta, two to gamma.
+
+**Least connections** matters when requests take very different times:
+
+- Round robin counts requests, not work, so one backend can end up holding all the slow ones.
+- `least_conn` looks at what each backend is busy with right now.
+- Against two tiny pages that answer in a millisecond you will not see a difference. On a real application with some slow requests, it usually spreads the load better.
 
 ## When a backend goes down
 
@@ -156,7 +183,12 @@ root@alpha:/# tail -1 /var/log/nginx/error.log
 2026/10/25 07:26:49 [error] 145#145: *45 connect() failed (111: Connection refused) while connecting to upstream, client: 127.0.0.1, server: , request: "GET / HTTP/1.1", upstream: "http://10.10.0.4:8000/", host: "localhost"
 ```
 
-Every request still succeeded. When nginx's connection to gamma was refused, it tried the request again on beta, logged the failure and marked gamma as down for a while. By default one failure (`max_fails=1`) takes a backend out for 10 seconds (`fail_timeout=10s`), after which nginx tries it again with a real request. This is a **passive health check**: nginx learns that a backend is unhealthy only from real requests failing. You can tune it per server, for example `server gamma:8000 max_fails=3 fail_timeout=30s;`.
+Every request still succeeded:
+
+- When nginx's connection to gamma was refused, it tried the request again on beta, logged the failure, and marked gamma as down for a while.
+- By default, one failure (`max_fails=1`) takes a backend out for 10 seconds (`fail_timeout=10s`). After that, nginx tries it again with a real request.
+
+A **health check** is a test of whether a backend is working. This one is **passive**: nginx learns that a backend is unhealthy only from real requests failing. You can tune it per server, for example `server gamma:8000 max_fails=3 fail_timeout=30s;`.
 
 If every backend is down, there is nothing left to try, and the client gets an error from the proxy itself:
 
@@ -167,7 +199,9 @@ Server: nginx/1.24.0 (Ubuntu)
 ...
 ```
 
-**502 Bad Gateway** means the proxy could not get a usable answer from a backend. **504 Gateway Timeout** means it connected but the backend took too long to answer. Both come from the proxy, so the proxy's error log is the place to look first. The *The debugging playbook* topic uses both.
+- **502 Bad Gateway** means the proxy could not get a usable answer from a backend.
+- **504 Gateway Timeout** means it connected, but the backend took too long to answer.
+- Both come from the proxy, so the proxy's error log is the place to look first. *The debugging playbook* topic uses both.
 
 ## Passing the client's address along
 
@@ -203,17 +237,24 @@ User-Agent: curl/8.5.0
 Accept: */*
 ```
 
-The connection still comes from alpha, but the headers name gamma, `10.10.0.4`, as the real client. Run curl a couple of times, since every other request goes to gamma's own backend. A backend should trust these headers only when the request came from its own proxy, because any client can send an `X-Forwarded-For` header of its choosing.
+- The connection still comes from alpha, but the headers name gamma, `10.10.0.4`, as the real client.
+- Run curl a couple of times, since every other request goes to gamma's own backend.
+- A backend should trust these headers only when the request came from its own proxy, because any client can send an `X-Forwarded-For` header of its choosing.
 
 ## The same idea in the cloud
 
-A cloud **load balancer** is a managed reverse proxy. You do not run nginx; you create a load balancer, give it a listener (port 80 or 443), and register a **target group** of backends. It does what you just built, with a few additions:
+A cloud load balancer is a **managed** reverse proxy: the provider runs it for you.
+
+- You do not run nginx. You create a load balancer, give it a **listener** (port 80 or 443), and register a **target group** of backends.
+
+It does what you just built, with a few additions:
 
 - **Active health checks.** It requests a path such as `/health` on every backend every few seconds, and stops sending traffic to one that fails, before real users hit it.
 - **It runs on several machines** across separate data centres, so the balancer itself is not a single point of failure.
 - **It adds `X-Forwarded-For`** and related headers, so your application reads the client address the same way it would behind nginx.
 
-Some cloud load balancers work at the HTTP level, like nginx here, and can route by path or host name. Others work at the TCP level and only pass connections through.
+- Some cloud load balancers work at the HTTP level, like nginx here, and can route by path or host name.
+- Others work at the TCP level and only pass connections through.
 
 ## Tasks
 

@@ -1,10 +1,20 @@
-Your laptop has a private address such as `192.168.1.20`, and so do millions of other laptops. None of those addresses can appear on the internet, yet every one of those laptops can load a web page. Something on the way out swaps the private address for a public one and swaps it back on the replies. That is **network address translation**, or **NAT**.
+## What NAT is
 
-NAT is everywhere in the cloud: a private subnet reaches the internet through a NAT gateway, and a container is reached through a port that Docker forwards to it. By the end you can explain source and destination NAT, set up a router that lets a private network reach the outside, forward a port to a machine inside, and read the table that keeps track of it all.
+**NAT** (*network address translation*) is a router rewriting the addresses in packets as they pass through it.
+
+- Your laptop has a private address such as `192.168.1.20`, and so do millions of other laptops. None of those addresses can appear on the internet, yet every one of those laptops can load a web page.
+- Something on the way out swaps the private address for a public one, and swaps it back on the replies. That is NAT.
+
+NAT is everywhere in the cloud:
+
+- A private subnet reaches the internet through a **NAT gateway**.
+- A container is reached through a port that Docker forwards to it.
 
 ## Why NAT exists
 
-There are only about 4 billion IPv4 addresses, far fewer than the devices that want one. The *IP addresses* topic introduced the private ranges, such as `10.0.0.0/8` and `192.168.0.0/16`, which anyone can use inside their own network. Routers on the internet do not carry traffic for private addresses, because thousands of networks use the same ones and there would be no way to know which one a packet belongs to.
+- There are only about 4 billion IPv4 addresses, far fewer than the devices that want one.
+- The *IP addresses* topic introduced the private ranges, such as `10.0.0.0/8` and `192.168.0.0/16`, which anyone can use inside their own network.
+- Routers on the internet do not carry traffic for private addresses, because thousands of networks use the same ones and there would be no way to know which one a packet belongs to.
 
 So a host with a private address can send a packet out, but a reply addressed to `10.20.0.2` has nowhere to go. NAT solves this at the edge of the private network. The router there rewrites addresses in the packet headers as packets pass through it:
 
@@ -14,17 +24,24 @@ So a host with a private address can send a packet out, but a reply addressed to
 | Masquerade | The same, using whatever address the outgoing interface has | A router whose public address can change |
 | Destination NAT (DNAT) | The destination address, and often the port, of incoming packets | Port forwarding to a server inside the network |
 
-A home router does both. A cloud NAT gateway does source NAT for private subnets. A load balancer in front of private servers does a form of destination NAT.
+- A home router does both.
+- A cloud NAT gateway does source NAT for private subnets.
+- A load balancer in front of private servers does a form of destination NAT.
 
 ## Source NAT and masquerade
 
-With **source NAT**, a host inside sends a packet as usual. When the packet leaves the router, the router replaces its private source address with the router's own outside address. The server on the other end sees the router as the sender, so it replies to the router. The router recognises the reply, puts the original private address back as the destination, and passes the packet inside.
+**Source NAT** rewrites the source address of packets leaving a private network:
+
+1. A host inside sends a packet as usual.
+2. When the packet leaves the router, the router replaces its private source address with the router's own outside address.
+3. The server on the other end sees the router as the sender, so it replies to the router.
+4. The router recognises the reply, puts the original private address back as the destination, and passes the packet inside.
 
 **Masquerade** is source NAT where you do not name the new address. The router uses whatever address the outgoing interface has at that moment. That suits a router whose outside address is handed out by someone else and may change.
 
-On Linux both are rules in the `nat` table of iptables, in the `POSTROUTING` chain, which runs just before a packet leaves. The *Firewall basics* topic covers tables and chains properly. For now, a rule has a match (which packets) and a target (what to do with them).
-
-The router has to remember which inside host each translated connection belongs to, or it could not send replies to the right place. That memory is **connection tracking**, covered at the end of this topic.
+- On Linux both are rules in the `nat` table of iptables, in the `POSTROUTING` chain, which runs just before a packet leaves.
+- The *Firewall basics* topic covers tables and chains properly. For now, a rule has a **match** (which packets) and a **target** (what to do with them).
+- The router has to remember which inside host each translated connection belongs to, or it could not send replies to the right place. That memory is **connection tracking**, covered at the end of this topic.
 
 ## Build the two-network lab
 
@@ -72,7 +89,10 @@ PING 10.10.0.2 (10.10.0.2) 56(84) bytes of data.
 07:28:19.485369 IP 10.20.0.2 > 10.10.0.2: ICMP echo request, id 34, seq 2, length 64
 ```
 
-The requests arrive, but alpha never answers. It sees a sender at `10.20.0.2`, has no route to that network, and drops its reply. Try it yourself on alpha:
+- The requests arrive, but alpha never answers.
+- It sees a sender at `10.20.0.2`, has no route to that network, and drops its reply.
+
+Try it yourself on alpha:
 
 ```bash
 root@alpha:/# ping -c 1 10.20.0.2
@@ -106,7 +126,9 @@ PING 10.10.0.2 (10.10.0.2) 56(84) bytes of data.
 07:28:29.942943 IP 10.10.0.2 > 10.10.0.254: ICMP echo reply, id 36, seq 1, length 64
 ```
 
-alpha now sees router (`10.10.0.254`) as the sender, which is on its own network, so it can reply. router translates the reply back to delta. `ttl=63` instead of 64 shows that the packet crossed one router.
+- alpha now sees router (`10.10.0.254`) as the sender, which is on its own network, so it can reply.
+- router translates the reply back to delta.
+- `ttl=63` instead of 64 shows that the packet crossed one router.
 
 List the rule with its counters:
 
@@ -118,7 +140,11 @@ Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
     1    84 MASQUERADE  0    --  *      eth0    10.20.0.0/24         0.0.0.0/0
 ```
 
-Two pings, but the counter says 1 packet. The `nat` table only sees the **first packet of each connection**. Its decision is stored, and every later packet in the same connection is translated the same way without going through the rules again. The `DOCKER_POSTROUTING` line is Docker's own NAT for the container's DNS resolver at `127.0.0.11`; leave it alone.
+Two pings, but the counter says 1 packet.
+
+- The `nat` table only sees the **first packet of each connection**.
+- Its decision is stored, and every later packet in the same connection is translated the same way without going through the rules again.
+- The `DOCKER_POSTROUTING` line is Docker's own NAT for the container's DNS resolver at `127.0.0.11`. Leave it alone.
 
 Put alpha's default route back when you are done with this part, so it can reach the internet again:
 
@@ -128,7 +154,10 @@ root@alpha:/# ip route add default via 10.10.0.1
 
 ## Destination NAT and port forwarding
 
-Masquerade lets inside hosts start connections out. Nothing outside can start a connection in, because outside hosts cannot address delta at all. To offer a service from inside, you forward a port: connections to a port on router's outside address are sent on to a machine inside. That is **destination NAT**.
+Masquerade lets inside hosts start connections out. Nothing outside can start a connection in, because outside hosts cannot address delta at all.
+
+- **Destination NAT** rewrites the destination address, and often the port, of packets coming in.
+- **Port forwarding** is the common use: connections to a port on router's outside address are sent on to a machine inside. That is how you offer a service from inside.
 
 Start a web server on delta:
 
@@ -158,9 +187,10 @@ root@delta:/# tail -1 /var/log/nginx/access.log
 10.20.0.254 - - [25/Oct/2026:07:34:11 +0000] "GET / HTTP/1.1" 200 17 "-" "curl/8.5.0"
 ```
 
-Because of that second rule, delta's log shows router (`10.20.0.254`) as the client, not alpha. Load balancers that translate both addresses have the same effect, which is why they often pass the original client address in a header instead.
+- Because of that second rule, delta's log shows router (`10.20.0.254`) as the client, not alpha.
+- Load balancers that translate both addresses have the same effect, which is why they often pass the original client address in a header instead.
 
-### Docker's -p is DNAT
+## Docker's -p is destination NAT
 
 When you run a container with `-p 8080:80`, Docker adds a DNAT rule on the machine that runs Docker. You can read it from a container that shares that machine's network. This works on Linux, macOS and Windows:
 
@@ -171,11 +201,13 @@ $ docker run --rm --privileged --net host netlab iptables -t nat -S DOCKER
 -A DOCKER -p tcp -m tcp --dport 8080 -j DNAT --to-destination 172.17.0.2:80
 ```
 
-Connections to port 8080 on your computer are sent to port 80 on the container. You may also see a warning about legacy tables, and one rule for each other published port; ignore those. Stop it with `docker stop web`.
+- Connections to port 8080 on your computer are sent to port 80 on the container.
+- You may also see a warning about legacy tables, and one rule for each other published port. Ignore those.
+- Stop it with `docker stop web`.
 
 ## Connection tracking
 
-Every translation relies on the **conntrack** table, which the kernel keeps for each connection it has seen. On router, read it straight from `/proc` after a request from alpha and a ping from delta:
+**Connection tracking**, or *conntrack*, is the table the kernel keeps of every connection it has seen. Every translation relies on it. On router, read it straight from `/proc` after a request from alpha and a ping from delta:
 
 ```bash
 root@router:/# cat /proc/net/nf_conntrack
@@ -183,9 +215,18 @@ ipv4     2 icmp     1 29 src=10.20.0.2 dst=10.10.0.2 type=8 code=0 id=58 src=10.
 ipv4     2 tcp      6 109 TIME_WAIT src=10.10.0.2 dst=10.10.0.254 sport=43896 dport=8080 src=10.20.0.2 dst=10.20.0.254 sport=80 dport=43896 [ASSURED] mark=0 zone=0 use=2
 ```
 
-Each line holds two views of one connection. The first `src=… dst=…` is the packet as it arrived. The second is what a reply should look like. In the ICMP line, delta pinged alpha, and the reply is expected from alpha to router: that is the masquerade. In the TCP line, alpha asked for router's port 8080, and the reply is expected from delta's port 80: that is the port forward. The number after the protocol (`29`, `109`) is the seconds left before the entry expires.
+Each line holds two views of one connection:
 
-The `conntrack` command, in the package of the same name, shows the same table in a friendlier form and can delete entries. The firewall topics use conntrack too, to let reply packets through.
+- The first `src=… dst=…` is the packet as it arrived.
+- The second is what a reply should look like.
+
+Reading the two lines:
+
+- In the ICMP line, delta pinged alpha, and the reply is expected from alpha to router. That is the masquerade.
+- In the TCP line, alpha asked for router's port 8080, and the reply is expected from delta's port 80. That is the port forward.
+- The number after the protocol (`29`, `109`) is the seconds left before the entry expires.
+
+The `conntrack` command, in the package of the same name, shows the same table in a friendlier form and can delete entries. The *Firewall basics* topic uses conntrack too, to let reply packets through.
 
 ## Tasks
 

@@ -1,10 +1,12 @@
-Every tool so far tells you what a program thinks happened: `curl` says it timed out, `ping` says no reply. **tcpdump** shows you what actually crossed the wire. When two teams disagree about whether a request ever arrived, a capture settles it.
+## What tcpdump is
 
-This topic covers capturing packets on an interface, reading tcpdump's output, narrowing a capture with filters, and saving a capture to a file. By the end you can follow a single HTTP request from the handshake to the close, and answer "did the packet arrive, and did anything answer?" on any Linux machine.
+**tcpdump** is a program that captures the packets crossing a network interface and prints them. Every other tool tells you what a program thinks happened: `curl` says it timed out, `ping` says no reply. tcpdump shows what actually crossed the wire.
+
+When two teams disagree about whether a request ever arrived, a capture settles it.
 
 ## Your first capture
 
-tcpdump listens on a network interface and prints a line for each packet it sees. It needs root, which you have in the lab. Start it on beta, on `eth0`, and stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>:
+tcpdump listens on a network interface and prints a line for each packet it sees. A record of packets taken this way is a **capture**. tcpdump needs root, which you have in the lab. Start it on beta, on `eth0`, and stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>:
 
 ```bash
 root@beta:/# tcpdump -n -i eth0
@@ -19,7 +21,14 @@ It waits. In another terminal, ping beta once from alpha, and two lines appear:
 07:42:08.490078 IP 10.10.0.3 > 10.10.0.2: ICMP echo reply, id 67, seq 1, length 64
 ```
 
-Each line is one packet: the time, the protocol (`IP`), source `>` destination, and a summary of what is inside. Here alpha asked and beta answered, 56 microseconds later.
+Each line is one packet:
+
+- the time
+- the protocol (`IP`)
+- source `>` destination
+- a summary of what is inside
+
+Here alpha asked and beta answered, 56 microseconds later.
 
 Three options belong on almost every capture:
 
@@ -29,7 +38,11 @@ Three options belong on almost every capture:
 | `-n` | Do not turn addresses and ports into names. Faster, and shows what is really in the packet. |
 | `-c 10` | Stop after 10 packets, instead of running until <kbd>Ctrl</kbd>+<kbd>C</kbd>. |
 
-Without `-n`, tcpdump looks up a name for every address it prints. The same capture shows `alpha.lab.47692 > beta.http` instead of `10.10.0.2.47692 > 10.10.0.3.80`. That is easier to read until a lookup is slow or wrong, and then it is misleading. Keep `-n` as the habit.
+Without `-n`, tcpdump looks up a name for every address it prints.
+
+- The same capture shows `alpha.lab.47692 > beta.http` instead of `10.10.0.2.47692 > 10.10.0.3.80`.
+- That is easier to read until a lookup is slow or wrong, and then it is misleading.
+- Keep `-n` as the habit.
 
 ## Choosing an interface
 
@@ -55,7 +68,7 @@ Many more lines follow, such as `tunl0` and `nflog`; you can ignore them. Pick t
 
 ## Filters
 
-A busy server sees thousands of packets a second. A **filter**, written after the options, keeps only the ones you want. The building blocks:
+A busy server sees thousands of packets a second. A **filter**, written after the options, is a condition that keeps only the packets you want. The building blocks:
 
 | Filter | Keeps packets |
 | --- | --- |
@@ -82,7 +95,8 @@ That keeps only packets from alpha that are pings or web traffic. A curl and a p
 07:51:03.202899 IP 10.10.0.2 > 10.10.0.3: ICMP echo request, id 74, seq 1, length 64
 ```
 
-beta's replies and router's ping are filtered out. A filter you will use often is `not port 22`: when you capture on a server you reached over SSH, it keeps your own session's packets from flooding the output.
+- beta's replies and router's ping are filtered out.
+- A filter you will use often is `not port 22`. When you capture on a server you reached over SSH, it keeps your own session's packets from flooding the output.
 
 ## Following a curl request
 
@@ -122,9 +136,19 @@ Read the `Flags` field, which the *TCP* topic explained:
 | 7 | `[.]` | alpha acknowledges it |
 | 8 to 10 | `[F.]`, `[F.]`, `[.]` | Both sides close the connection |
 
-`S` is SYN, `.` is ACK, `P` is push (data to hand to the program), and `F` is FIN. alpha's port, 45846, is a random high port; beta's is 80. After the handshake, tcpdump shows sequence numbers relative to the start, so `seq 1:68` means bytes 1 to 67 of the data.
+- `S` is SYN, `.` is ACK, `P` is push (data to hand to the program), and `F` is FIN.
+- alpha's port, 45846, is a random high port; beta's is 80.
+- After the handshake, tcpdump shows sequence numbers relative to the start, so `seq 1:68` means bytes 1 to 67 of the data.
 
-This one picture answers most "is it the network?" questions. No `[S]` at all means the packet never arrived: a route, firewall or DNS problem before beta. An `[S]` with no `[S.]` means beta got it and did not answer, often a firewall on beta. An `[S]` answered by `[R.]`, a reset, means nothing is listening on the port.
+## Reading a capture to find the fault
+
+This one picture answers most "is it the network?" questions:
+
+| What the capture shows | What it means |
+| --- | --- |
+| No `[S]` at all | The packet never arrived: a route, firewall or DNS problem before beta |
+| An `[S]` with no `[S.]` | beta got it and did not answer, often a firewall on beta |
+| An `[S]` answered by `[R.]`, a reset | Nothing is listening on the port |
 
 ## Seeing inside packets
 
@@ -141,7 +165,8 @@ User-Agent: curl/8.5.0
 Accept: */*
 ```
 
-The scrambled characters before `GET` are the IP and TCP headers, printed as if they were text. `-X` prints hex and text side by side, which helps when the data is not text. The rows after the headers look like this:
+- The scrambled characters before `GET` are the IP and TCP headers, printed as if they were text.
+- `-X` prints **hex** (base 16, two digits per byte) and text side by side, which helps when the data is not text. The rows after the headers look like this:
 
 ```text
 	0x0030:  5513 f962 4745 5420 2f20 4854 5450 2f31  U..bGET./.HTTP/1
@@ -167,7 +192,13 @@ reading from file /tmp/web.pcap, link-type EN10MB (Ethernet), snapshot length 26
 07:41:52.977594 IP 10.10.0.2.47692 > 10.10.0.3.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 759801500 ecr 1427372386], length 0
 ```
 
-While writing, tcpdump prints only the counts. A capture file is the usual way to work on a problem: capture on the server during the failure, copy the file somewhere comfortable, and read it as many times as you like. The `.pcap` format is standard, so graphical tools such as Wireshark open it too. To copy one out of the lab to your own computer:
+While writing, tcpdump prints only the counts. A capture file is the usual way to work on a problem:
+
+1. Capture on the server during the failure.
+2. Copy the file somewhere comfortable.
+3. Read it as many times as you like.
+
+The `.pcap` format is standard, so graphical tools such as Wireshark open it too. To copy one out of the lab to your own computer:
 
 ```bash
 $ docker cp beta:/tmp/web.pcap .
