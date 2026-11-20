@@ -1,6 +1,21 @@
-A monitoring system can only act on what a check tells it. In this project you write `health-check.sh`, a script that looks at disk use, free memory, the load average and a list of processes, prints a short table of OK, WARN and FAIL lines, and exits with 0, 1 or 2 so that cron, a monitor or another script knows how worried to be.
+## The project
 
-It uses *Arguments and input* for `getopts` and the usage message, *Functions* and *Arrays* for the structure, *Arithmetic and strings* for the sums and `printf`, *Exit codes and errors* for the status it returns, *Robust scripts* for `set -euo pipefail` and a trap, and *Real-world scripts* for the config file, logging and cron. From the Linux skill it draws on *Disks and disk space*, *Monitoring CPU, memory and load*, *Processes* and *Scheduling jobs with cron*.
+A **health check** is a test of whether a machine or service is working. A monitoring system can only act on what a check tells it. You write `health-check.sh`, a script that:
+
+- looks at disk use, free memory, the load average and a list of processes
+- prints a short table of OK, WARN and FAIL lines
+- exits with 0, 1 or 2, so that cron, a monitor or another script knows how worried to be
+
+From this skill it uses:
+
+- *Arguments and input* for `getopts` and the usage message
+- *Functions* and *Arrays* for the structure
+- *Arithmetic and strings* for the sums and `printf`
+- *Exit codes and errors* for the status it returns
+- *Robust scripts* for `set -euo pipefail` and a trap
+- *Real-world scripts* for the config file, logging and cron
+
+From the Linux skill it draws on *Disks and disk space*, *Monitoring CPU, memory and load*, *Processes* and *Scheduling jobs with cron*.
 
 ## What you need
 
@@ -12,7 +27,7 @@ $ docker run -it --rm --hostname lab -v "$PWD":/root/scripts -w /root/scripts ub
 root@lab:~/scripts#
 ```
 
-Install cron and ShellCheck, and start the cron service by hand, because the container has no init system to do it for you:
+Install cron and ShellCheck, and start the cron service by hand, because the container has no **init system**, the program that starts services at boot, to do it for you:
 
 ```bash
 root@lab:~/scripts# apt update && apt install -y cron shellcheck
@@ -28,7 +43,8 @@ root@lab:~/scripts# sleep infinity &
 [1] 412
 ```
 
-Your process ID will differ. The memory and load figures in this page come from one machine; yours will show different numbers, which is fine.
+- Your process ID will differ.
+- The memory and load figures in this page come from one machine. Yours will show different numbers, which is fine.
 
 ## The brief
 
@@ -51,7 +67,10 @@ Before you write a script, find each number at the prompt. You need four things:
 - **Load**. The first number in `/proc/loadavg` is the 1-minute load average. A load of 2.0 means very different things on 1 CPU and on 16, so compare it with `nproc`.
 - **Processes**. `pgrep -x NAME` matches the process name exactly, and `-c` prints a count.
 
-Hint: Bash does whole-number maths only. Load is a decimal, so turn `0.39` into hundredths, 39, before you divide by the CPU count. Watch out for a part like `08`: Bash reads a leading zero as octal, and `08` is not valid octal. `10#` forces base 10.
+Hints:
+
+- Bash does whole-number maths only. Load is a decimal, so turn `0.39` into hundredths, 39, before you divide by the CPU count.
+- Watch out for a part like `08`. Bash reads a leading zero as octal, and `08` is not valid octal. `10#` forces base 10.
 
 <details>
 <summary>Show a solution</summary>
@@ -85,7 +104,7 @@ root@lab:~/scripts# echo $(( (10#$whole * 100 + 10#$frac) / cpus ))
 4
 ```
 
-That is 4 percent of the machine's capacity. 100 percent means every CPU is busy on average.
+That is 4 percent of the machine's capacity. 100 percent means every CPU is busy, on average.
 
 </details>
 
@@ -118,19 +137,32 @@ record() {
 }
 ```
 
-Storing finished lines in an array means the report can be printed to the screen and written to a file without running the checks twice.
-
-`(( code > worst )) && worst=$code` returns a non-zero status when the test is false, but `set -e` ignores failures on the left of `&&`, so it is safe here. It would not be safe as the last line of the function, because the function would then return that status.
+- Storing finished lines in an array means the report can be printed to the screen and written to a file without running the checks twice.
+- `(( code > worst )) && worst=$code` returns a non-zero status when the test is false, but `set -e` ignores failures on the left of `&&`, so it is safe here.
+- It would not be safe as the last line of the function, because the function would then return that status.
 
 </details>
 
 ### Add options and a config file
 
-The thresholds that suit a build server do not suit a database server, so they must be changeable without editing the script. Use two layers: a config file for each machine, and `-s KEY=VALUE` on the command line for one-off changes. The command line wins.
+A **threshold** is the value at which a check turns from OK to WARN, or from WARN to FAIL. The thresholds that suit a build server do not suit a database server, so they must be changeable without editing the script. Use two layers:
 
-The config file is plain `KEY=VALUE` lines with `#` comments. You could `source` it, but then anything in the file runs as code, as root, from cron. Reading it line by line with `IFS='=' read -r key value` and accepting only known keys is safer, and it gives a clear error for a typo.
+1. a config file for each machine
+2. `-s KEY=VALUE` on the command line, for one-off changes
 
-Hint: send both the file and `-s` through one function, `set_setting KEY VALUE`, so they cannot drift apart. Check numbers with `[[ $value =~ ^[0-9]+$ ]]`. For lists, `read -ra mounts <<< "$value"` splits a space-separated value into an array. Since `-c` may come after `-s` on the command line, collect the options in `getopts` first and apply them afterwards in the right order.
+The command line wins.
+
+The config file is plain `KEY=VALUE` lines with `#` comments.
+
+- You could `source` it, but then anything in the file runs as code, as root, from cron.
+- Reading it line by line with `IFS='=' read -r key value` and accepting only known keys is safer, and it gives a clear error for a typo.
+
+Hints:
+
+- Send both the file and `-s` through one function, `set_setting KEY VALUE`, so they cannot drift apart.
+- Check numbers with `[[ $value =~ ^[0-9]+$ ]]`.
+- For lists, `read -ra mounts <<< "$value"` splits a space-separated value into an array.
+- `-c` may come after `-s` on the command line, so collect the options in `getopts` first and apply them afterwards in the right order.
 
 <details>
 <summary>Show a solution</summary>
@@ -365,11 +397,18 @@ root@lab:~/scripts#
 
 ### Run it from cron
 
-A health check earns its keep when nobody is watching. Add a cron entry that runs it every five minutes with the config file, writes the report to `/var/log/health-report.txt`, and appends a line to `/var/log/health-alerts.log` whenever it exits non-zero. In a real setup that last part might send a message or call a monitoring system instead.
+A health check earns its keep when nobody is watching. Add a cron entry that:
+
+- runs it every five minutes with the config file
+- writes the report to `/var/log/health-report.txt`
+- appends a line to `/var/log/health-alerts.log` whenever it exits non-zero. In a real setup that last part might send a message or call a monitoring system instead.
 
 Cron runs jobs with a short `PATH`, no terminal and `/bin/sh`, not Bash. Use full paths for the script and the config file, and keep the command on the line simple.
 
-Hint: in `cmd || other`, `$?` inside `other` is still the status of `cmd`, but only until something else runs. Put `$?` before any `$(date)` in the same line. Add a temporary every-minute entry to test it, then remove it.
+Hints:
+
+- In `cmd || other`, `$?` inside `other` is still the status of `cmd`, but only until something else runs. Put `$?` before any `$(date)` in the same line.
+- Add a temporary every-minute entry to test it, then remove it.
 
 <details>
 <summary>Show a solution</summary>
@@ -403,7 +442,10 @@ root@lab:~/scripts# cat /var/log/health-alerts.log
 cat: /var/log/health-alerts.log: No such file or directory
 ```
 
-Every check is OK, because `cron` and `sleep` are both running. There are two `cron` processes: the daemon, and the copy of it that is running this job. Stop the `sleep` and wait another minute:
+- Every check is OK, because `cron` and `sleep` are both running.
+- There are two `cron` processes: the daemon, and the copy of it that is running this job.
+
+Stop the `sleep` and wait another minute:
 
 ```bash
 root@lab:~/scripts# pkill -x sleep

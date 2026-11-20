@@ -1,10 +1,27 @@
+## The project
+
 When a request fails in a way no log explains, the packets are the final word. A capture shows what was actually sent and received, in what order, and how long each step took. Reading one fluently takes practice, and the best practice is a request you already understand, slowed down to one packet at a time.
 
-In this project you capture a single HTTPS request from start to finish, then a plain HTTP one, and explain every packet in them. You use the stack from *Build a small web stack* as the server. The project draws on *tcpdump*, *DNS basics*, *TCP*, *TLS and HTTPS* and *HTTP*.
+You:
+
+1. Capture a single HTTPS request from start to finish.
+2. Capture a plain HTTP one.
+3. Explain every packet in them.
+
+You use the stack from *Build a small web stack* as the server. The project draws on *tcpdump*, *DNS basics*, *TCP*, *TLS and HTTPS* and *HTTP*.
 
 ## What you need
 
-The stack from *Build a small web stack*, running: `proxy` (with its `shop.lab.internal` alias), `app1` and `app2` on the `lab` network, and the client with your CA trusted. If you removed it, start it again from your `stack` directory with the `docker run` commands in that project. Your certificate files are still there, so you can skip making them; you only need to repeat the setup inside the proxy (linking `shop.conf`, starting nginx and the firewall rules) and the `update-ca-certificates` step on the client.
+The stack from *Build a small web stack*, running:
+
+- `proxy`, with its `shop.lab.internal` alias
+- `app1` and `app2` on the `lab` network
+- the client, with your CA trusted
+
+If you removed it, start it again from your `stack` directory with the `docker run` commands in that project.
+
+- Your certificate files are still there, so you can skip making them.
+- You only need to repeat the setup inside the proxy (linking `shop.conf`, starting nginx and the firewall rules) and the `update-ca-certificates` step on the client.
 
 Check the stack before you start:
 
@@ -40,9 +57,10 @@ root@client:/#
 
 ### Capture the request
 
-In the first shell, start `tcpdump` on `eth0`, writing to a file. Filter on `port 443` so nothing else gets in. In the second shell, make the request once. Wait two seconds, then stop the capture with <kbd>Ctrl</kbd>+<kbd>C</kbd>. If you stop it at once, the last few packets can still be in the kernel's buffer and never reach the file.
-
-Then read the file back with `-n`, so tcpdump shows numbers rather than looking up names.
+1. In the first shell, start `tcpdump` on `eth0`, writing to a file. Filter on `port 443` so nothing else gets in.
+2. In the second shell, make the request once.
+3. Wait two seconds, then stop the capture with <kbd>Ctrl</kbd>+<kbd>C</kbd>. If you stop it at once, the last few packets can still be in the kernel's buffer and never reach the file.
+4. Read the file back with `-n`, so tcpdump shows numbers instead of looking up names.
 
 <details>
 <summary>Show a solution</summary>
@@ -82,7 +100,9 @@ reading from file https.pcap, link-type EN10MB (Ethernet), snapshot length 26214
 07:33:52.553896 IP 10.10.0.10.443 > 10.10.0.30.55570: Flags [.], ack 725, win 505, options [nop,nop,TS val 1380470313 ecr 4057890013], length 0
 ```
 
-The whole request took about 30 milliseconds, from the SYN to the last `ACK`. Your ports, sequence numbers and times will differ. Number the lines from 1 to 17 as you read; the rest of the project refers to them that way.
+- The whole request took about 30 milliseconds, from the SYN to the last `ACK`.
+- Your ports, sequence numbers and times will differ.
+- Number the lines from 1 to 17 as you read. The rest of the project refers to them that way.
 
 </details>
 
@@ -93,7 +113,9 @@ The client looked up `shop.lab.internal` before it connected, yet the capture st
 <details>
 <summary>Show a solution</summary>
 
-`/etc/resolv.conf` on the client says `nameserver 127.0.0.11`, Docker's DNS helper. That address is on the loopback, inside the client itself, and the helper knows the proxy's alias, so it answers without sending anything onto the network. You captured on `eth0`, so the lookup never appears. Capture with `tcpdump -n -i lo host 127.0.0.11` while you repeat the request, and you see the question and the answer on `lo`.
+- `/etc/resolv.conf` on the client says `nameserver 127.0.0.11`, Docker's DNS helper.
+- That address is on the loopback, inside the client itself, and the helper knows the proxy's alias, so it answers without sending anything onto the network.
+- You captured on `eth0`, so the lookup never appears. Capture with `tcpdump -n -i lo host 127.0.0.11` while you repeat the request, and you see the question and the answer on `lo`.
 
 On a real server the resolver is usually another machine, and a capture like this starts with the DNS question and answer on UDP port 53, before the SYN. When a request is slow to start, that is the first gap to measure.
 
@@ -101,9 +123,11 @@ On a real server the resolver is usually another machine, and a capture like thi
 
 ### The TCP handshake
 
-Lines 1 to 3 set up the connection to port 443. Name each one by its flags, and check the sequence and acknowledgement numbers: each side acknowledges the other's number plus one.
+Lines 1 to 3 set up the connection to port 443.
 
-From line 4 on, tcpdump shows sequence numbers relative to the start (`seq 1:518`) instead of the full number. `seq 1:518` with `length 517` means "bytes 1 to 517 of this side's stream".
+- Name each one by its flags.
+- Check the sequence and acknowledgement numbers: each side acknowledges the other's number plus one.
+- From line 4 on, tcpdump shows sequence numbers relative to the start (`seq 1:518`) instead of the full number. `seq 1:518` with `length 517` means "bytes 1 to 517 of this side's stream".
 
 <details>
 <summary>Show a solution</summary>
@@ -114,7 +138,9 @@ From line 4 on, tcpdump shows sequence numbers relative to the start (`seq 1:518
 | 2 | `[S.]` | The proxy's SYN-ACK. It sends its own starting number `4150853253` and acknowledges `1381001963`, the client's plus one. |
 | 3 | `[.]` | The client's ACK of the proxy's number. The connection is open. |
 
-The handshake took about 0.13 milliseconds, which is one round trip between two containers. Across the internet it would be tens of milliseconds, and HTTPS has to pay it before TLS can even start. Both sides also agree on options in the SYNs: a maximum segment size (`mss 1460`) and window scaling (`wscale 7`).
+- The handshake took about 0.13 milliseconds, which is one round trip between two containers.
+- Across the internet it would be tens of milliseconds, and HTTPS has to pay it before TLS can even start.
+- Both sides also agree on options in the SYNs: a maximum segment size (`mss 1460`) and window scaling (`wscale 7`).
 
 </details>
 
@@ -122,9 +148,17 @@ The handshake took about 0.13 milliseconds, which is one round trip between two 
 
 Line 4 is the client's first data: the TLS **ClientHello**, 517 bytes. Line 6 is the proxy's reply, 1,374 bytes. tcpdump does not decode TLS, but you can still see a lot.
 
-Search the ClientHello for readable text with `-A`. Then look at the first bytes of each TLS packet with `-X`. Every TLS record starts with a five-byte header: a type byte (`16` handshake, `14` change cipher spec, `15` alert, `17` application data), two version bytes and two length bytes. With TCP timestamps on, the TLS data starts at offset `0x34` in the dump.
+1. Search the ClientHello for readable text with `-A`.
+2. Look at the first bytes of each TLS packet with `-X`.
+3. Search the proxy's packets for the text of its certificate, such as `Lab CA`.
 
-Then search the proxy's packets for the text of its certificate, such as `Lab CA`.
+A **TLS record** is one unit of TLS data. Every record starts with a five-byte header:
+
+- a type byte: `16` handshake, `14` change cipher spec, `15` alert, `17` application data
+- two version bytes
+- two length bytes
+
+With TCP timestamps on, the TLS data starts at offset `0x34` in the dump.
 
 <details>
 <summary>Show a solution</summary>
@@ -138,7 +172,9 @@ root@client:/# tcpdump -nr https.pcap -A 'dst port 443' 2>/dev/null | grep -a -o
       1 shop.lab.internal
 ```
 
-The name is the **SNI** (server name indication). The client sends it before any encryption exists, so the server can pick the right certificate when it hosts several names. Anyone on the path can read it, which is why a capture or a firewall can see which site you visit over HTTPS, but not what you do there.
+- The name is the **SNI** (server name indication).
+- The client sends it before any encryption exists, so the server can pick the right certificate when it hosts several names.
+- Anyone on the path can read it. That is why a capture or a firewall can see which site you visit over HTTPS, but not what you do there.
 
 The first bytes of the two packets, trimmed to the line where TLS starts:
 
@@ -170,15 +206,21 @@ root@client:/# tcpdump -nr https.pcap -A 'src port 443' 2>/dev/null | grep -a -c
 0
 ```
 
-In TLS 1.3 the server encrypts its certificate, using keys from the key exchange in the ServerHello. Older TLS 1.2 sent it in the clear.
-
-Line 8, the client's 80 bytes, starts with the same 6-byte change cipher spec, followed by the client's encrypted **Finished** message. The handshake is complete after line 8.
+- In TLS 1.3 the server encrypts its certificate, using keys from the key exchange in the ServerHello. Older TLS 1.2 sent it in the clear.
+- Line 8, the client's 80 bytes, starts with the same 6-byte change cipher spec, followed by the client's encrypted **Finished** message.
+- The handshake is complete after line 8.
 
 </details>
 
 ### The application data and the close
 
-Every TLS packet from line 9 on starts with `17 03 03`, so the headers all look the same. Work out which is the request and which is the response from three things: which way the packet goes, where it falls in the order, and its length. As a hint, a TLS 1.3 record adds 22 bytes to what it carries: 5 for the header, 1 for the hidden content type and 16 for the integrity check.
+Every TLS packet from line 9 on starts with `17 03 03`, so the headers all look the same. Work out which is the request and which is the response from three things:
+
+- which way the packet goes
+- where it falls in the order
+- its length
+
+As a hint, a TLS 1.3 record adds 22 bytes to what it carries: 5 for the header, 1 for the hidden content type and 16 for the integrity check.
 
 Then look at lines 14 to 17, and decide which side ended the conversation.
 
@@ -196,17 +238,28 @@ Then look at lines 14 to 17, and decide which side ended the conversation.
 | 16 | client to proxy | `[F.]` | The client closes its side. |
 | 17 | proxy to client | `[.]` | The proxy acknowledges the client's FIN. Done. |
 
-You know line 9 is the request because it is the first data the client sends after the handshake, and line 13 is the response because it is the last data from the proxy before the close. The plain HTTP capture in the next step shows the same request is exactly 80 bytes. An observer can learn a lot from sizes and timing alone, even when they cannot read a byte.
+How you know which is which:
 
-The client started the close, at the TLS layer, with the `close_notify` on line 14. nginx answered it by closing the TCP connection first (line 15), and the client followed. Each side sends its own FIN, and each is acknowledged, so a close takes three or four packets.
+- Line 9 is the request because it is the first data the client sends after the handshake.
+- Line 13 is the response because it is the last data from the proxy before the close.
+- The plain HTTP capture in the next step shows the same request is exactly 80 bytes.
+- An observer can learn a lot from sizes and timing alone, even when they cannot read a byte.
 
-The proxy's time between line 9 and line 13, about 1.6 milliseconds, includes its whole trip to `app2` and back. That gap is where you look when a slow site is slow inside the server rather than on the network.
+How the connection closed:
+
+- The client started the close, at the TLS layer, with the `close_notify` on line 14.
+- nginx answered it by closing the TCP connection first (line 15), and the client followed.
+- Each side sends its own FIN, and each is acknowledged, so a close takes three or four packets.
+
+The proxy's time between line 9 and line 13, about 1.6 milliseconds, includes its whole trip to `app2` and back. That gap is where you look when a slow site is slow inside the server instead of on the network.
 
 </details>
 
 ### The same request over plain HTTP
 
-Capture again, this time on `port 80`, into `http.pcap`, and request `http://shop.lab.internal/`. The proxy will answer with a redirect. Read the file with `-A` and a filter that keeps only packets carrying data: `'tcp[tcpflags] & tcp-push != 0'`.
+1. Capture again, this time on `port 80`, into `http.pcap`.
+2. Request `http://shop.lab.internal/`. The proxy will answer with a redirect.
+3. Read the file with `-A` and a filter that keeps only packets carrying data: `'tcp[tcpflags] & tcp-push != 0'`.
 
 <details>
 <summary>Show a solution</summary>
@@ -235,7 +288,10 @@ root@client:/# tcpdump -nr http.pcap
 07:34:22.640299 IP 10.10.0.30.59164 > 10.10.0.10.80: Flags [.], ack 390, win 501, options [nop,nop,TS val 4057920099 ecr 1380500399], length 0
 ```
 
-Only 10 packets this time. The TCP handshake is the same as before, but there is no TLS handshake, so the request goes out straight after line 3. tcpdump even names the HTTP lines for you. The client sends the first FIN, because without TLS there is no `close_notify` to ask the server to close.
+- Only 10 packets this time.
+- The TCP handshake is the same as before, but there is no TLS handshake, so the request goes out straight after line 3.
+- tcpdump even names the HTTP lines for you.
+- The client sends the first FIN, because without TLS there is no `close_notify` to ask the server to close.
 
 The data, readable:
 
@@ -272,7 +328,9 @@ Location: https://shop.lab.internal/
 </html>
 ```
 
-The few lines of dots and letters before each message are the IP and TCP headers, printed as if they were text. After them, every header and the body are there for anyone on the path to read. If the request had carried a password or a session cookie, it would be just as readable. That is what the redirect to HTTPS protects against, from the second request on.
+- The few lines of dots and letters before each message are the IP and TCP headers, printed as if they were text.
+- After them, every header and the body are there for anyone on the path to read.
+- If the request had carried a password or a session cookie, it would be just as readable. That is what the redirect to HTTPS protects against, from the second request on.
 
 </details>
 
@@ -304,7 +362,14 @@ Host: shop.lab.internal
 Location: https://shop.lab.internal/
 ```
 
-Your written explanation should cover, in order: where the name lookup went; the SYN, SYN-ACK and ACK; the ClientHello with its SNI; the ServerHello and the encrypted rest of the handshake; the request, tickets and response, identified by direction and size; and the close, started by the client's `close_notify`.
+Your written explanation should cover, in order:
+
+1. where the name lookup went
+2. the SYN, SYN-ACK and ACK
+3. the ClientHello with its SNI
+4. the ServerHello and the encrypted rest of the handshake
+5. the request, tickets and response, identified by direction and size
+6. the close, started by the client's `close_notify`
 
 ## Going further
 

@@ -1,6 +1,15 @@
-When a new server arrives, someone has to make it ready for the people and programs that will use it. In this project you do that for a small web team: you create their accounts, give them a shared directory that only they can use, run their web site as a service that starts on boot, and let one person restart it without handing them full control of the machine.
+## The project
+
+When a new server arrives, someone has to make it ready for the people and programs that will use it. You do that for a small web team:
+
+1. Create their accounts.
+2. Give them a shared directory that only they can use.
+3. Run their web site as a service that starts on boot.
+4. Let one person restart it without handing them full control of the machine.
 
 It uses the *Users and permissions* topic most, along with *Services with systemd*, *Installing software with apt*, *Editing files with nano and vim* and *Processes*.
+
+## Where to run it
 
 **This project needs a real Linux machine or a virtual machine**, because it uses systemd to start the service on boot, and a plain Docker container does not run systemd. Use one of these:
 
@@ -12,9 +21,10 @@ The user and directory parts also work in the Docker container from earlier topi
 
 ## What you need
 
-A shell on the machine as a user who can run `sudo`. On Multipass that is the `ubuntu` user you are logged in as. The commands below start with `$ sudo` for that reason.
+- A shell on the machine as a user who can run `sudo`. On Multipass that is the `ubuntu` user you are logged in as. The commands below start with `$ sudo` for that reason.
+- Two tools: `python3`, to serve the web site, and `curl`, to test it. Both are often installed already, in which case `apt` says so.
 
-Make sure the packages are up to date and install the two tools the project uses: `python3`, to serve the web site, and `curl`, to test it. Both are often installed already, in which case `apt` says so.
+Make sure the packages are up to date and install them:
 
 ```bash
 $ sudo apt update
@@ -34,9 +44,9 @@ $ sudo apt install -y python3 curl
 
 ### Create the users and the group
 
-Create the group first, then the users, adding `sam` and `priya` to the group as you create them. Ask `useradd` to make a home directory and to set the shell to `/bin/bash`; without those options you get no home directory and a basic `sh` shell.
-
-Give `sam` a password, because `sudo` will ask `sam` for one later.
+- Create the group first, then the users, adding `sam` and `priya` to the group as you create them.
+- Ask `useradd` to make a home directory and to set the shell to `/bin/bash`. Without those options you get no home directory and a basic `sh` shell.
+- Give `sam` a password, because `sudo` will ask `sam` for one later.
 
 Hint: `useradd -G` sets the extra groups a user belongs to. If you forget it, `usermod -aG webteam USER` adds the group afterwards. Leave out the `a` and `usermod` replaces all the user's extra groups instead of adding one.
 
@@ -75,7 +85,7 @@ Think about what each part of the mode must be:
 - The owner, `root`, can do anything regardless, so `7` is fine.
 - The group needs to list, enter and create files: read, write and execute, `7`.
 - Everyone else should not even see inside: `0`.
-- On top of that, the **setgid** bit on a directory makes new files and subdirectories inherit the directory's group instead of the creator's primary group. Without it, a file `sam` creates would belong to the group `sam`, and `priya` could not change it. In octal, setgid is a `2` in front of the usual three digits.
+- On top of that, set the setgid bit. The **setgid** bit on a directory makes new files and subdirectories inherit the directory's group instead of the creator's primary group. Without it, a file `sam` creates would belong to the group `sam`, and `priya` could not change it. In octal, setgid is a `2` in front of the usual three digits.
 
 Hint: in `ls -l` the setgid bit shows as an `s` in place of the group's `x`.
 
@@ -102,7 +112,9 @@ total 4
 sam@lab:~$ exit
 ```
 
-The file belongs to the group `webteam`, thanks to setgid. It is also group-writable: Ubuntu gives ordinary users a *umask* of `002` when each has a private group of their own, so new files are `rw-rw-r--` rather than `rw-r--r--`. The `r` for others does not matter here, because no one outside the group can get into the directory to reach the file.
+- The file belongs to the group `webteam`, thanks to setgid.
+- It is also group-writable. The **umask** is the set of permissions taken away from every new file. Ubuntu gives ordinary users a umask of `002` when each has a private group of their own, so new files are `rw-rw-r--` instead of `rw-r--r--`.
+- The `r` for others does not matter here, because no one outside the group can get into the directory to reach the file.
 
 ```bash
 $ sudo -iu priya
@@ -125,7 +137,10 @@ Group membership is read when a user logs in. If you add a user to a group while
 
 The site needs a program to serve it. Python includes a small web server, `python3 -m http.server`, which serves the files in a directory. It is fine for a lab; a real site would use a server such as nginx.
 
-Do not run it as root, and not as `sam` either: if the program were ever broken into, the attacker would get that account's rights. Create a **system user** for it instead. A system user has a low user ID, no home directory and no login shell, so no one can log in as it. Add it to `webteam` so it can read the site.
+Do not run it as root, and not as `sam` either: if the program were ever broken into, the attacker would get that account's rights. Create a system user for it instead.
+
+- A **system user** is an account for a program, not a person. It has a low user ID, no home directory and no login shell, so no one can log in as it.
+- Add it to `webteam` so it can read the site.
 
 Then write a unit file in `/etc/systemd/system/team-site.service`. It needs three sections:
 
@@ -133,7 +148,8 @@ Then write a unit file in `/etc/systemd/system/team-site.service`. It needs thre
 - `[Service]` with the user and group to run as, the full command to run, and a rule to restart the program if it fails.
 - `[Install]` saying which target pulls the service in at boot. For a server, that is `multi-user.target`.
 
-Bind the server to `127.0.0.1` so only this machine can reach it. After writing the file, tell systemd to reload its configuration, then enable and start the service in one command.
+- Bind the server to `127.0.0.1` so only this machine can reach it.
+- After writing the file, tell systemd to reload its configuration, then enable and start the service in one command.
 
 Hint: systemd does not search your `PATH`, so give the full path to `python3`. `command -v python3` prints it.
 
@@ -174,9 +190,9 @@ $ curl http://127.0.0.1:8080/
 <p>Edited by priya</p>
 ```
 
-`systemd-analyze verify` prints nothing when the unit file is valid. `enable` creates the link that makes the service start at boot, and `--now` also starts it straight away.
-
-`Group=webteam` makes `webteam` the process's main group. That is enough to read the site, so adding `website` to the group with `-G` is not strictly needed for the service. It does make the intent clear when someone runs `id website` later.
+- `systemd-analyze verify` prints nothing when the unit file is valid.
+- `enable` creates the link that makes the service start at boot, and `--now` also starts it straight away.
+- `Group=webteam` makes `webteam` the process's main group. That is enough to read the site, so adding `website` to the group with `-G` is not strictly needed for the service. It does make the intent clear when someone runs `id website` later.
 
 If `curl` fails, read what the service said with `sudo journalctl -u team-site`.
 
@@ -186,7 +202,9 @@ If `curl` fails, read what the service said with `sudo journalctl -u team-site`.
 
 `sam` looks after the site and needs to restart it after changing the configuration. Adding `sam` to the `sudo` group would allow that, but it would also allow everything else. Write a rule that allows only `systemctl restart team-site` and `systemctl status team-site`.
 
-Put the rule in its own file in `/etc/sudoers.d/` and always edit it with `visudo`. `visudo` checks the syntax before saving. A broken sudoers file can lock everyone out of `sudo`, and on a server without another way in, that is hard to fix.
+- The **sudoers** files list who may run what with `sudo`.
+- Put the rule in its own file in `/etc/sudoers.d/`, and always edit it with `visudo`, which checks the syntax before saving.
+- A broken sudoers file can lock everyone out of `sudo`, and on a server without another way in, that is hard to fix.
 
 A sudoers rule reads: *who*, *on which hosts*, *as which user*, *which commands*. Commands need their full paths.
 
@@ -308,7 +326,8 @@ $ getent passwd website
 website:x:999:999::/home/website:/usr/sbin/nologin
 ```
 
-The home directory is listed but does not exist, which is what `--no-create-home` means. The user ID may differ on your machine; system users get IDs below 1000.
+- The home directory is listed but does not exist, which is what `--no-create-home` means.
+- The user ID may differ on your machine. System users get IDs below 1000.
 
 The sudo rule is narrow:
 

@@ -1,6 +1,14 @@
-In this project you take a small online shop, cost it on its own servers and in the cloud over three years, and then cut the cloud bill with the savings from the *Paying for the cloud* topic.
+## The project
 
-It draws on *Before the cloud*, *Scaling and elasticity* and *Paying for the cloud*. All the prices are made-up round numbers so the sums are easy to check. Real prices differ by provider, region and year, but the method is the same.
+You take a small online shop and:
+
+1. Cost it on its own servers over three years.
+2. Cost it in the cloud over the same three years.
+3. Cut the cloud bill with the savings from the *Paying for the cloud* topic.
+
+It draws on *Before the cloud*, *Scaling and elasticity* and *Paying for the cloud*.
+
+All the prices are made-up round numbers, so the sums are easy to check. Real prices differ by provider, region and year, but the method is the same.
 
 ## What you need
 
@@ -53,7 +61,8 @@ Use 730 hours in a month and 36 months in three years.
 
 ### Cost it on-premises
 
-The shop must own enough servers for the busiest month, even though it needs half of them the rest of the year. Make one row for each item, with a column for how many, the price, and the three-year cost.
+- The shop must own enough servers for the busiest month, even though it needs half of them the rest of the year.
+- Make one row for each item, with a column for how many, the price, and the three-year cost.
 
 <details>
 <summary>Show a solution</summary>
@@ -96,7 +105,8 @@ Per month: $48,108 ÷ 36 = **$1,336**.
 
 ### Cut the cloud bill
 
-The two web servers that always run and the database run every hour of the three years, so they are the ones to commit. The sale-month servers stay on-demand.
+- The two web servers that always run and the database run every hour of the three years, so they are the ones to commit.
+- The sale-month servers stay on-demand.
 
 <details>
 <summary>Show a solution</summary>
@@ -134,9 +144,16 @@ Your totals should match these:
 | Cloud, on-demand | $48,108 | $1,336 |
 | Cloud, with commitment | $38,647.20 | $1,074 |
 
-If your on-premises total is lower, check that you bought 5 servers, not 3: the shop must own enough for its busiest month. If your cloud total is higher, check that the extra web servers run for 3 months in all, not 36.
+If your totals differ:
 
-Notice which row is the largest in each column. In both, it is the engineer. On-premises, the servers and the rack space come next, and the hardware as a whole (servers, storage and network, $43,000) is about a third of the bill. In the cloud, there is no hardware to buy, and the database is the next largest cost after the engineer.
+- **On-premises total lower:** check that you bought 5 servers, not 3. The shop must own enough for its busiest month.
+- **Cloud total higher:** check that the extra web servers run for 3 months in all, not 36.
+
+Notice which row is the largest in each column:
+
+- In both, it is the engineer.
+- On-premises, the servers and the rack space come next. The hardware as a whole (servers, storage and network, $43,000) is about a third of the bill.
+- In the cloud, there is no hardware to buy, and the database is the next largest cost after the engineer.
 
 ## Going further
 

@@ -1,6 +1,26 @@
-When a team grows by ten people, nobody wants to type `useradd` ten times, and a typo in one of them is easy to miss. In this project you write `bulk-users.sh`, a script that reads a CSV file of accounts, checks every line, creates the groups and users that are missing, brings existing users in line with the file, and prints a summary. It has a dry-run mode, and running it twice makes no changes the second time.
+## The project
 
-It uses *Loops* for reading the file line by line, *Conditionals* and *Parameter expansion* for validation, *Arguments and input* for `getopts` and the usage message, *Functions* and *Arrays* for the structure and the counters, *Exit codes and errors* for the status it returns, *Robust scripts* for `set -euo pipefail`, a trap and being safe to run twice, and *Real-world scripts* for the dry run and logging. From the Linux skill it draws on *Users and permissions*.
+When a team grows by ten people, nobody wants to type `useradd` ten times, and a typo in one of them is easy to miss. A **CSV file** (*comma-separated values*) is a plain text file of rows, with the fields in each row separated by commas. You write `bulk-users.sh`, a script that:
+
+- reads a CSV file of accounts
+- checks every line
+- creates the groups and users that are missing
+- brings existing users in line with the file
+- prints a summary
+
+It has a dry-run mode, and running it twice makes no changes the second time.
+
+From this skill it uses:
+
+- *Loops* for reading the file line by line
+- *Conditionals* and *Parameter expansion* for validation
+- *Arguments and input* for `getopts` and the usage message
+- *Functions* and *Arrays* for the structure and the counters
+- *Exit codes and errors* for the status it returns
+- *Robust scripts* for `set -euo pipefail`, a trap and being safe to run twice
+- *Real-world scripts* for the dry run and logging
+
+From the Linux skill it draws on *Users and permissions*.
 
 ## What you need
 
@@ -18,7 +38,8 @@ Install ShellCheck:
 root@lab:~/scripts# apt update && apt install -y shellcheck
 ```
 
-The container is the right place for this project, because the script creates real accounts and the container throws them away when you exit. On a machine you care about, only run it with `-n` until you trust it.
+- The container is the right place for this project, because the script creates real accounts and the container throws them away when you exit.
+- On a machine you care about, only run it with `-n` until you trust it.
 
 Save this sample file as `users.csv`. Lines 5 to 7 and line 10 are wrong on purpose, and line 8 is blank:
 
@@ -56,7 +77,7 @@ Start with a loop that reads the file and prints each line with its number, befo
 - A file saved on Windows ends each line with a carriage return. `line=${line%$'\r'}` removes it; otherwise the shell on the last field would be `/bin/bash\r`, which is not in `/etc/shells`.
 - Split a line into fields with `IFS=, read -r username fullname group shell extra <<< "$line"`. Naming a fifth variable catches lines with too many fields: anything after the fourth comma lands in `extra`.
 
-Hint: count lines yourself in a variable, and count every line, including the header and blank ones, so the numbers you report match what someone sees in an editor.
+Hint: count lines yourself in a variable. Count every line, including the header and blank ones, so the numbers you report match what someone sees in an editor.
 
 <details>
 <summary>Show a solution</summary>
@@ -91,7 +112,8 @@ root@lab:~/scripts# ./read-csv.sh users.csv
 10 user=sam     name=Sam Lee      group=ops         shell=/bin/bash  extra=
 ```
 
-Line 5 has an empty shell and nothing in `extra`, so it has too few fields. Line 8 is not printed because it is blank.
+- Line 5 has an empty shell and nothing in `extra`, so it has too few fields.
+- Line 8 is not printed because it is blank.
 
 A common mistake is `for line in $(cat users.csv)`. That splits on every space as well as every newline, so `Sam Lee` becomes two items, and the line numbers are lost.
 
@@ -99,11 +121,29 @@ A common mistake is `for line in $(cat users.csv)`. That splits on every space a
 
 ### Validate each line
 
-Write a function, `validate`, that takes the five fields and prints the reason the line is bad, or prints nothing if it is good. The caller captures it with `problem=$(validate ...)` and treats any output as a failure. One function with one job is easy to test on its own.
+**Validation** is checking that input is correct before acting on it. Write a function, `validate`, that takes the five fields and prints the reason the line is bad, or prints nothing if it is good.
 
-Check, in this order: too many fields, too few, the user name, the full name, the group, the shell, and duplicates. Keep the patterns strict; the names end up in system files, and a name with a space or a capital letter causes trouble later.
+- The caller captures it with `problem=$(validate ...)` and treats any output as a failure.
+- One function with one job is easy to test on its own.
 
-Hint: put the name pattern in a variable, `readonly NAME_RE='^[a-z_][a-z0-9_-]{0,31}$'`, and use it unquoted on the right of `=~`, since quoting it would make it a plain string. `grep -qxF -- "$shell" /etc/shells` checks that the shell is listed as a whole line. For duplicates, keep an associative array `seen` from user name to the line number where it first appeared. A full name must not contain `:`, because that is the field separator in `/etc/passwd`.
+Check, in this order:
+
+1. too many fields
+2. too few fields
+3. the user name
+4. the full name
+5. the group
+6. the shell
+7. duplicates
+
+Keep the patterns strict. The names end up in system files, and a name with a space or a capital letter causes trouble later.
+
+Hints:
+
+- Put the name pattern in a variable, `readonly NAME_RE='^[a-z_][a-z0-9_-]{0,31}$'`, and use it unquoted on the right of `=~`. Quoting it would make it a plain string.
+- `grep -qxF -- "$shell" /etc/shells` checks that the shell is listed as a whole line.
+- For duplicates, keep an associative array `seen` from user name to the line number where it first appeared.
+- A full name must not contain `:`, because that is the field separator in `/etc/passwd`.
 
 <details>
 <summary>Show a solution</summary>
@@ -122,9 +162,8 @@ validate() {
 }
 ```
 
-`${seen[$username]:-}` gives an empty string when the key is missing. Without `:-`, `set -u` stops the script the first time it looks up a name it has not seen.
-
-The function runs inside `$( )`, a subshell, so it can read `seen` but must not change it. The main loop records `seen[$username]=$lineno` after a line passes.
+- `${seen[$username]:-}` gives an empty string when the key is missing. Without `:-`, `set -u` stops the script the first time it looks up a name it has not seen.
+- The function runs inside `$( )`, a subshell, so it can read `seen` but must not change it. The main loop records `seen[$username]=$lineno` after a line passes.
 
 </details>
 
@@ -138,9 +177,17 @@ Now act on a good line. Look the user up with `getent passwd`, which also finds 
 
 That comparison is what makes the script safe to run twice: it changes only what differs, so a second run finds nothing to do.
 
-For the dry run, route every command that changes the system through one function, `run`. With `-n` it prints the command; otherwise it runs it. Each check above still runs in a dry run, because looking does no harm.
+A **dry run** shows what a script would do and changes nothing. For the dry run:
 
-Hint: `"$@"` inside `run` runs the arguments as a command with each one intact. To print a command so that it could be pasted back into a shell, use `printf ' %q' "$@"`, which escapes spaces. Count results in an associative array, `count[created]` and so on. Avoid `(( count[created]++ ))`: when the old value is 0 it returns a failure status and `set -e` ends the script.
+- Route every command that changes the system through one function, `run`. With `-n` it prints the command; otherwise it runs it.
+- Each check above still runs in a dry run, because looking does no harm.
+
+Hints:
+
+- `"$@"` inside `run` runs the arguments as a command, with each one intact.
+- To print a command so that it could be pasted back into a shell, use `printf ' %q' "$@"`, which escapes spaces.
+- Count results in an associative array, `count[created]` and so on.
+- Avoid `(( count[created]++ ))`. When the old value is 0 it returns a failure status, and `set -e` ends the script.
 
 <details>
 <summary>Show a solution</summary>
@@ -309,7 +356,7 @@ main "$@"
 A few things to notice:
 
 - In a dry run a new group does not get created, so the next user in the same group would ask for it again. The `new_groups` array remembers groups this run has created, or would have.
-- The `trap` on `INT` and `TERM` prints the summary if you press Ctrl+C halfway through a long file, so you know how far it got. Exit status 130 is the usual one for a script stopped by Ctrl+C.
+- The `trap` on `INT` and `TERM` prints the summary if you press <kbd>Ctrl</kbd>+<kbd>C</kbd> halfway through a long file, so you know how far it got. Exit status 130 is the usual one for a script stopped by <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 - The root check comes after the options are read, so `-n` works for anyone.
 
 ```bash
@@ -386,7 +433,8 @@ root@lab:~/scripts# ./bulk-users.sh users.csv
 2026-10-25 09:01:21 Summary: created 0, updated 0, skipped 4, failed 4
 ```
 
-The second run creates nothing and changes nothing. It exits 1 both times because the sample still has four bad lines; fix or remove them and it exits 0.
+- The second run creates nothing and changes nothing.
+- It exits 1 both times because the sample still has four bad lines. Fix or remove them and it exits 0.
 
 Now edit the file: change alex's shell on line 4 to `/bin/bash` and move priya to the `ops` group on line 3. Check with a dry run, then apply:
 
@@ -408,7 +456,8 @@ root@lab:~/scripts# ./bulk-users.sh users.csv 2> /dev/null
 2026-10-25 09:01:21 Summary: created 0, updated 2, skipped 2, failed 4
 ```
 
-`2> /dev/null` hides the error lines for the bad rows, which you have already seen; they still count in the summary. `usermod -g` changes the primary group only. Priya's old group, `developers`, still exists, which is what you want when other people are in it.
+- `2> /dev/null` hides the error lines for the bad rows, which you have already seen. They still count in the summary.
+- `usermod -g` changes the primary group only. Priya's old group, `developers`, still exists, which is what you want when other people are in it.
 
 </details>
 
