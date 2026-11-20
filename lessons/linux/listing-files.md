@@ -1,55 +1,58 @@
-Once you are in a directory, the next question is what is in it. On a server you ask that all the time: is the config file there, how big is the log, when did it last change, who owns it. `ls` answers all of these, if you know how to read what it prints.
+## Listing a directory with ls
 
-By the end you can list a directory, show hidden files, sort a listing by size or time, and read every column of the long listing.
-
-## Listing a directory
-
-`ls` (*list*) prints the names in your working directory:
+`ls` (*list*) prints the names of the files and directories in a directory. With no path, it lists your working directory:
 
 ```bash
 $ ls
 app.conf  deploy.sh  logs  numbers.txt
 ```
 
-Give it a path to list somewhere else, without moving there:
+Give it a path to list somewhere else without moving there:
 
 ```bash
 $ ls /var/log
 alternatives.log  apt  bootstrap.log  btmp  dpkg.log  faillog  lastlog  wtmp
 ```
 
-You can give it several paths at once, and directories and files can be mixed. If a name does not exist, `ls` says so:
+- You can give it several paths at once, files and directories mixed.
+- If a name does not exist, `ls` says so:
 
 ```bash
 $ ls nothere
 ls: cannot access 'nothere': No such file or directory
 ```
 
-The plain listing does not tell you which names are directories. On most machines `ls` uses colours for that, with directories in blue. When colours are missing, `-F` adds a marker after each name: `/` for a directory and `*` for a file you can run.
+The plain listing does not tell you which names are directories:
+
+- On most machines `ls` uses colours for that, with directories in blue.
+- When colours are missing, `-F` adds a marker after each name: `/` for a directory and `*` for a file you can run.
 
 ```bash
 $ ls -F
 app.conf  deploy.sh*  logs/  numbers.txt
 ```
 
-Linux does not rely on file extensions. `app.conf` is a text file because of what is in it, not because of its name. A program can be called `deploy.sh` or just `deploy`.
+As the *Core Concepts* section of *The Linux file system* topic says, Linux does not rely on file extensions. `app.conf` is a text file because of what is in it, not because of its name, and a program can be called `deploy.sh` or just `deploy`.
 
-## Hidden files
+## Hidden files and ls -a
 
-A name that starts with a dot is a **hidden file**, or *dotfile*. `ls` leaves them out unless you add `-a` (*all*):
+A **hidden file**, or *dotfile*, is a file whose name starts with a dot. `ls` leaves hidden files out unless you add `-a` (*all*):
 
 ```bash
 $ ls -a
 .  ..  .env  app.conf  deploy.sh  logs  numbers.txt
 ```
 
-There is nothing secret about hidden files. The dot only keeps them out of the way. Programs use them for settings, such as `.bashrc` for the shell and `.ssh` for SSH keys, and projects use them for files like `.env` and `.gitignore`. When a setting seems to come from nowhere, a hidden file is often the reason.
+- Hidden files are not secret. The dot only keeps them out of the way of a normal listing.
+- Programs keep their settings in them, such as `.bashrc` for the shell and `.ssh` for SSH keys.
+- Projects use them for files like `.env` and `.gitignore`.
+- When a setting seems to come from nowhere, a hidden file is often the reason.
 
 `.` and `..` appear in every directory. They are the same `.` and `..` you used in paths: this directory and its parent.
 
-## Reading the long listing (ls -l)
+## Reading the long listing with ls -l
 
-`-l` (*long*) prints one line per file with the details:
+`-l` (*long*) prints one line per file, with its details:
 
 ```bash
 $ ls -l
@@ -73,20 +76,26 @@ Take the line for `deploy.sh` apart:
 | Modified | `Oct 24 11:15` | When the contents last changed |
 | Name | `deploy.sh` | The file's name |
 
-The **permissions** are nine letters in three groups of three: for the owner, for the group, and for everyone else. `r` is read, `w` is write, `x` is execute, and `-` means that right is missing. So `rwxr-xr-x` means the owner can do everything, and everyone else can read and run the file but not change it. The *Users and permissions* topic explains these properly.
+**Permissions** are the rules for who may do what with a file. They are written as nine letters in three groups of three: for the owner, for the group, and for everyone else.
 
-The **modified time** shows the year instead of the time of day for files older than about six months, as in `Apr 22  2024`.
+- `r` is read, `w` is write, `x` is execute (run), and `-` means that right is missing.
+- `rwxr-xr-x` means the owner can do everything, and everyone else can read and run the file but not change it.
+- The *Users and permissions* topic explains these properly.
 
-The size of a directory, usually `4096`, is the space its list of names takes up, not the size of what is inside. To find out how much a directory holds, use `du`, which the *Disks and disk space* topic covers. The `total` line at the top is the disk space used by the listed files, in blocks; you can ignore it.
+A few details that confuse people at first:
 
-Some entries are **links**: a name that points at another file or directory. They start with `l` and show where they point:
+- **Old files.** For files older than about six months, the modified column shows the year instead of the time of day, as in `Apr 22  2024`.
+- **Directory sizes.** The size of a directory, usually `4096`, is the space its list of names takes up, not the size of what is inside. To find out how much a directory holds, use `du`, from the *Disks and disk space* topic.
+- **The `total` line.** It is the disk space used by the listed files, counted in blocks. You can ignore it.
+
+A **link** is a name that points at another file or directory. Its line starts with `l` and shows where it points:
 
 ```bash
 $ ls -l /bin
 lrwxrwxrwx 1 root root 7 Apr 22  2024 /bin -> usr/bin
 ```
 
-The *Hard and symbolic links* topic covers these.
+The *Hard and symbolic links* topic covers links.
 
 ## Sorting and other ls options
 
@@ -114,7 +123,7 @@ drwxr-xr-x 2 root root 4.0K Oct 24 11:15 logs
 -rw-r--r-- 1 root root 107K Oct 22 14:30 numbers.txt
 ```
 
-`-t` puts the newest file at the top, which is how you find the log that is being written to right now. Add `-r` to put the newest at the bottom instead, close to your prompt:
+`-t` puts the newest file at the top. That is how you find the log that is being written to right now. Add `-r` to put the newest at the bottom instead, close to your prompt:
 
 ```bash
 $ ls -ltr
@@ -142,7 +151,13 @@ $ ls -l /etc/hostname /etc/passwd
 -rw-r--r-- 1 root root 888 Sep 30 14:26 /etc/passwd
 ```
 
-A `*` in a name matches any run of characters, so `*.txt` matches every name ending in `.txt`, and `app*` every name starting with `app`. The shell expands the pattern into the matching names before `ls` runs:
+A **wildcard** is a character that stands for other characters in a file name. The one you will use most is `*`, which matches any run of characters:
+
+- `*.txt` matches every name ending in `.txt`.
+- `app*` matches every name starting with `app`.
+- `*` does not match hidden files.
+
+The shell expands the pattern into the matching names before `ls` runs:
 
 ```bash
 $ ls *.txt
@@ -151,7 +166,7 @@ $ ls -l *.conf
 -rw-r--r-- 1 root root 10 Oct 20 08:00 app.conf
 ```
 
-`*` does not match hidden files. You will use these patterns again with `cp`, `mv` and `rm` in the *Creating, copying and deleting files* topic.
+You will use these patterns again with `cp`, `mv` and `rm` in the *Creating, copying and deleting files* topic.
 
 ## Tasks
 

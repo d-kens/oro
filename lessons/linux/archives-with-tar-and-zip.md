@@ -1,10 +1,15 @@
-Software releases, backups and log history usually arrive as a single file that holds many others. On Linux that file is most often a tar archive, compressed with gzip or xz. You also meet zip files, mostly from other systems. Knowing how to pack, check and unpack them safely is part of almost every install and every backup.
+## Archives and compression
 
-By the end you can create, list and extract tar archives with and without compression, compress single files, work with zip files, unpack into the directory you choose, and check that a download is the file it claims to be.
+Software releases, backups and log history usually arrive as a single file that holds many others.
 
-## tar: create, list, extract
+- An **archive** is one file that holds many files and directories, along with their names and details.
+- **Compression** makes a file smaller by storing repeated data more efficiently. Uncompressing it gives back the original exactly.
 
-**`tar`** joins many files and directories into one file, keeping names, permissions, owners and timestamps. On its own it does not compress anything. The name comes from *tape archive*, which is where backups used to go.
+On Linux the archive is most often a tar archive, compressed with gzip or xz. You also meet zip files, mostly from other systems.
+
+## Creating a tar archive
+
+`tar` joins many files and directories into one file, keeping their names, permissions, owners and timestamps. On its own it does not compress anything. The name comes from *tape archive*, which is where backups used to go.
 
 A `tar` command starts with letters that say what to do:
 
@@ -16,7 +21,8 @@ A `tar` command starts with letters that say what to do:
 | `v` | Verbose: print each file name as it goes |
 | `f` | The next argument is the archive file name |
 
-You always need exactly one of `c`, `t` or `x`, and almost always `f`. Because `f` takes the next argument, keep it last in the group: `-cvf site.tar`, not `-cfv site.tar`.
+- You always need exactly one of `c`, `t` or `x`, and almost always `f`.
+- Because `f` takes the next argument, keep it last in the group: `-cvf site.tar`, not `-cfv site.tar`.
 
 The examples use a small website directory with one large log. Create it in your home directory:
 
@@ -41,7 +47,20 @@ site/css/main.css
 site/index.html
 ```
 
-The order of the names depends on the file system, so yours may differ. List what is inside without extracting it. Add `v` to see sizes, owners and dates:
+The order of the names depends on the file system, so yours may differ.
+
+If you archive an absolute path, `tar` strips the leading `/`, so that extracting never writes over system files by accident:
+
+```bash
+$ tar -cf hostname.tar /etc/hostname
+tar: Removing leading `/' from member names
+$ tar -tf hostname.tar
+etc/hostname
+```
+
+## Listing and extracting a tar archive
+
+`t` lists what is inside an archive without extracting it. Add `v` to see sizes, owners and dates:
 
 ```bash
 $ tar -tvf site.tar
@@ -53,24 +72,17 @@ drwxr-xr-x root/root         0 2026-10-24 11:19 site/css/
 -rw-r--r-- root/root        15 2026-10-24 11:19 site/index.html
 ```
 
-Extract it with `x`. Files are written relative to the directory you are in, so this recreates `site/` here, replacing any files with the same names:
+**Extracting** means writing the files in an archive back out to disk. Do it with `x`:
 
 ```bash
 $ tar -xf site.tar
 ```
 
-To extract a single file, name it after the archive, exactly as the listing shows it: `tar -xf site.tar site/index.html`.
+- Files are written relative to the directory you are in, so this recreates `site/` here.
+- Any files with the same names are replaced.
+- To extract a single file, name it after the archive, exactly as the listing shows it: `tar -xf site.tar site/index.html`.
 
-If you archive an absolute path, `tar` strips the leading `/` so that extracting never writes over system files by accident:
-
-```bash
-$ tar -cf hostname.tar /etc/hostname
-tar: Removing leading `/' from member names
-$ tar -tf hostname.tar
-etc/hostname
-```
-
-## Compression
+## Compressing a tar archive
 
 A plain tar file is as big as the files in it. Add one more letter to compress it as it is written:
 
@@ -97,11 +109,13 @@ $ ls -lh site.tar*
 -rw-r--r-- 1 root root  33K Oct 24 11:21 site.tar.xz
 ```
 
-This log shrinks a lot because it repeats itself; real logs usually compress to between a fifth and a tenth of their size. Files that are already compressed, such as images or zip files, barely shrink at all.
+- This log shrinks a lot because it repeats itself. Real logs usually compress to between a fifth and a tenth of their size.
+- Files that are already compressed, such as images or zip files, barely shrink at all.
+- When listing or extracting, modern `tar` detects the compression on its own, so `tar -tf site.tar.xz` and `tar -xf site.tar.gz` both work. You only need the letter when creating.
 
-When listing or extracting, modern `tar` detects the compression on its own, so `tar -tf site.tar.xz` and `tar -xf site.tar.gz` both work. You only need the letter when creating.
+## Compressing single files with gzip and xz
 
-**`gzip`** and **`xz`** also work on single files, without `tar`. They replace the file with a compressed copy:
+`gzip` and `xz` also work on single files, without `tar`. They replace the file with a compressed copy:
 
 ```bash
 $ cp site/logs/access.log app.log
@@ -113,7 +127,9 @@ $ ls app.log*
 app.log
 ```
 
-`gzip -k` keeps the original. `zcat` prints a compressed file without unpacking it, so you can pipe it straight into `grep` or `head`. This is how you read old logs in `/var/log`, which are rotated into files like `syslog.2.gz`:
+- `gzip -k` keeps the original.
+- `zcat` prints a compressed file without unpacking it, so you can pipe it straight into `grep` or `head`. This is how you read old logs in `/var/log`, which are rotated into files like `syslog.2.gz`.
+- `xz` and `unxz` work the same way, and `xzcat` is their `zcat`.
 
 ```bash
 $ gzip -k app.log
@@ -122,11 +138,9 @@ GET /api/orders 200 1
 GET /api/orders 200 2
 ```
 
-`xz` and `unxz` work the same way, and `xzcat` is their `zcat`.
+## Extracting to another directory with -C
 
-## Extracting to another directory
-
-**`-C`** changes to a directory before `tar` does anything else. When extracting, it puts the files somewhere other than where you are standing. The directory must already exist:
+`-C` changes to a directory before `tar` does anything else. When extracting, it puts the files somewhere other than where you are standing. The directory must already exist:
 
 ```bash
 $ mkdir restore
@@ -150,7 +164,9 @@ $ tar -tf flat.tar.gz
 ./index.html
 ```
 
-**`--exclude`** leaves out files that match a pattern. Put it before the directory you archive:
+## Leaving files out with --exclude
+
+`--exclude` leaves out files that match a pattern. Put it before the directory you archive:
 
 ```bash
 $ tar -czf site-nologs.tar.gz --exclude="site/logs" site
@@ -161,7 +177,8 @@ site/css/main.css
 site/index.html
 ```
 
-A pattern can also use wildcards: `--exclude="*.log"` skips every file ending in `.log` wherever it is, but keeps the empty `logs/` directory. You can give `--exclude` several times.
+- A pattern can use wildcards: `--exclude="*.log"` skips every file ending in `.log` wherever it is, but keeps the empty `logs/` directory.
+- You can give `--exclude` several times.
 
 ## Listing an archive before extracting
 
@@ -173,14 +190,19 @@ $ tar -tf flat.tar.gz | head
 
 Look for two things:
 
-- **Does everything sit under one top-level directory?** A well-made release unpacks into `tool-1.0/`. An archive like `flat.tar.gz` puts its files straight into the current directory and scatters them among yours. Extract that kind into a new, empty directory with `-C`.
-- **Are any paths absolute, or do any contain `..`?** Those could write outside the directory you chose. GNU `tar` refuses most of them, but you should still notice.
+1. **Does everything sit under one top-level directory?**
+   - A well-made release unpacks into one directory, such as `tool-1.0/`.
+   - An archive like `flat.tar.gz` puts its files straight into the current directory and scatters them among yours. Extract that kind into a new, empty directory with `-C`.
+
+2. **Are any paths absolute, or do any contain `..`?**
+   - Those could write outside the directory you chose.
+   - GNU `tar` refuses most of them, but you should still notice.
 
 `v` while extracting prints each file as it is written, so you can see afterwards what changed.
 
 ## zip and unzip
 
-**zip** files combine archiving and compression in one format. They are common for files shared with Windows and macOS users, and for some downloads. Ubuntu does not always include the tools:
+A **zip** file combines archiving and compression in one format. Zip files are common for files shared with Windows and macOS users, and for some downloads. Ubuntu does not always include the tools:
 
 ```bash
 $ apt install -y zip unzip
@@ -216,11 +238,13 @@ Archive:  site.zip
 $ unzip -q site.zip -d /tmp/unzipped
 ```
 
-`-q` stops `unzip` printing every file. To leave files out, use `-x` with a pattern: `zip -r site.zip site -x "site/logs/*"`. zip does not keep Linux owners, so prefer tar for backups of a Linux system.
+- `-q` stops `unzip` printing every file.
+- To leave files out, use `-x` with a pattern: `zip -r site.zip site -x "site/logs/*"`.
+- zip does not keep Linux owners, so prefer tar for backups of a Linux system.
 
 ## Verifying a download with a checksum
 
-A **checksum** is a short fingerprint of a file's contents. Change one byte and the checksum changes completely. Projects publish a SHA-256 checksum next to each download so you can confirm the file arrived intact and is the one they released.
+A **checksum** is a short fingerprint of a file's contents. Change one byte and the checksum changes completely. Projects publish a SHA-256 checksum next to each download, so you can confirm the file arrived intact and is the one they released.
 
 `sha256sum` prints a file's checksum:
 
@@ -236,7 +260,10 @@ $ sha256sum -c tool-1.0.tar.gz.sha256
 tool-1.0.tar.gz: OK
 ```
 
-If the file has changed, you see `FAILED` and a non-zero exit code. Do not extract a file that fails the check; download it again, and if it still fails, stop. When a project publishes only the bare checksum, build the line yourself, with two spaces between the checksum and the name:
+- If the file has changed, you see `FAILED` and a non-zero exit code.
+- Do not extract a file that fails the check. Download it again, and if it still fails, stop.
+
+When a project publishes only the bare checksum, build the line yourself, with two spaces between the checksum and the name:
 
 ```bash
 $ echo "<checksum from the website>  tool-1.0.tar.gz" | sha256sum -c

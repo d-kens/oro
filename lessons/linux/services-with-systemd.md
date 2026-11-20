@@ -1,6 +1,12 @@
-A **service** is a program that runs in the background with no terminal attached: a web server, a database, the SSH server you log in through. It has to start when the machine boots, come back if it crashes, and keep a log you can read later. On almost every current Linux distribution, **systemd** does all three.
+## Services and systemd
 
-By the end you can check, start, stop, restart and enable a service, read its logs with `journalctl`, and write a unit file that turns your own script into a service.
+A **service** is a program that runs in the background with no terminal attached, such as a web server, a database, or the SSH server you log in through. A service has to:
+
+- start when the machine boots
+- come back if it crashes
+- keep a log you can read later
+
+**systemd** is the program that does all three on almost every current Linux distribution. It runs as PID 1, the first process the kernel starts, and it starts everything else.
 
 ## Setting up a machine to practise on
 
@@ -23,13 +29,16 @@ For this topic, use a full Linux machine:
 
 - **Linux.** Use your own machine.
 
-There you are an ordinary user, so the commands that change the system start with `sudo`, which the *Users and permissions* topic explains. On Multipass the user is called `ubuntu` and `sudo` does not ask for a password; on WSL it asks for the password you chose when you set it up.
+There you are an ordinary user, so the commands that change the system start with `sudo`, which the *Users and permissions* topic explains.
 
-## Units and systemctl
+- On Multipass the user is called `ubuntu`, and `sudo` does not ask for a password.
+- On WSL, `sudo` asks for the password you chose when you set it up.
 
-systemd is PID 1 on a normal machine. It starts everything else, and it manages each thing through a **unit**, described in a small text file. Units come in several types; a service unit's name ends in `.service`. You talk to systemd with `systemctl`.
+## Units and systemctl status
 
-`systemctl status` is the first thing to run when a service misbehaves. The `cron` service, which runs scheduled jobs, is on every Ubuntu machine:
+A **unit** is anything systemd manages, described in a small text file called a **unit file**. Units come in several types; a service unit's name ends in `.service`.
+
+`systemctl` is the command you use to talk to systemd. `systemctl status` is the first thing to run when a service misbehaves. The `cron` service, which runs scheduled jobs, is on every Ubuntu machine:
 
 ```bash
 $ systemctl status cron
@@ -52,16 +61,20 @@ The lines that matter most:
 
 | Line | What it tells you |
 | --- | --- |
-| `Loaded` | Where the unit file is, and whether the service is **enabled** to start at boot |
+| `Loaded` | Where the unit file is, and whether the service is **enabled**, set to start at boot |
 | `Active` | Whether it is running now, and since when |
 | `Main PID` | The process systemd is watching |
 | The last lines | The most recent log lines from the service |
 
-If the output is longer than the screen, it opens in a reader; press <kbd>q</kbd> to leave. Status does not need `sudo`.
+- If the output is longer than the screen, it opens in a reader. Press <kbd>q</kbd> to leave.
+- `status` does not need `sudo`.
 
 ## Start, stop, restart and enable
 
-Two separate questions: is the service running **now**, and will it start at **boot**? `start` and `stop` answer the first. `enable` and `disable` answer the second.
+Two separate questions apply to every service:
+
+- Is it running **now**? `start` and `stop` change that.
+- Will it start at **boot**? `enable` and `disable` change that.
 
 | Command | What it does |
 | --- | --- |
@@ -86,7 +99,8 @@ $ systemctl is-active cron
 active
 ```
 
-A stopped service can still be enabled, and a running one can be disabled. A service that was started by hand but never enabled runs fine until the next reboot, then stays off.
+- A stopped service can still be enabled, and a running one can be disabled.
+- A service that was started by hand but never enabled runs fine until the next reboot, then stays off.
 
 To see every running service:
 
@@ -96,7 +110,7 @@ $ systemctl list-units --type=service --state=running
 
 ## Reading logs with journalctl
 
-systemd collects everything a service prints into the **journal**. `journalctl` reads it, and `-u` picks one unit:
+The **journal** is where systemd collects everything its services print. `journalctl` reads it, and `-u` picks one unit:
 
 ```bash
 $ journalctl -u cron
@@ -120,7 +134,12 @@ If `journalctl` shows nothing, or warns that you are not seeing messages from ot
 
 ## Writing a unit file
 
-Packages install their unit files under `/usr/lib/systemd/system`. Your own go in `/etc/systemd/system`, which also takes priority. Say you have a script at `/usr/local/bin/clock.sh`. This unit, saved as `/etc/systemd/system/clock.service`, makes it a service called `clock`:
+Unit files live in two places:
+
+- Packages install theirs under `/usr/lib/systemd/system`.
+- Your own go in `/etc/systemd/system`. Files there take priority.
+
+Say you have a script at `/usr/local/bin/clock.sh`. This unit, saved as `/etc/systemd/system/clock.service`, makes it a service called `clock`:
 
 ```text
 [Unit]
@@ -143,11 +162,19 @@ WantedBy=multi-user.target
 
 The service runs as root unless you add a `User=` line under `[Service]`.
 
-Two rules catch most people out. The command in `ExecStart` must be executable, or the service fails with `status=203/EXEC`. And after you create or change a unit file, run `sudo systemctl daemon-reload` so systemd reads it again. If you forget, `systemctl` reminds you:
+## Common unit file mistakes
 
-```text
-Warning: The unit file, source configuration file or drop-ins of clock.service changed on disk. Run 'systemctl daemon-reload' to reload units.
-```
+1. **The script is not executable**
+   - The command in `ExecStart` must be executable, or the service fails with `status=203/EXEC`.
+   - Fix it with `sudo chmod +x` on the script.
+
+2. **Forgetting daemon-reload**
+   - After you create or change a unit file, run `sudo systemctl daemon-reload` so systemd reads it again.
+   - If you forget, `systemctl` reminds you:
+
+   ```text
+   Warning: The unit file, source configuration file or drop-ins of clock.service changed on disk. Run 'systemctl daemon-reload' to reload units.
+   ```
 
 `systemd-analyze verify` checks a unit file for mistakes. It prints nothing if the file is fine:
 

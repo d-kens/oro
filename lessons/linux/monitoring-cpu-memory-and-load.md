@@ -1,17 +1,23 @@
-When someone says a server is slow, the first job is to look at it. Is the CPU working flat out? Has memory run out? Are processes waiting on a slow disk? A handful of commands answer these questions in under a minute, and they are the same on every Linux machine.
+## CPU, memory and load
 
-By the end you can read the load average, use `top` to see what is using the CPU and memory, tell used memory from memory the kernel is borrowing for cache, find the heaviest processes with `ps`, and decide whether a machine is busy or broken.
+When someone says a server is slow, the first job is to look at it. Three resources explain most slow servers:
 
-## Load average
+- The **CPU** (*central processing unit*) is the part of the computer that runs programs. A machine usually has several CPUs, or cores, each running one process at a time.
+- **Memory**, or RAM, is where running programs keep their data. It is fast but limited.
+- **Load** is how much work is queued up for the CPUs, including work waiting on the disk.
 
-`uptime` prints one line: the time, how long the machine has been running, how many users are logged in, and the **load average**:
+A handful of commands show all three in under a minute, and they are the same on every Linux machine.
+
+## Load average with uptime
+
+`uptime` prints one line: the time, how long the machine has been running, how many users are logged in, and the load average:
 
 ```bash
 $ uptime
  10:42:07 up 12 days,  3:18,  1 user,  load average: 3.84, 2.10, 1.25
 ```
 
-The load average is the number of processes that are either running on a CPU or waiting for one, averaged over the last **1, 5 and 15 minutes**. Processes waiting for the disk count too.
+The **load average** is the number of processes that are either running on a CPU or waiting for one, averaged over the last **1, 5 and 15 minutes**. Processes waiting for the disk count too.
 
 The number only means something next to the number of CPUs. `nproc` tells you that:
 
@@ -20,13 +26,20 @@ $ nproc
 4
 ```
 
-With 4 CPUs, a load of 4 means every CPU is busy and nothing is waiting. A load of 1 means three CPUs are idle. A load of 12 means that, on average, two processes are waiting for each one that runs.
+With 4 CPUs:
 
-Reading the three numbers together tells you the direction. `3.84, 2.10, 1.25` is rising: the last minute was much busier than the last quarter of an hour. `0.50, 2.80, 3.90` is falling: something heavy has just finished.
+- A load of 4 means every CPU is busy and nothing is waiting.
+- A load of 1 means three CPUs are idle.
+- A load of 12 means that, on average, two processes are waiting for each one that runs.
 
-## top and htop
+Reading the three numbers together tells you the direction:
 
-`top` shows a live view that refreshes every few seconds. Press <kbd>q</kbd> to quit.
+- `3.84, 2.10, 1.25` is rising: the last minute was much busier than the last quarter of an hour.
+- `0.50, 2.80, 3.90` is falling: something heavy has just finished.
+
+## Watching the machine live with top
+
+`top` shows a live view of the machine that refreshes every few seconds. Press <kbd>q</kbd> to quit.
 
 ```bash
 $ top
@@ -52,13 +65,24 @@ The header is a summary of the whole machine. The CPU line is the one to learn:
 | `wa` | Time with nothing to run because programs are waiting for the disk |
 | `st` | *Steal*: time a virtual machine wanted the CPU but the host gave it to another machine |
 
-Below the header, processes are sorted by CPU use. `%CPU` is a share of one CPU, so a busy program using two CPUs shows `196.4`. `RES` is the memory the process is really using. The `S` column is the state from the *Processes* topic: `R` running, `S` sleeping, `D` waiting on the disk and impossible to interrupt.
+Below the header, processes are sorted by CPU use:
 
-Useful keys while `top` is running: <kbd>M</kbd> sorts by memory, <kbd>P</kbd> sorts by CPU again, <kbd>1</kbd> shows each CPU on its own line, and <kbd>k</kbd> asks for a PID to send a signal to.
+- `%CPU` is a share of one CPU, so a busy program using two CPUs shows `196.4`.
+- `RES` is the memory the process is really using.
+- `S` is the state from the *Processes* topic: `R` running, `S` sleeping, `D` waiting on the disk and impossible to interrupt.
+
+Useful keys while `top` is running:
+
+| Key | What it does |
+| --- | --- |
+| <kbd>M</kbd> | Sort by memory |
+| <kbd>P</kbd> | Sort by CPU again |
+| <kbd>1</kbd> | Show each CPU on its own line |
+| <kbd>k</kbd> | Ask for a PID to send a signal to |
 
 `htop` does the same job with colour and scrolling. Install it with `apt install -y htop`, but learn `top` first: it is on every machine.
 
-## Memory: free
+## Memory with free
 
 `free -h` shows memory in readable units:
 
@@ -69,15 +93,26 @@ Mem:           7.7Gi       5.0Gi       402Mi        12Mi       2.3Gi       2.7Gi
 Swap:             0B          0B          0B
 ```
 
-`free` looks alarming here, but it is not the column to read. Linux uses memory that no program needs to **cache** files it has read recently, which makes the next read faster. That cache is `buff/cache`, and the kernel gives it back the moment a program asks for memory.
+The `free` column looks alarming here, but it is not the one to read.
 
-The column that matters is **available**: how much memory programs can still get, counting the cache that can be freed. Low `free` with plenty of `available` is a healthy machine. Low `available` is a machine running out of memory.
+- A **cache** is a copy of data kept somewhere faster. Linux uses memory that no program needs to cache files it has read recently, which makes the next read faster.
+- That cache is `buff/cache`. The kernel gives it back the moment a program asks for memory.
+- The column that matters is **available**: how much memory programs can still get, counting the cache that can be freed.
+- Low `free` with plenty of `available` is a healthy machine. Low `available` is a machine running out of memory.
 
-**Swap** is disk space used as overflow when memory is full. It keeps the machine alive, but disk is far slower than memory, so heavy swap use makes everything slow. When memory and swap run out, the kernel's **OOM killer** (*out of memory*) stops a process to free memory, usually the largest one. You see it in the kernel log with `journalctl -k | grep -i oom`.
+## Swap and the OOM killer
+
+**Swap** is disk space used as overflow when memory is full. It keeps the machine alive, but disk is far slower than memory, so heavy swap use makes everything slow.
+
+The **OOM killer** (*out of memory*) is the part of the kernel that stops a process when memory and swap have both run out, usually the largest one, to free memory. You see it in the kernel log:
+
+```bash
+$ journalctl -k | grep -i oom
+```
 
 ## Watching over time with vmstat
 
-`top` shows a moment. `vmstat` prints one line per interval, so you can see a trend. `vmstat 2 5` prints five lines, two seconds apart:
+`top` shows a moment. `vmstat` (*virtual memory statistics*) prints one line per interval, so you can see a trend. `vmstat 2 5` prints five lines, two seconds apart:
 
 ```bash
 $ vmstat 2 5
@@ -89,7 +124,7 @@ procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu----
 ...
 ```
 
-Ignore the first line, an average since boot. Then read:
+Ignore the first line, which is an average since boot. Then read:
 
 - `r`: processes running or waiting for a CPU. More than the number of CPUs, for a while, means the CPU is the bottleneck.
 - `b`: processes blocked waiting for the disk. Anything above zero for a while is worth a look.
@@ -98,7 +133,10 @@ Ignore the first line, an average since boot. Then read:
 
 ## Finding the heaviest processes with ps
 
-`top` is interactive. For a quick answer, or in a script, sort `ps` output instead. `-eo` chooses the columns and `--sort=-%cpu` sorts by CPU with the largest first:
+`top` is interactive. For a quick answer, or in a script, sort `ps` output instead:
+
+- `-eo` chooses the columns.
+- `--sort=-%cpu` sorts by CPU, largest first.
 
 ```bash
 $ ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu | head -5
@@ -119,11 +157,11 @@ $ ps -eo pid,user,%mem,rss,comm --sort=-%mem | head -4
     640 root      0.4  31840 containerd
 ```
 
-`%CPU` in `ps` is the average since the process started, not the current moment, so a process that just became busy can rank lower here than in `top`.
+`%CPU` in `ps` is the average since the process started, not the current moment. A process that just became busy can rank lower here than in `top`.
 
 ## Reading /proc
 
-All these tools read **`/proc`**, a directory the kernel fills with live information. Its files take no disk space and are made fresh each time you read them.
+All these tools read `/proc`, the directory the kernel fills with live information, as *The Linux file system* topic described. Its files take no disk space and are made fresh each time you read them.
 
 ```bash
 $ cat /proc/loadavg
@@ -136,7 +174,10 @@ $ grep -c ^processor /proc/cpuinfo
 4
 ```
 
-Each process has a directory named after its PID. `/proc/2214/status` shows its name, state and memory, and `/proc/2214/cmdline` the full command it was started with.
+Each process has a directory named after its PID:
+
+- `/proc/2214/status` shows its name, state and memory.
+- `/proc/2214/cmdline` shows the full command it was started with.
 
 ## Telling a busy server from a broken one
 

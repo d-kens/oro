@@ -1,10 +1,12 @@
-A program on disk does nothing until you run it. Once it runs, it is a **process**: a program in memory, with its own number, an owner, and a share of the CPU. A busy server runs dozens or hundreds of them. When an application hangs, or something uses all the CPU, your job is to find the right process and stop it cleanly.
-
-By the end you can list processes, find one by name, run a command in the background, send it signals, and stop a process that ignores a polite request.
-
 ## What a process is
 
-Each process has a **process ID** or *PID*, a number the kernel hands out when the process starts. Each process also has a **parent**, the process that started it, whose PID is the *PPID*. When you type a command, your shell starts it as a child of the shell.
+A **process** is a program that is running. A program on disk does nothing until you run it. Once it runs, it is loaded into memory and gets its own number, an owner, and a share of the CPU. A busy server runs dozens or hundreds of processes at once.
+
+Every process has:
+
+- a **process ID**, or *PID*: a number the kernel hands out when the process starts.
+- a **parent**: the process that started it. The parent's PID is the *PPID*. When you type a command, your shell starts it, so the shell is its parent.
+- a user it runs as, which decides what it is allowed to do.
 
 `$$` holds the PID of your shell:
 
@@ -13,13 +15,13 @@ $ echo $$
 1
 ```
 
-In the Docker container your shell is PID 1, because it is the first and only thing the container started. On a normal Linux machine PID 1 is **systemd**, which starts everything else when the machine boots. The *Services with systemd* topic covers it.
-
-The kernel shows every process as a directory under `/proc`, named after its PID. Tools such as `ps` read their information from there.
+- In the Docker container your shell is PID 1, because it is the first and only thing the container started.
+- On a normal Linux machine PID 1 is **systemd**, which starts everything else when the machine boots. The *Services with systemd* topic covers it.
+- The kernel shows every process as a directory under `/proc`, named after its PID. Tools such as `ps` read their information from there.
 
 ## Listing processes with ps
 
-`ps` on its own lists the processes started from this terminal:
+`ps` (*process status*) lists processes. On its own, it lists the ones started from this terminal:
 
 ```bash
 $ ps
@@ -28,7 +30,12 @@ $ ps
    12 pts/0    00:00:00 ps
 ```
 
-`ps` sees itself, because it is running while it looks. To see every process on the machine, use `ps -ef` or `ps aux`. Both are common; `-ef` shows the parent, `aux` shows CPU and memory use.
+`ps` sees itself, because it is running while it looks.
+
+To see every process on the machine, use `ps -ef` or `ps aux`. Both are common:
+
+- `ps -ef` shows each process's parent.
+- `ps aux` shows how much CPU and memory each one uses.
 
 ```bash
 $ ps -ef
@@ -54,20 +61,22 @@ root        16  0.0  0.0   7888  3712 pts/0    R+   11:21   0:00 ps aux
 | `STAT` | State: `R` running, `S` sleeping (waiting for something), `T` stopped, `Z` zombie |
 | `COMMAND` or `CMD` | The command line it was started with |
 
-On a server the list is long. `pgrep` finds processes by name, and `-a` prints the command line too:
+## Finding a process with pgrep
+
+On a server the list from `ps` is long. `pgrep` finds processes by name and prints their PIDs. `-a` prints the command line too:
 
 ```bash
 $ pgrep -a sleep
 14 sleep 600
 ```
 
-`top` shows the same list, sorted by CPU use and updated every few seconds. The *Monitoring CPU, memory and load* topic covers it.
+`top` shows the same list as `ps`, sorted by CPU use and updated every few seconds. The *Monitoring CPU, memory and load* topic covers it.
 
-## Foreground and background
+## Foreground and background jobs
 
 A command normally runs in the **foreground**: the shell waits for it to finish before giving you the prompt back. <kbd>Ctrl</kbd>+<kbd>C</kbd> stops it.
 
-Put `&` at the end of a command to run it in the **background**. The shell prints a job number in brackets and the PID, then gives you the prompt straight away:
+A command in the **background** runs while the shell gives you the prompt straight away. Put `&` at the end of a command to start it there. The shell prints a job number in brackets and the PID:
 
 ```bash
 $ sleep 600 &
@@ -79,7 +88,7 @@ $ jobs
 [2]+  Running                 sleep 900 &
 ```
 
-`jobs` lists the background jobs of this shell. You can refer to a job as `%1`, `%2` and so on, in place of its PID.
+A **job** is a command started from your shell. `jobs` lists them, and you can refer to one as `%1`, `%2` and so on, in place of its PID.
 
 | Keys or command | What it does |
 | --- | --- |
@@ -91,7 +100,9 @@ Background jobs belong to your shell. If you close the terminal they are usually
 
 ## Signals
 
-You stop a process by sending it a **signal**, a short message from the kernel. The command is called `kill`, but sending a signal does not always mean killing. The ones you will use:
+A **signal** is a short message the kernel delivers to a process, telling it something has happened or asking it to do something. You stop a process by sending it a signal.
+
+The command that sends signals is called `kill`, but sending a signal does not always mean killing. The ones you will use:
 
 | Number | Name | Sent by | What it means |
 | --- | --- | --- | --- |
@@ -100,7 +111,9 @@ You stop a process by sending it a **signal**, a short message from the kernel. 
 | 1 | `SIGHUP` | `kill -HUP PID` | Many services reload their config when they get it |
 | 9 | `SIGKILL` | `kill -9 PID` | Removed by the kernel at once. Cannot be caught or ignored. |
 
-A program can catch `SIGTERM` and `SIGINT`, close its files, finish what it was writing and exit tidily. It can also choose to ignore them. `SIGKILL` never reaches the program at all: the kernel simply ends it.
+- A program can catch `SIGTERM` and `SIGINT`, close its files, finish what it was writing, and exit tidily.
+- It can also choose to ignore them.
+- `SIGKILL` never reaches the program at all: the kernel simply ends it.
 
 ```bash
 $ kill 226
@@ -112,7 +125,8 @@ $
 [2]+  Terminated              sleep 900
 ```
 
-`kill -l` lists every signal. `pkill name` sends a signal to every process with that name, so check first with `pgrep -a name` that it matches only what you mean.
+- `kill -l` lists every signal.
+- `pkill name` sends a signal to every process with that name. Check first with `pgrep -a name` that it matches only what you mean.
 
 If the PID does not exist, perhaps because the process has already exited, `kill` says so:
 
@@ -129,7 +143,10 @@ Work up from polite to forceful:
 2. Wait a few seconds and check with `ps -p PID` or `pgrep -a name`.
 3. Only if it is still there, force it: `kill -9 PID`.
 
-Do not start with `kill -9`. The process gets no chance to clean up, so it can leave half-written files, lock files or temporary files behind, and a database may need to repair itself when it next starts.
+Do not start with `kill -9`. The process gets no chance to clean up:
+
+- It can leave half-written files, lock files or temporary files behind.
+- A database may need to repair itself when it next starts.
 
 Here is a script that ignores `SIGTERM`. `trap` tells the shell what to do when a signal arrives; here it prints a message and carries on.
 
@@ -152,7 +169,15 @@ $
 [1]+  Killed                  ./stubborn.sh
 ```
 
-Two cases where even `kill -9` seems not to work. A process in state `D` is waiting on a disk or network file system inside the kernel, and goes when that wait ends. A process in state `Z`, a *zombie*, has already exited; it is only an entry waiting for its parent to collect it, and it uses no CPU or memory.
+## When even kill -9 seems not to work
+
+1. **State `D`**
+   - The process is waiting on a disk or a network file system inside the kernel.
+   - It goes when that wait ends.
+
+2. **State `Z`, a zombie**
+   - A **zombie** is a process that has already exited, but whose parent has not yet collected its exit status.
+   - It is only an entry in the process list. It uses no CPU or memory, and it goes when its parent collects it or exits.
 
 ## Tasks
 
