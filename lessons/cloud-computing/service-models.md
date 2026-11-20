@@ -1,16 +1,27 @@
-Renting from a cloud does not mean one kind of thing. You can rent a bare virtual server and set up everything on it yourself, or rent a finished application and just log in. Between those two ends are several steps, and each one moves more of the work from you to the provider.
-
-This topic covers the service models, IaaS, PaaS, SaaS and serverless, and what you manage in each. By the end you can place any cloud service in one of them and say which parts of the work are yours.
-
 ## The layers of an application
 
-Every application stands on the same layers: its data, the application code, the runtime it needs (such as Python or Java), the operating system, the virtual machine, and the hardware and building under it. On-premises, you look after all of them. The service models differ in where the line falls between your layers and the provider's.
+**Service model:** The kind of thing you rent from a cloud provider, which decides how much of the work is yours and how much is the provider's.
+
+Renting from a cloud does not mean one kind of thing. You can rent a bare virtual server and set up everything on it yourself, or rent a finished application and just log in. Between those two ends are several steps, and each one moves more of the work from you to the provider.
+
+Every application stands on the same layers:
+
+- its data
+- the application code
+- the runtime it needs, such as Python or Java
+- the operating system
+- the virtual machine
+- the hardware and building under it
+
+On-premises, you look after all of them. The service models differ in where the line falls between your layers and the provider's.
 
 ## IaaS: infrastructure as a service
 
 **Infrastructure as a service (IaaS):** The provider supplies the basic computing resources: servers, storage and networks. You install and run whatever you want on them, including the operating system. You do not manage the hardware underneath, but you control everything from the operating system up.
 
-This is closest to having your own servers, without the hardware. It gives you the most control and the most work. Examples are virtual servers such as AWS EC2, Azure Virtual Machines and Google Compute Engine.
+- This is closest to having your own servers, without the hardware.
+- It gives you the most control and the most work.
+- Examples are virtual servers such as AWS EC2, Azure Virtual Machines and Google Compute Engine.
 
 Choose IaaS when you need full control of the machine: special software, an unusual setup, or an existing application moved as it is.
 
@@ -18,7 +29,9 @@ Choose IaaS when you need full control of the machine: special software, an unus
 
 **Platform as a service (PaaS):** The provider supplies a ready platform, with the operating system, the language runtime and the tools, and you deploy your own application onto it. You control the application and its settings, but not the servers, operating system or storage underneath.
 
-You no longer patch servers or install Python; you deploy code and say how many copies to run. Examples are AWS Elastic Beanstalk, Azure App Service, Google App Engine and Heroku. Managed databases, where the provider installs, patches and backs up the database for you, work the same way.
+- You no longer patch servers or install Python. You deploy code and say how many copies to run.
+- Examples are AWS Elastic Beanstalk, Azure App Service, Google App Engine and Heroku.
+- Managed databases, where the provider installs, patches and backs up the database for you, work the same way.
 
 Choose PaaS when you want to spend your time on the application, not the machines under it, and your application fits the platform's way of doing things.
 
@@ -32,9 +45,10 @@ Email, office suites, chat tools and customer-management systems are mostly SaaS
 
 **Serverless (function as a service, FaaS):** The provider runs your code only when an event triggers it, such as a web request, a file arriving or a message in a queue, and supplies the servers for each run automatically. You never set up or manage servers, and you pay only while your code runs.
 
-Serverless sits between PaaS and SaaS. When nothing is happening, nothing runs and you pay nothing.
-
-There are still servers, but you never see or size them. Examples are AWS Lambda, Azure Functions and Google Cloud Functions. Fully managed services such as storage buckets and queues are often called serverless too, because they have no servers for you to manage.
+- Serverless sits between PaaS and SaaS. When nothing is happening, nothing runs and you pay nothing.
+- There are still servers, but you never see or size them.
+- Examples are AWS Lambda, Azure Functions and Google Cloud Functions.
+- Fully managed services such as storage buckets and queues are often called serverless too, because they have no servers for you to manage.
 
 ## Who manages what
 
@@ -47,9 +61,11 @@ There are still servers, but you never see or size them. Examples are AWS Lambda
 | Virtual machine | You | Provider | Provider | Provider | Provider |
 | Hardware and data centre | You | Provider | Provider | Provider | Provider |
 
-Reading down a column tells you what a team has to look after. Reading across a row shows that your data is always yours, in every model.
+- Reading down a column tells you what a team has to look after.
+- Reading across a row shows that your data is always yours, in every model.
+- Moving right means less work and less control. Moving left means more of both.
 
-Moving right means less work and less control. Moving left means more of both. Most companies use a mix: SaaS for email, PaaS or serverless for new applications, IaaS for the software that needs a whole machine.
+Most companies use a mix: SaaS for email, PaaS or serverless for new applications, IaaS for the software that needs a whole machine.
 
 ## Tasks
 

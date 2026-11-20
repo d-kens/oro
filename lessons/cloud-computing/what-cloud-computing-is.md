@@ -1,14 +1,11 @@
-Every application needs machines to run its code, disks to keep its data, and a network to reach its users. Cloud computing is a way of getting those without owning them.
-
-This topic explains what cloud computing is, and the five things that make a service a cloud rather than just someone else's server. By the end you can explain the cloud in one sentence and tell whether a service you meet counts as one.
-
 ## Renting instead of buying
 
 **Cloud computing:** Getting computing resources, such as servers, storage, databases and networks, over the internet from a shared pool run by a provider. You set them up when you need them and release them when you are done, with little effort and no help from the provider, and you pay only for what you use.
 
-In practice, you ask a provider for a server, you get it within minutes, and when you delete it the charges stop.
+Every application needs machines to run its code, disks to keep its data, and a network to reach its users. Cloud computing is a way of getting those without owning them.
 
-A company that sells shoes online needs servers, but running a building full of them is not its business. It rents them from a provider that runs servers at a scale no shoe shop could reach.
+- In practice, you ask a provider for a server, you get it within minutes, and when you delete it the charges stop.
+- A company that sells shoes online needs servers, but running a building full of them is not its business. It rents them from a provider that runs servers at a scale no shoe shop could reach.
 
 What you can rent covers almost everything an application needs:
 
@@ -22,7 +19,7 @@ What you can rent covers almost everything an application needs:
 
 ## The five characteristics
 
-The standard definition, from the US standards body NIST, says a service is a cloud only if it has all five of these characteristics:
+The standard definition, from the US standards body NIST, says a service is a cloud only if it has all five of these characteristics. They are what make a service a cloud rather than just someone else's server:
 
 - **On-demand self-service:** You set up computing resources, such as servers and storage, yourself, whenever you need them, through a website, a command or an API, without contacting anyone at the provider.
 - **Broad network access:** Services are available over the network through standard tools, so you can reach them from any kind of device: a laptop, a phone or another server.
@@ -30,7 +27,10 @@ The standard definition, from the US standards body NIST, says a service is a cl
 - **Rapid elasticity:** Resources can be added or removed quickly, often automatically, to match demand. To the customer, the supply looks unlimited.
 - **Measured service:** The provider meters what each customer uses, such as hours of server time, gigabytes stored or requests made. Both sides can see exactly what was used, and you are billed for it.
 
-The cloud does not remove servers. They still exist and still fail; what changes is that the provider handles the hardware and you work through software: servers, networks and permissions are created by commands and code.
+The cloud does not remove servers:
+
+- They still exist and still fail.
+- What changes is that the provider handles the hardware, and you work through software: servers, networks and permissions are created by commands and code.
 
 ## Tasks
 

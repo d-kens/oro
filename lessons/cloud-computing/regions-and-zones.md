@@ -1,14 +1,12 @@
-Every server you rent is in a real building in a real place. Where that place is decides how fast your application feels to users, which laws apply to your data, and whether your service stays up when something goes wrong.
-
-This topic covers how providers arrange their data centres into regions and availability zones, why that design keeps services running, and how to choose where to run. By the end you can explain the difference between a region and a zone, and why serious applications run in more than one zone.
-
 ## Regions
 
 **Region:** A separate geographic area, such as a city or part of a country, where a provider runs a group of data centres.
 
-Large providers have dozens of regions around the world, each with a name and a short code.
+Every server you rent is in a real building in a real place. Where that place is decides how fast your application feels to users, which laws apply to your data, and whether your service stays up when something goes wrong.
 
-Regions are kept **independent** of each other. A problem in one, a power cut, a software fault, a natural disaster, should not spread to another. Your resources live in the region you choose, and nothing moves to another region unless you move it.
+- Large providers have dozens of regions around the world, each with a name and a short code.
+- Regions are kept **independent** of each other. A problem in one, such as a power cut, a software fault or a natural disaster, should not spread to another.
+- Your resources live in the region you choose, and nothing moves to another region unless you move it.
 
 When you create almost anything in the cloud, you pick a region first. Four things usually decide which one:
 
@@ -23,7 +21,10 @@ When you create almost anything in the cloud, you pick a region first. Four thin
 
 A region usually has three or more zones.
 
-Zones in a region are a few kilometres to tens of kilometres apart: far enough that a fire, flood or power cut is unlikely to hit two at once, close enough that they are joined by fast private links with only a millisecond or two between them.
+Zones in a region are a few kilometres to tens of kilometres apart:
+
+- far enough that a fire, flood or power cut is unlikely to hit two at once
+- close enough that they are joined by fast private links, with only a millisecond or two between them
 
 ```text
  Region
@@ -41,7 +42,10 @@ Zones in a region are a few kilometres to tens of kilometres apart: far enough t
 
 Power supplies, cooling systems and network links break, and sometimes a whole data centre goes offline. Zones are arranged so that one such failure takes out only one zone.
 
-Your part is to use that. If your application runs on one server in one zone, it goes down when that zone does. If it runs on servers in two or three zones, with a load balancer sending users to whichever are healthy, the loss of one zone barely shows.
+Your part is to use that:
+
+- If your application runs on one server in one zone, it goes down when that zone does.
+- If it runs on servers in two or three zones, with a load balancer sending users to whichever are healthy, the loss of one zone barely shows.
 
 | Setup | Survives a server failing | Survives a zone failing | Survives a region failing |
 | --- | --- | --- | --- |
@@ -50,7 +54,8 @@ Your part is to use that. If your application runs on one server in one zone, it
 | Several servers, several zones | Yes | Yes | No |
 | Copies in two regions | Yes | Yes | Yes |
 
-Running across several zones is the normal choice for anything that matters, and costs little more. Running in several regions is much harder and more expensive, and is kept for services that must survive even a whole region failing.
+- Running across several zones is the normal choice for anything that matters, and costs little more.
+- Running in several regions is much harder and more expensive, and is kept for services that must survive even a whole region failing.
 
 ## Edge locations
 
