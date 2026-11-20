@@ -1,6 +1,13 @@
-By default, Bash is forgiving. If a command fails, it prints an error and moves on to the next line. If you use a variable that was never set, it quietly treats it as empty. At the prompt that is convenient. In a script that runs unattended, it means one failed `cd` can be followed by an `rm` in the wrong directory.
+## What makes a script robust
 
-This topic makes scripts fail early and clean up after themselves. By the end you can write the usual safety header and know where it does not protect you, clean up temporary files with a trap, stop two copies of a script running at once, and write scripts that are safe to run twice.
+A **robust** script stops as soon as something goes wrong, cleans up after itself, and can be run again safely.
+
+By default, Bash is forgiving:
+
+- If a command fails, Bash prints an error and moves on to the next line.
+- If you use a variable that was never set, Bash quietly treats it as empty.
+
+At the prompt that is convenient. In a script that runs unattended, it means one failed `cd` can be followed by an `rm` in the wrong directory.
 
 ## set -e: stop at the first failure
 
@@ -20,7 +27,8 @@ root@lab:~/scripts# ./deploy-site.sh
 Old files removed
 ```
 
-The `cd` failed, Bash carried on, and `rm -rf ./*` ran in whatever directory the script started in. Here that was `~/scripts`, and every script in it is now gone. Do not run this one.
+- The `cd` failed, Bash carried on, and `rm -rf ./*` ran in whatever directory the script started in.
+- Here that was `~/scripts`, and every script in it is now gone. Do not run this one.
 
 **`set -e`** tells Bash to exit as soon as a command fails. Add it as the second line and the same run stops at the `cd`:
 
@@ -33,74 +41,83 @@ root@lab:~/scripts# echo $?
 
 `set -e` is a safety net, not a replacement for the checks in the *Exit codes and errors* topic. It has rules that surprise almost everyone, and you should know them before you rely on it.
 
-**It does not apply to commands being tested.** A failure inside an `if` condition, a `while` condition, or on the left of `&&` or `||` is treated as an answer, not an error. That includes every line of a function called from an `if`:
+## Where set -e does not protect you
 
-```bash
-#!/bin/bash
-set -e
+1. **Commands being tested**
+   - A failure inside an `if` condition, a `while` condition, or on the left of `&&` or `||` is treated as an answer, not an error.
+   - That includes every line of a function called from an `if`:
 
-check_config() {
-    grep -q '^port=' app.conf
-    echo "config looks fine"
-}
+   ```bash
+   #!/bin/bash
+   set -e
 
-if check_config; then
-    echo "starting"
-fi
-```
+   check_config() {
+       grep -q '^port=' app.conf
+       echo "config looks fine"
+   }
 
-```bash
-root@lab:~/scripts# ./check.sh
-grep: app.conf: No such file or directory
-config looks fine
-starting
-```
+   if check_config; then
+       echo "starting"
+   fi
+   ```
 
-The grep failed, but because `check_config` was called from `if`, `set -e` was switched off for the whole function. The function's status was that of its last line, the `echo`.
+   ```bash
+   root@lab:~/scripts# ./check.sh
+   grep: app.conf: No such file or directory
+   config looks fine
+   starting
+   ```
 
-**Some normal commands return non-zero.** `((count++))` returns 1 when the value *before* the increment is 0, because it treats 0 as false:
+   - The grep failed, but because `check_config` was called from `if`, `set -e` was switched off for the whole function. The function's status was that of its last line, the `echo`.
 
-```bash
-#!/bin/bash
-set -e
-count=0
-((count++))
-echo "count is $count"
-```
+2. **Normal commands that return non-zero**
+   - `((count++))` returns 1 when the value *before* the increment is 0, because it treats 0 as false:
 
-```bash
-root@lab:~/scripts# ./count.sh
-root@lab:~/scripts# echo $?
-1
-```
+   ```bash
+   #!/bin/bash
+   set -e
+   count=0
+   ((count++))
+   echo "count is $count"
+   ```
 
-The script stopped silently. Write `count=$((count + 1))` instead. `grep` finding nothing does the same thing: `errors=$(grep -c ERROR clean.log)` stops a `set -e` script when the log is clean, because grep exits with 1. Add `|| true` where "nothing found" is a normal answer.
+   ```bash
+   root@lab:~/scripts# ./count.sh
+   root@lab:~/scripts# echo $?
+   1
+   ```
 
-**`local` hides the status of a command substitution.** In `local version=$(cat VERSION)`, the status that counts is that of `local`, which always succeeds:
+   - The script stopped silently. Write `count=$((count + 1))` instead.
+   - `grep` finding nothing does the same thing. `errors=$(grep -c ERROR clean.log)` stops a `set -e` script when the log is clean, because grep exits with 1.
+   - Add `|| true` where "nothing found" is a normal answer.
 
-```bash
-#!/bin/bash
-set -e
+3. **`local` with a command substitution**
+   - In `local version=$(cat VERSION)`, the status that counts is that of `local`, which always succeeds:
 
-get_version() {
-    local version=$(cat /no/such/VERSION)
-    echo "version: $version"
-}
+   ```bash
+   #!/bin/bash
+   set -e
 
-get_version
-echo "carried on"
-```
+   get_version() {
+       local version=$(cat /no/such/VERSION)
+       echo "version: $version"
+   }
 
-```bash
-root@lab:~/scripts# ./version.sh
-cat: /no/such/VERSION: No such file or directory
-version: 
-carried on
-```
+   get_version
+   echo "carried on"
+   ```
 
-Declare and assign on separate lines, `local version` then `version=$(cat VERSION)`, and the failure stops the script. The *Debugging* topic shows ShellCheck catching this one for you.
+   ```bash
+   root@lab:~/scripts# ./version.sh
+   cat: /no/such/VERSION: No such file or directory
+   version: 
+   carried on
+   ```
 
-## set -u and set -o pipefail
+   - Declare and assign on separate lines, `local version` then `version=$(cat VERSION)`, and the failure stops the script.
+   - The *Debugging* topic shows ShellCheck catching this one for you.
+
+## set -u: stop on unset variables
 
 **`set -u`** makes using an unset variable an error. Without it, a typo turns into an empty string, and an empty string in a path can be dangerous:
 
@@ -117,7 +134,8 @@ root@lab:~/scripts# ./clear-cache.sh
 ./clear-cache.sh: line 4: cahce_dir: unbound variable
 ```
 
-Without `set -u`, the misspelled `$cahce_dir` would be empty and the `rm` line would become `rm -rf /*`. The `${var:?}` form from the *Parameter expansion* topic is a second guard on that line, and worth keeping on any `rm -rf` with a variable in it.
+- Without `set -u`, the misspelled `$cahce_dir` would be empty and the `rm` line would become `rm -rf /*`.
+- The `${var:?}` form from the *Parameter expansion* topic is a second guard on that line, and worth keeping on any `rm -rf` with a variable in it.
 
 `set -u` also catches missing arguments, which is usually what you want. When an argument is optional, give it a default:
 
@@ -126,7 +144,12 @@ env_name=$1            # stops with "$1: unbound variable" if no argument
 env_name=${1:-staging} # uses staging if no argument
 ```
 
-**`set -o pipefail`** fixes the pipeline problem from the *Exit codes and errors* topic. Normally a pipeline's status is that of its last command. With pipefail, it is the status of the last command that *failed*, so a broken first stage is no longer hidden:
+## set -o pipefail: fail when any part of a pipeline fails
+
+**`set -o pipefail`** fixes the pipeline problem from the *Exit codes and errors* topic.
+
+- Normally a pipeline's status is that of its last command.
+- With pipefail, it is the status of the last command that *failed*, so a broken first stage is no longer hidden:
 
 ```bash
 #!/bin/bash
@@ -143,6 +166,8 @@ root@lab:~/scripts# echo $?
 ```
 
 With only `set -eu`, the same script prints `Report done` and exits with 0.
+
+## The safety header
 
 Together these give the header you will see at the top of most careful Bash scripts:
 
@@ -163,7 +188,7 @@ Use it on new scripts. On an old script, add it with care and test, because code
 
 A script often leaves things behind: temporary files, a half-written output, a lock. **`trap`** runs a command when the script receives a signal or reaches a certain point. Two are especially useful:
 
-- `trap '...' EXIT` runs when the script ends for any reason: reaching the end, `exit`, a `set -e` failure, or being stopped with Ctrl+C or `kill`.
+- `trap '...' EXIT` runs when the script ends for any reason: reaching the end, `exit`, a `set -e` failure, or being stopped with <kbd>Ctrl</kbd>+<kbd>C</kbd> or `kill`.
 - `trap '...' ERR` runs whenever a command fails, in the same places `set -e` would act.
 
 ```bash
@@ -211,7 +236,12 @@ Put the trap command in single quotes, so that `$LINENO` and other variables are
 
 ## Temporary files with mktemp
 
-The usual mistake is a fixed name such as `/tmp/report.txt`. Two copies of the script running at once overwrite each other's file, and another user on the machine can create that name first. **`mktemp`** creates a new, empty file with a random name that only you can read, and prints the name:
+A **temporary file** is a file a script needs only while it runs. The usual mistake is a fixed name such as `/tmp/report.txt`:
+
+- Two copies of the script running at once overwrite each other's file.
+- Another user on the machine can create that name first.
+
+**`mktemp`** creates a new, empty file with a random name that only you can read, and prints the name:
 
 ```bash
 root@lab:~/scripts# mktemp
@@ -222,7 +252,10 @@ root@lab:~/scripts# mktemp /tmp/report.XXXXXX
 /tmp/report.n7s1SG
 ```
 
-`-d` makes a directory, and a template replaces the `X`s with random characters. Pair it with an EXIT trap so it is removed however the script ends:
+- `-d` makes a directory.
+- A template replaces the `X`s with random characters.
+
+Pair it with an EXIT trap so it is removed however the script ends:
 
 ```bash
 #!/bin/bash
@@ -248,7 +281,13 @@ Run `ls /tmp` afterwards and the directory is gone. Set the trap on the line str
 
 ## One copy at a time with flock
 
-A script run every five minutes from cron can take longer than five minutes. Then a second copy starts while the first is still working, and both write to the same files. A **lock** prevents this. The `flock` command, part of util-linux and present on Ubuntu, takes a lock on a file; only one process can hold it, and the lock is released automatically when that process exits, even if it crashes.
+A script run every five minutes from cron can take longer than five minutes. Then a second copy starts while the first is still working, and both write to the same files.
+
+A **lock** is a marker that only one process can hold at a time. It prevents this.
+
+- The `flock` command, part of util-linux and present on Ubuntu, takes a lock on a file.
+- Only one process can hold it.
+- The lock is released automatically when that process exits, even if it crashes.
 
 ```bash
 #!/bin/bash
@@ -266,7 +305,7 @@ sleep 5
 echo "Done"
 ```
 
-- `exec 9> file` opens the lock file on file descriptor 9 for the rest of the script.
+- `exec 9> file` opens the lock file on **file descriptor** 9 for the rest of the script. A file descriptor is the number a process uses for a file it has open, like 1 for stdout and 2 for stderr.
 - `flock -n 9` takes the lock on it, or fails at once if another process holds it. Without `-n`, it waits.
 
 Start one copy in the background and a second straight after:
@@ -279,32 +318,42 @@ nightly-sync: another copy is running
 root@lab:~/scripts# Done
 ```
 
-Avoid the home-made version, `if [ -e lockfile ]; then exit; fi; touch lockfile`. Two copies can both pass the check before either creates the file, and if the script is killed, the file stays and blocks every later run until someone deletes it.
+Avoid the home-made version, `if [ -e lockfile ]; then exit; fi; touch lockfile`:
+
+- Two copies can both pass the check before either creates the file.
+- If the script is killed, the file stays and blocks every later run until someone deletes it.
 
 ## Making a script safe to run twice
 
 A script is **idempotent** when running it a second time does no harm and changes nothing that is already right. Setup and deploy scripts get re-run all the time: after a failure halfway, by a colleague who is not sure it ran, or by a tool that runs it on every change. Three habits cover most cases.
 
-**Use options that accept "already done".** `mkdir dir` fails if the directory exists; `mkdir -p dir` does not. `rm -f` does not fail on a missing file, and `ln -sfn` replaces an existing link.
+1. **Use options that accept "already done"**
+   - `mkdir dir` fails if the directory exists; `mkdir -p dir` does not.
+   - `rm -f` does not fail on a missing file, and `ln -sfn` replaces an existing link.
 
-**Check before you create.** Appending a line to a file is the classic case:
+2. **Check before you create**
+   - Appending a line to a file is the classic case:
 
-```bash
-echo "alias ll='ls -l'" >> bashrc-sam
-```
+   ```bash
+   echo "alias ll='ls -l'" >> bashrc-sam
+   ```
 
-Run that twice and the line is there twice. Check first:
+   - Run that twice and the line is there twice. Check first:
 
-```bash
-line="alias ll='ls -l'"
-if ! grep -qxF "$line" bashrc-sam 2> /dev/null; then
-    echo "$line" >> bashrc-sam
-fi
-```
+   ```bash
+   line="alias ll='ls -l'"
+   if ! grep -qxF "$line" bashrc-sam 2> /dev/null; then
+       echo "$line" >> bashrc-sam
+   fi
+   ```
 
-`-x` matches the whole line and `-F` treats the text as plain characters rather than a pattern. The same goes for users (`id name`), packages and services: ask whether it exists, then act.
+   - `-x` matches the whole line, and `-F` treats the text as plain characters instead of a pattern.
+   - The same goes for users (`id name`), packages and services: ask whether it exists, then act.
 
-**Write to a temporary file, then move it into place.** If a script writes straight to `report.txt` and fails halfway, readers see half a file. Write to a temporary file in the same directory and `mv` it over the old one at the end. On the same file system, `mv` is **atomic**: other programs see either the whole old file or the whole new one, never a mix. Task 1 uses this.
+3. **Write to a temporary file, then move it into place**
+   - If a script writes straight to `report.txt` and fails halfway, readers see half a file.
+   - Write to a temporary file in the same directory, and `mv` it over the old one at the end.
+   - On the same file system, `mv` is **atomic**: other programs see either the whole old file or the whole new one, never a mix. Task 1 uses this.
 
 ## Tasks
 

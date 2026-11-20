@@ -1,6 +1,9 @@
-Sooner or later you need to change a file on a server: a port number in a config file, a line in a script, a setting that a colleague asked you to turn on. Servers have no desktop and no graphical editor, so you edit the file in the terminal. Two editors cover almost every case. **nano** is simple and shows its keys on screen. **vim** is harder to learn, but it is installed on nearly every Linux machine, including the small ones where nano is missing.
+## Text editors in the terminal
 
-By the end you can open a file in nano, change it and save it, do the same in vim, and get out of vim when you are stuck.
+A **text editor** is a program for changing the text in a file. Servers have no desktop, so you use an editor that runs inside the terminal. Two cover almost every case:
+
+- **nano** is simple and shows its keys at the bottom of the screen. Start with it.
+- **vim** is harder to learn, but it is installed on nearly every Linux machine, including the small ones where nano is missing.
 
 ## Installing nano and vim
 
@@ -10,7 +13,7 @@ The Docker Ubuntu image leaves out both editors to stay small. Install them; the
 $ apt update && apt install -y nano vim
 ```
 
-On a normal Ubuntu server nano is usually there already, and `vi` (a smaller relative of vim) is there on almost every distribution.
+On a normal Ubuntu server nano is usually there already. `vi`, a smaller relative of vim, is there on almost every distribution.
 
 Create a small config file to practise on. `printf` prints text, and each `\n` starts a new line:
 
@@ -52,7 +55,11 @@ workers=2
 ^X Exit      ^R Read File ^\ Replace   ^U Paste     ^J Justify   ^/ Go To Line
 ```
 
-nano works like a basic text box. Move with the arrow keys, type to insert text, and use <kbd>Backspace</kbd> and <kbd>Delete</kbd> to remove it. The two lines at the bottom are a reminder of the commands. `^` means <kbd>Ctrl</kbd>, so `^X` is <kbd>Ctrl</kbd>+<kbd>X</kbd>. `M-` means <kbd>Alt</kbd>.
+nano works like a basic text box:
+
+- Move with the arrow keys.
+- Type to insert text, and use <kbd>Backspace</kbd> and <kbd>Delete</kbd> to remove it.
+- The two lines at the bottom list the commands. `^` means <kbd>Ctrl</kbd>, so `^X` is <kbd>Ctrl</kbd>+<kbd>X</kbd>. `M-` means <kbd>Alt</kbd>.
 
 | Keys | What it does |
 | --- | --- |
@@ -64,17 +71,23 @@ nano works like a basic text box. Move with the arrow keys, type to insert text,
 | <kbd>Ctrl</kbd>+<kbd>_</kbd> | Go to a line number |
 | <kbd>Ctrl</kbd>+<kbd>C</kbd> | Cancel the question at the bottom |
 
-Saving takes two steps. <kbd>Ctrl</kbd>+<kbd>O</kbd> asks for the file name, already filled in, and <kbd>Enter</kbd> confirms it:
+Error messages often name a line number. `nano -l app.conf` shows line numbers down the left side.
 
-```text
-File Name to Write: app.conf
-```
+## Saving and exiting nano
 
-nano then reports how many lines it wrote:
+Saving takes two steps:
 
-```text
-                               [ Wrote 4 lines ]
-```
+1. <kbd>Ctrl</kbd>+<kbd>O</kbd> asks for the file name, already filled in:
+
+   ```text
+   File Name to Write: app.conf
+   ```
+
+2. <kbd>Enter</kbd> confirms it, and nano reports how many lines it wrote:
+
+   ```text
+                                  [ Wrote 4 lines ]
+   ```
 
 If you press <kbd>Ctrl</kbd>+<kbd>X</kbd> with unsaved changes, nano asks first:
 
@@ -84,15 +97,15 @@ Save modified buffer?
  N No           ^C Cancel
 ```
 
-<kbd>Y</kbd> saves (press <kbd>Enter</kbd> to confirm the name), <kbd>N</kbd> throws your changes away, and <kbd>Ctrl</kbd>+<kbd>C</kbd> takes you back to the file.
-
-Error messages often name a line number. `nano -l app.conf` shows line numbers down the left side.
+- <kbd>Y</kbd> saves. Press <kbd>Enter</kbd> to confirm the name.
+- <kbd>N</kbd> throws your changes away.
+- <kbd>Ctrl</kbd>+<kbd>C</kbd> takes you back to the file.
 
 ## vim and its modes
 
-vim is worth learning for one reason: it is always there. Some commands also open it without asking you, for example when a tool needs you to type a message. If you have never used it, it looks broken, because typing letters does not type letters.
+vim is worth learning because it is always there. Some commands also open it without asking you, for example when a tool needs you to type a message. If you have never used it, it looks broken, because typing letters does not type letters.
 
-That is because vim has **modes**:
+That is because vim has **modes**: states in which the same keys do different things.
 
 | Mode | What your keys do | How you get there |
 | --- | --- | --- |
@@ -116,15 +129,22 @@ workers=2
 "app.conf" 4L, 50B                                            1,1           All
 ```
 
-The `~` lines are past the end of the file. The bottom line shows the file's size and, on the right, the cursor's line and column.
+- The `~` lines are past the end of the file.
+- The bottom line shows the file's size and, on the right, the cursor's line and column.
 
-You start in normal mode. Move to where you want to type, press <kbd>i</kbd>, and the bottom line changes:
+To type text:
 
-```text
--- INSERT --                                                  1,1           All
-```
+1. You start in normal mode. Move to where you want to type.
+2. Press <kbd>i</kbd>. The bottom line changes:
 
-Now you can type and delete as normal. When you are done, press <kbd>Esc</kbd> to go back to normal mode. If you are ever unsure which mode you are in, press <kbd>Esc</kbd>. It does no harm in normal mode.
+   ```text
+   -- INSERT --                                                  1,1           All
+   ```
+
+3. Type and delete as normal.
+4. Press <kbd>Esc</kbd> to go back to normal mode.
+
+If you are ever unsure which mode you are in, press <kbd>Esc</kbd>. It does no harm in normal mode.
 
 ## Saving and quitting vim
 
@@ -164,7 +184,11 @@ The arrow keys move the cursor in normal mode. These normal-mode keys cover what
 | `o` | Open a new line below and switch to insert mode |
 | `u` | Undo the last change |
 
-Searching puts the cursor on the first letter of the match, which makes `cw` handy. To change `info` to `debug`, type `/info`, <kbd>Enter</kbd>, `cw`, `debug`, <kbd>Esc</kbd>.
+Searching puts the cursor on the first letter of the match, which makes `cw` handy. To change `info` to `debug`:
+
+1. Type `/info` and press <kbd>Enter</kbd>.
+2. Type `cw`, then `debug`.
+3. Press <kbd>Esc</kbd>.
 
 If a search finds nothing, vim tells you at the bottom:
 
@@ -176,9 +200,19 @@ You will also see `h`, `j`, `k` and `l` used to move left, down, up and right. T
 
 ## Editing files as root with sudo
 
-Most config files live under `/etc` and belong to root. As an ordinary user you can open them but not save them; nano says `Permission denied` when you try to write. Open the file as root instead, with `sudo nano /etc/...` or `sudo vim /etc/...`. The *Users and permissions* topic explains owners and `sudo`.
+Most config files live under `/etc` and belong to root.
 
-After editing, compare your file with the copy you made. `diff` prints only the lines that changed: `<` lines are from the first file, `>` lines from the second.
+- As an ordinary user you can open them but not save them. nano says `Permission denied` when you try to write.
+- Open the file as root instead, with `sudo nano /etc/...` or `sudo vim /etc/...`.
+- The *Users and permissions* topic explains owners and `sudo`.
+
+## Checking your change with diff
+
+After editing, compare your file with the copy you made. `diff` prints only the lines that differ between two files:
+
+- `<` lines are from the first file.
+- `>` lines are from the second.
+- `2c2` means line 2 of the first file was changed into line 2 of the second.
 
 ```bash
 $ diff app.conf.bak app.conf

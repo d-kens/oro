@@ -1,16 +1,16 @@
-A cloud is large buildings full of ordinary servers, plus software that lets many customers share them safely and create what they need in seconds.
-
-This topic looks behind the website: the data centres, how one physical machine becomes many virtual ones, and the APIs that make self-service possible. By the end you can explain what happens when you click "create server".
-
 ## Data centres
 
 **Data centre:** A building that houses servers, storage and network equipment, with the power, cooling, network connections and physical security they need to run without stopping.
 
-A large one holds tens of thousands of servers in rows of racks. Customers never go inside. Providers build data centres in groups around the world, which the *Regions and zones* topic covers.
+A cloud is large buildings full of ordinary servers, plus software that lets many customers share them safely and create what they need in seconds.
+
+- A large data centre holds tens of thousands of servers in rows of racks.
+- Customers never go inside.
+- Providers build data centres in groups around the world, which the *Regions and zones* topic covers.
 
 ## Virtualisation
 
-If every customer got a whole physical server, the cloud would be slow to set up and wasteful: most customers need a small part of a modern server, which can have a hundred CPU cores and over a terabyte of memory.
+If every customer got a whole physical server, the cloud would be slow to set up and wasteful. Most customers need a small part of a modern server, which can have a hundred CPU cores and over a terabyte of memory.
 
 The answer is virtualisation:
 
@@ -31,13 +31,14 @@ The answer is virtualisation:
  └────────────────────────────────────────────────────────────┘
 ```
 
-The hypervisor keeps VMs apart: one customer cannot see another customer's memory or disks, even on the same host. This is the *resource pooling* from the first topic, and it is what lets the provider keep its hardware busy.
-
-Because a VM is software, it can be created, stopped, copied or moved in seconds. A provider can start your server on whichever host has room, and move it if that host needs repair.
+- The hypervisor keeps VMs apart: one customer cannot see another customer's memory or disks, even on the same host.
+- This is the *resource pooling* from the first topic, and it is what lets the provider keep its hardware busy.
+- Because a VM is software, it can be created, stopped, copied or moved in seconds. A provider can start your server on whichever host has room, and move it if that host needs repair.
 
 **Container:** An application packaged with everything it needs to run, which shares the host's operating system kernel instead of running its own.
 
-Because they do not carry a whole operating system, containers are smaller and start faster than VMs. The Docker skill covers them. Clouds use both.
+- Because they do not carry a whole operating system, containers are smaller and start faster than VMs.
+- The Docker skill covers them. Clouds use both.
 
 ## The control plane and APIs
 
@@ -53,7 +54,9 @@ When you click "create server", no person does anything. Your request goes to th
 
 **API (application programming interface):** A defined set of requests that a program can send to a service, such as "create a server of this size" or "delete this disk", and the answers it gets back.
 
-Everything in the cloud goes through the provider's API. The website, the command-line tool and infrastructure tools such as Terraform are all just different ways of sending the same API requests. That is why anything you can click, you can also script.
+- Everything in the cloud goes through the provider's API.
+- The website, the command-line tool and infrastructure tools such as Terraform are all just different ways of sending the same API requests.
+- That is why anything you can click, you can also script.
 
 ## Tasks
 

@@ -1,18 +1,34 @@
-Every packet carries the address it comes from and the address it is going to. On almost every network you will work with, those are IP addresses. When a service cannot be reached, one of the first questions is which address it is on and whether that address can be reached from where you are.
+## What an IP address is
 
-This topic covers the two kinds of IP address, IPv4 and IPv6, the ranges set aside for private networks, and the network interfaces that addresses belong to. By the end you can tell a private address from a public one, list a machine's interfaces and addresses with `ip`, bring an interface down and up, add an address, and check an interface's MTU.
+An **IP address** is the number that identifies a host's connection to a network. Every packet carries the address it comes from and the address it is going to. When a service cannot be reached, one of the first questions is which address it is on and whether that address can be reached from where you are.
+
+There are two kinds:
+
+- **IPv4** addresses, such as `10.10.0.2`
+- **IPv6** addresses, such as `2001:db8::2`
 
 ## IPv4 addresses
 
-An **IPv4 address** is a 32-bit number. Nobody writes it as one long number. Instead it is split into four bytes, each written in decimal and separated by dots, like `10.10.0.2`. Each of the four parts is called an **octet** and can be anything from 0 to 255.
+An **IPv4 address** is a 32-bit number. Nobody writes it as one long number. Instead it is split into four bytes, each written in decimal and separated by dots, like `10.10.0.2`.
 
-32 bits allow about 4.3 billion addresses. There are more devices than that, and the free pool ran out years ago. Two things keep IPv4 going: private ranges that many networks reuse, and NAT, which lets many private addresses share one public one (the *NAT* topic covers it).
+- Each of the four parts is called an **octet** and can be anything from 0 to 255.
+- 32 bits allow about 4.3 billion addresses. There are more devices than that, and the free pool ran out years ago.
+- Two things keep IPv4 going: private ranges that many networks reuse, and NAT, which lets many private addresses share one public one. The *NAT* topic covers it.
 
-An address has two parts. The first part says which **network** the host is on, and the rest says which **host** it is on that network. On the lab, `10.10.0` is the network and the last number is the host, so alpha (`10.10.0.2`) and beta (`10.10.0.3`) are on the same network. Where exactly the split falls is written after a slash, as in `10.10.0.2/24`. The *Subnets and CIDR* topic explains that number in full. For now, read `/24` as "the first three octets are the network".
+An address has two parts:
+
+- The **network part**, at the start, says which network the host is on.
+- The **host part**, the rest, says which host it is on that network.
+
+On the lab, `10.10.0` is the network and the last number is the host, so alpha (`10.10.0.2`) and beta (`10.10.0.3`) are on the same network. Where exactly the split falls is written after a slash, as in `10.10.0.2/24`. The *Subnets and CIDR* topic explains that number in full. For now, read `/24` as "the first three octets are the network".
 
 ## Private, public and special ranges
 
-Some ranges are set aside for **private** networks: homes, offices, data centres and cloud virtual networks. Anyone can use them, and the same addresses are reused on millions of separate networks. Routers on the internet will not carry packets to them, so a private address is only reachable from inside its own network, or through something that bridges into it, such as NAT, a VPN or a load balancer.
+A **private address** is one from a range set aside for private networks: homes, offices, data centres and cloud virtual networks.
+
+- Anyone can use these ranges, and the same addresses are reused on millions of separate networks.
+- Routers on the internet will not carry packets to them.
+- So a private address is only reachable from inside its own network, or through something that bridges into it, such as NAT, a VPN or a load balancer.
 
 | Range | Written as | Typical use |
 | --- | --- | --- |
@@ -20,7 +36,7 @@ Some ranges are set aside for **private** networks: homes, offices, data centres
 | 172.16.0.0 – 172.31.255.255 | `172.16.0.0/12` | Docker's default networks, some cloud defaults |
 | 192.168.0.0 – 192.168.255.255 | `192.168.0.0/16` | Home and small office routers |
 
-Every other ordinary address is **public**: it is unique across the whole internet and can be routed to from anywhere. A web server that the world can reach has a public address somewhere in front of it, even if the server itself only has a private one.
+A **public address** is any other ordinary address. It is unique across the whole internet and can be reached from anywhere. A web server that the world can reach has a public address somewhere in front of it, even if the server itself only has a private one.
 
 A few more ranges come up often:
 
@@ -32,9 +48,19 @@ A few more ranges come up often:
 | `0.0.0.0` | "No particular address". A server listening on `0.0.0.0` listens on all of its addresses, as the *Ports and sockets* topic shows. |
 | `192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24` | Reserved for documentation. These lessons use them for made-up public addresses. |
 
-Most machines get their address automatically when they join a network, through **DHCP**: the machine broadcasts a request, and a DHCP server, usually the router or the cloud provider's network, replies with an address, a gateway and a DNS server. A `169.254` address means that exchange failed.
+## How a machine gets its address: DHCP
 
-When you see an address in a log or an error, decide first which kind it is. A connection from `10.x` came from inside your network. A connection from a public address came from outside, or from something that changes addresses on the way in.
+**DHCP** (*Dynamic Host Configuration Protocol*) is how most machines get their address automatically when they join a network:
+
+1. The machine sends a request to every host on the network.
+2. A DHCP server, usually the router or the cloud provider's network, replies with an address, a gateway and a DNS server.
+
+A `169.254` address means that exchange failed.
+
+When you see an address in a log or an error, decide first which kind it is:
+
+- A connection from `10.x` came from inside your network.
+- A connection from a public address came from outside, or from something that changes addresses on the way in.
 
 ## IPv6 addresses
 
@@ -49,13 +75,29 @@ That is long, so two shortening rules apply:
 - Leading zeros in a group can be dropped: `0db8` becomes `db8`, `0002` becomes `2`.
 - One run of all-zero groups can be replaced by `::`. Only one, or the address would be ambiguous.
 
-So the address above is usually written `2001:db8::2`. `::1` is the IPv6 loopback, addresses starting `fe80:` are link-local, addresses starting `fd` are the private range, and most addresses starting `2` or `3` are public. There is so much IPv6 space that a network does not need NAT: every device can have a public address, and a firewall decides what may reach it.
+So the address above is usually written `2001:db8::2`.
 
-Most networks today run both at once, which is called **dual stack**. A name can have an IPv4 address and an IPv6 address, and a client may try either. When something works from one machine and not another, check which of the two each one used. The lab network runs on IPv4 only; Docker turns IPv6 off on networks that were not created with it.
+| Address | Meaning |
+| --- | --- |
+| `::1` | The IPv6 loopback |
+| Starting `fe80:` | Link-local |
+| Starting `fd` | The private range |
+| Most starting `2` or `3` | Public |
+
+There is so much IPv6 space that a network does not need NAT. Every device can have a public address, and a firewall decides what may reach it.
+
+**Dual stack** means running IPv4 and IPv6 at the same time, as most networks do today.
+
+- A name can have an IPv4 address and an IPv6 address, and a client may try either.
+- When something works from one machine and not another, check which of the two each one used.
+- The lab network runs on IPv4 only. Docker turns IPv6 off on networks that were not created with it.
 
 ## Interfaces
 
-A machine does not have an IP address on its own. The address belongs to one of its **network interfaces**, the points where it connects to a network. An interface is anything the kernel can send packets out of and receive packets from. Some match real hardware, such as `eth0` or `ens5` for a network card, and many are virtual: the loopback `lo`, bridges such as `docker0` that act as software switches, tunnels such as `wg0` for a VPN, and virtual pairs that connect containers.
+A machine does not have an IP address on its own. The address belongs to one of its **network interfaces**, the points where it connects to a network. An interface is anything the kernel can send packets out of and receive packets from.
+
+- Some match real hardware, such as `eth0` or `ens5` for a network card.
+- Many are virtual: the loopback `lo`, **bridges** such as `docker0` that act as software switches, tunnels such as `wg0` for a VPN, and virtual pairs that connect containers.
 
 In the lab, each container's `eth0` is one end of a virtual pair. The other end is plugged into the bridge Docker made for the `lab` network, and the `@if33` is the number of the interface at the other end. Your number will differ.
 
@@ -75,9 +117,18 @@ root@alpha:/# ip addr show eth0
 - `inet` is an IPv4 address, with its prefix length after the slash. `inet6` would be an IPv6 one. `brd` is the broadcast address of that network.
 - `scope global` means the address can be used to talk to other machines. The loopback's addresses have `scope host`, meaning this machine only.
 
-`ip -br addr` gives one line per interface, `ip -4 addr` and `ip -6 addr` show one family, and `ip -s link` adds counters of packets received (`RX`) and sent (`TX`), with errors and drops. On a real server, `errors` or `dropped` counters that keep climbing point to a problem with the card, the cable or the driver, below anything IP can see.
+| Command | Shows |
+| --- | --- |
+| `ip -br addr` | One line per interface |
+| `ip -4 addr`, `ip -6 addr` | Only IPv4 or only IPv6 addresses |
+| `ip -s link` | Counters of packets received (`RX`) and sent (`TX`), with errors and drops |
 
-A machine's **public address** is often not on any of its interfaces. A home computer has a private address, and the public one belongs to the router. A cloud server's interface has a private address, and the provider's network maps the public one onto it.
+On a real server, `errors` or `dropped` counters that keep climbing point to a problem with the card, the cable or the driver, below anything IP can see.
+
+A machine's public address is often not on any of its interfaces:
+
+- A home computer has a private address, and the public one belongs to the router.
+- A cloud server's interface has a private address, and the provider's network maps the public one onto it.
 
 To see which of its addresses a machine will use to reach a given destination, ask the routing table:
 
@@ -91,7 +142,11 @@ root@alpha:/# ip route get 10.10.0.3
 
 ## The loopback
 
-Every machine has a **loopback** interface, `lo`. Packets sent to it never leave the machine; they come straight back in. It holds `127.0.0.1` and `::1`, and programs use it to talk to other programs on the same machine. Docker's DNS server in the lab listens on `127.0.0.11`, so even name lookups in the lab depend on `lo`:
+Every machine has a **loopback** interface, `lo`. Packets sent to it never leave the machine; they come straight back in.
+
+- It holds `127.0.0.1` and `::1`.
+- Programs use it to talk to other programs on the same machine.
+- Docker's DNS server in the lab listens on `127.0.0.11`, so even name lookups in the lab depend on `lo`:
 
 ```bash
 root@alpha:/# ip link set lo down
@@ -110,7 +165,10 @@ root@alpha:/# ping -c 1 10.10.0.3
 ping: connect: Network is unreachable
 ```
 
-The address is still configured, but the interface is off, so the kernel has no way out to the network. `Network is unreachable` is an error from your own machine: no packet was sent at all. Bring it back and look at the routing table:
+- The address is still configured, but the interface is off, so the kernel has no way out to the network.
+- `Network is unreachable` is an error from your own machine: no packet was sent at all.
+
+Bring it back and look at the routing table:
 
 ```bash
 root@alpha:/# ip link set eth0 up
@@ -118,7 +176,12 @@ root@alpha:/# ip route
 10.10.0.0/24 dev eth0 proto kernel scope link src 10.10.0.2 
 ```
 
-Before, it also had a line `default via 10.10.0.1 dev eth0`, the route to everything outside the lab. Taking the interface down removed every route that used it, and bringing it up only restored the route the kernel makes for the address itself. Until you add the default route back with `ip route add default via 10.10.0.1`, alpha cannot reach the internet. On a real server, a network service such as systemd-networkd or NetworkManager normally puts the routes back. Be careful doing this over SSH: taking down the interface you are connected through cuts off your own session.
+- Before, it also had a line `default via 10.10.0.1 dev eth0`, the route to everything outside the lab.
+- Taking the interface down removed every route that used it, and bringing it up only restored the route the kernel makes for the address itself.
+- Until you add the default route back with `ip route add default via 10.10.0.1`, alpha cannot reach the internet.
+- On a real server, a network service such as systemd-networkd or NetworkManager normally puts the routes back.
+
+Be careful doing this over SSH: taking down the interface you are connected through cuts off your own session.
 
 An interface can hold more than one address. Add one with `ip addr add`, giving the prefix length, and other machines can use it straight away:
 
@@ -129,11 +192,13 @@ root@beta:/# ping -c 1 10.10.0.50
 root@alpha:/# ip addr del 10.10.0.50/24 dev eth0
 ```
 
-Nothing done with `ip` survives a reboot, or in the lab, the container exiting. Permanent settings live in the system's network configuration, such as netplan files on Ubuntu, or come from DHCP. On a cloud server you rarely add addresses by hand; you attach them through the provider, and the server picks them up.
+- Nothing done with `ip` survives a reboot, or in the lab, the container exiting.
+- Permanent settings live in the system's network configuration, such as netplan files on Ubuntu, or come from DHCP.
+- On a cloud server you rarely add addresses by hand. You attach them through the provider, and the server picks them up.
 
 ## MTU
 
-**MTU:** maximum transmission unit, the largest packet an interface will send, in bytes. Ethernet's standard is 1500. Larger data is cut into packets that fit.
+The **MTU** (*maximum transmission unit*) is the largest packet an interface will send, in bytes. Ethernet's standard is 1500. Larger data is cut into packets that fit.
 
 You can test it with `ping`. `-s` sets the size of the data, and `-M do` forbids splitting the packet. An ICMP header is 8 bytes and an IPv4 header is 20, so 1472 bytes of data makes exactly 1500:
 
@@ -146,7 +211,13 @@ PING beta (10.10.0.3) 1473(1501) bytes of data.
 ping: local error: message too long, mtu=1500
 ```
 
-`ip link set eth0 mtu 1400` changes it. MTU problems have a recognisable shape. Small packets get through and large ones vanish, so a connection opens, a short request works, and then a large response or file transfer hangs. You meet this with VPNs and tunnels, which add their own headers and so leave less room, and in cloud networks, where some links allow larger "jumbo" packets of around 9000 bytes and others do not.
+`ip link set eth0 mtu 1400` changes it.
+
+MTU problems have a recognisable shape:
+
+- Small packets get through and large ones vanish.
+- So a connection opens, a short request works, and then a large response or file transfer hangs.
+- You meet this with VPNs and tunnels, which add their own headers and so leave less room, and in cloud networks, where some links allow larger "jumbo" packets of around 9000 bytes and others do not.
 
 ## Tasks
 

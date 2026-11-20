@@ -1,14 +1,23 @@
-A full disk is one of the most common reasons a server stops working. Logs stop being written, databases refuse new data, and programs fail with errors that do not mention disk space at all. Knowing how to see what is using the space, and where, is a skill you will use often.
+## Disks, partitions and file systems
 
-By the end you can check how full each file system is, find the directories that are using the space, list the disks a machine has, read what is mounted where, and work through a full disk calmly.
+A full disk is one of the most common reasons a server stops working. Logs stop being written, databases refuse new data, and programs fail with errors that do not mention disk space at all.
 
-## Disks, file systems and mounting
+- A **disk** is raw storage: a physical drive, or on a cloud server a virtual volume.
+- A **partition** is a section of a disk that is treated as a separate unit. A disk is usually split into one or more partitions.
+- A **file system** is the structure that keeps track of files, directories and free space on a partition. Before a partition can hold files, it is formatted with one. Common file systems on Linux are **ext4** and **xfs**.
 
-A **disk** is raw storage: a physical drive, or on a cloud server a virtual volume. Before it can hold files, it is usually split into **partitions** and each partition is formatted with a **file system**, the structure that keeps track of files, directories and free space. Common file systems on Linux are **ext4** and **xfs**.
+## Mounting and mount points
 
-Windows gives each disk a letter. Linux has a single directory tree that starts at `/`, and each file system is attached to a directory in it. Attaching it is called **mounting**, and the directory is its **mount point**. A server might have its system disk mounted at `/` and a second disk for data mounted at `/var/lib/postgresql`. You move between them with `cd` and never notice the boundary, but each one has its own size and fills up on its own.
+Windows gives each disk a letter. Linux has a single directory tree that starts at `/`, and each file system is attached to a directory in it.
 
-`lsblk` lists the block devices, which means disks and partitions, as a tree:
+- **Mounting** is attaching a file system to a directory in the tree.
+- A **mount point** is the directory it is attached to.
+
+A server might have its system disk mounted at `/` and a second disk for data mounted at `/var/lib/postgresql`. You move between them with `cd` and never notice the boundary, but each one has its own size and fills up on its own.
+
+## Listing disks with lsblk
+
+A **block device** is a disk or a partition. `lsblk` (*list block devices*) lists them as a tree:
 
 ```bash
 $ lsblk
@@ -19,9 +28,13 @@ nvme0n1      259:0    0   20G  0 disk
 nvme1n1      259:3    0  100G  0 disk /data
 ```
 
-This server has two disks. The first has two partitions, mounted at `/` and `/boot/efi`. The second disk is used whole, with no partitions, and is mounted at `/data`. In a Docker container `lsblk` shows the host's disks, which can look confusing; the container's own files sit on a layered file system called `overlay`.
+- This server has two disks.
+- The first has two partitions, mounted at `/` and `/boot/efi`.
+- The second disk is used whole, with no partitions, and is mounted at `/data`.
 
-## How full is each file system: df
+In a Docker container `lsblk` shows the host's disks, which can look confusing. The container's own files sit on a layered file system called `overlay`.
+
+## Checking how full each file system is with df
 
 `df` (*disk free*) shows each mounted file system, how big it is, and how much is used. `-h` prints sizes in K, M and G instead of blocks:
 
@@ -34,7 +47,8 @@ tmpfs           1.9G     0  1.9G   0% /dev/shm
 /dev/nvme1n1     98G   41G   53G  44% /data
 ```
 
-Read the `Use%` and `Mounted on` columns first. `tmpfs` lines are file systems held in memory, not on disk, and you can usually ignore them.
+- Read the `Use%` and `Mounted on` columns first.
+- `tmpfs` lines are file systems held in memory, not on disk. You can usually ignore them.
 
 To check only the file system that holds a particular directory, pass it as an argument. `-T` adds the file system type:
 
@@ -46,9 +60,12 @@ Filesystem     Type  Size  Used Avail Use% Mounted on
 
 `/var/log` is not a mount point of its own, so `df` reports the file system it lives on, which is `/`.
 
-A file system can also run out of **inodes**, the entries that record each file, while it still has space. That happens with millions of tiny files. `df -i` shows inode use in the same layout; if `IUse%` is at 100%, nothing new can be created, whatever `df -h` says.
+An **inode** is the entry a file system keeps for each file. A file system can run out of inodes while it still has space, which happens with millions of tiny files.
 
-## What is using the space: du
+- `df -i` shows inode use in the same layout.
+- If `IUse%` is at 100%, nothing new can be created, whatever `df -h` says.
+
+## Finding what is using the space with du
 
 `df` tells you a file system is full. `du` (*disk usage*) tells you which files and directories are filling it. `-s` gives one total per argument and `-h` makes it readable:
 
@@ -57,7 +74,11 @@ $ du -sh /var/log
 288K	/var/log
 ```
 
-To see which directories inside a directory are biggest, give `du` all of them and sort the result. `sort -h` understands sizes like `4.0K` and `1.2G`, and `-r` puts the largest first:
+To see which directories inside a directory are biggest, give `du` all of them and sort the result:
+
+- `sort -h` understands sizes like `4.0K` and `1.2G`.
+- `-r` puts the largest first.
+- `2>/dev/null` throws away the error messages for directories you cannot read. The *Pipes and text processing* topic explains it.
 
 ```bash
 $ du -sh /var/* 2>/dev/null | sort -rh | head -5
@@ -68,7 +89,7 @@ $ du -sh /var/* 2>/dev/null | sort -rh | head -5
 4.0K	/var/spool
 ```
 
-`2>/dev/null` throws away the error messages for directories you cannot read; the *Pipes and text processing* topic explains it. Then repeat the same command one level down, into the largest directory, until you reach the files themselves:
+Then repeat the same command one level down, into the largest directory, until you reach the files themselves:
 
 ```bash
 $ du -sh /var/log/* 2>/dev/null | sort -rh | head -3
@@ -77,14 +98,15 @@ $ du -sh /var/log/* 2>/dev/null | sort -rh | head -3
 1.2M	/var/log/apt
 ```
 
-To stay on one file system and not wander into other disks mounted below the directory you are measuring, add `-x`. `find` can also look for large files directly, as the *Searching for files and text* topic showed:
+- `-x` keeps `du` on one file system, so it does not wander into other disks mounted below the directory you are measuring.
+- `find` can also look for large files directly, as the *Searching for files and text* topic showed. `-xdev` keeps it on one file system:
 
 ```bash
 $ find / -xdev -type f -size +100M 2>/dev/null
 /var/log/app/app.log
 ```
 
-## Mounting and /etc/fstab
+## Mounting a file system with mount
 
 `mount` with no arguments lists every mounted file system. The list is long, so `findmnt` is easier to read for one mount point:
 
@@ -102,7 +124,11 @@ $ mount /dev/nvme2n1 /mnt/backup
 $ umount /mnt/backup
 ```
 
-A mount made by hand lasts until the next reboot. Mounts that should come back at every boot are listed in `/etc/fstab`, one per line, with six fields:
+A mount made by hand lasts until the next reboot.
+
+## Mounting at boot with /etc/fstab
+
+`/etc/fstab` (*file systems table*) lists the mounts that should come back at every boot, one per line, with six fields:
 
 ```text
 UUID=2c1f8a4e-5b0d-4e1a-9f2c-7d3e6b8a1c40  /data  xfs  defaults,nofail  0  2
@@ -117,7 +143,13 @@ UUID=2c1f8a4e-5b0d-4e1a-9f2c-7d3e6b8a1c40  /data  xfs  defaults,nofail  0  2
 | Dump | `0` | Used by an old backup tool; almost always `0` |
 | Check order | `2` | When to check the file system at boot: `1` for `/`, `2` for others, `0` for never |
 
-`lsblk -f` shows each device's UUID. Be careful with this file: a mistake in it can stop a server from booting. After you change it, run `mount -a` to mount everything it lists, and fix any error before you reboot. The Docker container has an empty `fstab`, because the container does not boot.
+A **UUID** (*universally unique identifier*) is a long ID written into the file system when it is created. `lsblk -f` shows each device's UUID.
+
+Be careful with this file: a mistake in it can stop a server from booting.
+
+- After you change it, run `mount -a` to mount everything it lists.
+- Fix any error before you reboot.
+- The Docker container has an empty `fstab`, because the container does not boot.
 
 ## Fixing a full disk
 
@@ -134,7 +166,11 @@ Work through it in order:
 2. `du -sh <mount point>/* | sort -rh | head` to find the largest directory, and repeat one level down until you find the files.
 3. Decide what can go. Old, rotated logs like `app.log.1` are usually safe to delete. A database's data files are not.
 
-There is one trap. If you delete a file that a running program still has open, the name disappears but the space does not come back until the program closes it. `du` no longer counts the file, but `df` still does, so the two disagree:
+## When deleting a file does not free space
+
+If you delete a file that a running program still has open, the name disappears but the space does not come back until the program closes it.
+
+- `du` no longer counts the file, but `df` still does, so the two disagree:
 
 ```bash
 $ rm /data/logs/app.log
@@ -145,14 +181,16 @@ $ du -sh /data
 28M	/data
 ```
 
-You can find such files through `/proc`, where each process lists the files it has open:
+- You can find such files through `/proc`, where each process lists the files it has open:
 
 ```bash
 $ find /proc/[0-9]*/fd -lname '*(deleted)' -printf '%p -> %l\n' 2>/dev/null
 /proc/18/fd/3 -> /data/logs/app.log (deleted)
 ```
 
-Process 18 still holds the file. Restarting that program frees the space. To empty a log a program is still writing to, truncate it instead of deleting it:
+- Process 18 still holds the file. Restarting that program frees the space.
+
+To empty a log that a program is still writing to, **truncate** it, meaning cut it to zero bytes, instead of deleting it:
 
 ```bash
 $ : > /data/logs/app.log

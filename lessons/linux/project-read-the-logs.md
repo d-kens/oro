@@ -1,4 +1,10 @@
-A web server writes one line to its access log for every request it answers. When something goes wrong, or someone asks how busy the site was, that log is where you look. In this project you generate a day of web traffic, answer six questions about it with pipelines, and then turn those pipelines into a script that reports on any log you give it.
+## The project
+
+An **access log** is the file a web server writes one line to for every request it answers. When something goes wrong, or someone asks how busy the site was, that log is where you look. You:
+
+1. Generate a day of web traffic.
+2. Answer six questions about it with pipelines.
+3. Turn those pipelines into a script that reports on any log you give it.
 
 It draws mostly on the *Pipes and text processing* topic, with help from *Reading files*, *Searching for files and text*, *Creating, copying and deleting files* and *Users and permissions* (to make the script executable).
 
@@ -10,13 +16,15 @@ Any Linux shell works for this project. The Docker container from the *What Linu
 $ docker run -it --rm --hostname lab ubuntu:24.04
 ```
 
-Everything you need is already in the Ubuntu image: `bash`, `cut`, `sort`, `uniq`, `awk`, `grep` and `wc`. You also need an editor to write the scripts. `nano` is not in the Docker image, so install it first:
+- Everything you need is already in the Ubuntu image: `bash`, `cut`, `sort`, `uniq`, `awk`, `grep` and `wc`.
+- You also need an editor to write the scripts. `nano` is not in the Docker image, so install it first:
 
 ```bash
 $ apt update && apt install -y nano
 ```
 
-If you would rather keep your files when the container exits, work in WSL, a Multipass VM or a Linux machine instead. The answers below come from Bash 5, which is what Ubuntu 24.04 ships.
+- If you would rather keep your files when the container exits, work in WSL, a Multipass VM or a Linux machine instead.
+- The answers below come from Bash 5, which is what Ubuntu 24.04 ships.
 
 ## The brief
 
@@ -37,7 +45,9 @@ Work in a directory called `logs` in your home directory.
 
 You need data before you can read it. Real logs hold real visitors' addresses, so the script below makes up its own traffic using the IP ranges set aside for documentation (`192.0.2.x`, `198.51.100.x` and `203.0.113.x`), which never belong to a real machine.
 
-The script uses `$RANDOM`, a shell variable that gives a different number between 0 and 32767 each time you read it. Setting `RANDOM=42` at the start *seeds* it: from that point the sequence of numbers is always the same, so your log matches the one the answers below came from. Lists in the script repeat some entries on purpose. Picking at random from a list where `14` appears six times makes 2 pm a busier hour than 3 am, which appears once.
+- The script uses `$RANDOM`, a shell variable that gives a different number between 0 and 32767 each time you read it.
+- Setting `RANDOM=42` at the start **seeds** it: from that point the sequence of numbers is always the same, so your log matches the one the answers below came from.
+- Lists in the script repeat some entries on purpose. Picking at random from a list where `14` appears six times makes 2 pm a busier hour than 3 am, which appears once.
 
 Create the directory, open `make-log.sh` in your editor and type or paste the script from the solution. Then make it executable and run it.
 
@@ -139,13 +149,22 @@ $ rm copy.log
 
 `cmp` printing nothing means the two files are byte for byte the same.
 
-Two details keep the output repeatable. The time is built with `printf -v time` rather than `time=$(printf ...)`, and the loop writes to a file rather than into a pipe. Both `$( )` and a pipe run commands in a *subshell*, and Bash gives each subshell a fresh random seed, which would break the fixed sequence.
+Two details keep the output repeatable:
+
+- The time is built with `printf -v time` instead of `time=$(printf ...)`.
+- The loop writes to a file instead of into a pipe.
+
+Both `$( )` and a pipe run commands in a **subshell**, a copy of the shell, and Bash gives each subshell a fresh random seed, which would break the fixed sequence.
 
 </details>
 
 ### Learn the shape of a line
 
-Before you write any pipeline, look at the data. Use `head` to see the first few lines and pick one apart. The format is close to the *combined log format* that most web servers use. Work out which field holds what when you split the line on spaces, because `cut -d ' '` and `awk` both count fields that way.
+Before you write any pipeline, look at the data.
+
+- Use `head` to see the first few lines and pick one apart.
+- The format is close to the *combined log format* that most web servers use.
+- Work out which field holds what when you split the line on spaces, because `cut -d ' '` and `awk` both count fields that way.
 
 Hint: number the fields of one line with `awk '{ for (i = 1; i <= NF; i++) print i, $i }'`.
 
@@ -176,7 +195,14 @@ The user agent at the end contains spaces, so its words land in several fields. 
 
 ### Count and group
 
-The pattern behind most log questions is the same: pull out one field, sort it so equal values sit next to each other, count them with `uniq -c`, then sort the counts with `sort -rn` so the biggest comes first. Use it to answer steps 2, 4 and 7.
+The pattern behind most log questions is the same:
+
+1. Pull out one field.
+2. Sort it, so equal values sit next to each other.
+3. Count them with `uniq -c`.
+4. Sort the counts with `sort -rn`, so the biggest comes first.
+
+Use it to answer steps 2, 4 and 7.
 
 For step 7 you want the result ordered by status code, not by count. Look at which field the code is in after `uniq -c` and sort on that one.
 
@@ -221,11 +247,9 @@ $ awk '{ print $9 }' access.log | sort | uniq -c | sort -k2,2n
 
 ### Time and errors
 
-The hour sits inside the fourth field, between the first and second colons: `[23/Oct/2026:14:05:09`. An IPv4 address has no colons, so if you split the whole line on `:` instead of on spaces, the hour is field 2. Count those and keep the top one.
-
-For the 5xx share you need two numbers, the count of lines whose status is between 500 and 599 and the total, and then a division. The shell only does whole-number arithmetic, so let `awk` do the division.
-
-For missing pages, filter on the status field before you count paths. It is tempting to use `grep ' 404 '`, but try it and compare the count with the `awk` one. A response that happens to be 404 bytes long matches too.
+- **Busiest hour.** The hour sits inside the fourth field, between the first and second colons: `[23/Oct/2026:14:05:09`. An IPv4 address has no colons, so if you split the whole line on `:` instead of on spaces, the hour is field 2. Count those and keep the top one.
+- **5xx share.** You need two numbers, the count of lines whose status is between 500 and 599 and the total, and then a division. The shell only does whole-number arithmetic, so let `awk` do the division.
+- **Missing pages.** Filter on the status field before you count paths. It is tempting to use `grep ' 404 '`, but try it and compare the count with the `awk` one. A response that happens to be 404 bytes long matches too.
 
 <details>
 <summary>Show a solution</summary>
@@ -270,7 +294,8 @@ $ awk '$9 == 404' access.log | wc -l
 245
 ```
 
-The extra line is a successful request whose size was 404 bytes. Requests for `/wp-login.php` and `/.env` on a site that has neither are usually automated scanners looking for weak spots, which is worth knowing when you read real logs.
+- The extra line is a successful request whose size was 404 bytes.
+- Requests for `/wp-login.php` and `/.env` on a site that has neither are usually automated scanners looking for weak spots, which is worth knowing when you read real logs.
 
 </details>
 
@@ -278,7 +303,10 @@ The extra line is a successful request whose size was 404 bytes. Requests for `/
 
 Pipelines you type once are easy to lose. Put them in `report.sh` so you, or anyone on your team, can run the same report on tomorrow's log.
 
-Start the script with `set -euo pipefail` so it stops on the first error. Check the arguments before doing anything else: `$#` is the number of arguments, and `[[ -r $log ]]` is true when the file exists and you can read it. Send error messages to standard error with `>&2`, and `exit 1` after them. Use `"$log"` with quotes everywhere, so a path with a space in it still works.
+- Start the script with `set -euo pipefail`, so it stops on the first error.
+- Check the arguments before doing anything else. `$#` is the number of arguments, and `[[ -r $log ]]` is true when the file exists and you can read it.
+- Send error messages to standard error with `>&2`, and `exit 1` after them.
+- Use `"$log"` with quotes everywhere, so a path with a space in it still works.
 
 Hint: store the total and the 5xx count in variables with `$( )`, then print the percentage from them.
 
@@ -331,7 +359,8 @@ $ bash -n report.sh
 
 `bash -n` reads the script and reports syntax errors without running anything. No output means it found none.
 
-`awk -v e="$errors"` passes a shell variable into `awk`, where it is called `e`. A `BEGIN` block runs before `awk` reads any input, and since no file is given it reads none, so the block is all that runs.
+- `awk -v e="$errors"` passes a shell variable into `awk`, where it is called `e`.
+- A `BEGIN` block runs before `awk` reads any input. No file is given, so it reads none, and the block is all that runs.
 
 </details>
 

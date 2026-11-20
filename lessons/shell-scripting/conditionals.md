@@ -1,10 +1,15 @@
-A script that does the same thing every time cannot react to what it finds. **Conditionals** let it check something first, such as whether a file exists, a disk is full or a user has an account, and then choose what to do.
+## What a conditional is
 
-This topic covers `if`, the three ways of writing a test, and `case`. By the end you can compare strings, numbers and files, chain checks with `elif`, pick between several values with `case`, and avoid the spacing and quoting mistakes that make tests fail in odd ways.
+A **conditional** is a part of a script that checks something and then chooses which commands to run. It lets a script react to what it finds, such as whether a file exists, a disk is full or a user has an account.
+
+Bash has two kinds:
+
+- `if`, which checks whether a command succeeded
+- `case`, which compares one value against several patterns
 
 ## if runs a command and checks its exit status
 
-Every command finishes with an **exit status**, a number from 0 to 255. `0` means success and anything else means failure. `if` runs a command and looks only at that number:
+An **exit status** is the number a command returns when it finishes, from 0 to 255. `0` means success and anything else means failure. `if` runs a command and looks only at that number:
 
 ```bash
 #!/bin/bash
@@ -22,7 +27,8 @@ root@lab:~/scripts# ./has-user.sh
 sam has no account
 ```
 
-`grep -q` prints nothing; it exits `0` if it found a match and `1` if it did not. Change `user` to `root` and the script prints `root has an account`.
+- `grep -q` prints nothing. It exits `0` if it found a match and `1` if it did not.
+- Change `user` to `root` and the script prints `root has an account`.
 
 The shape is always the same:
 
@@ -35,7 +41,7 @@ Any command can go after `if`. The *Exit codes and errors* topic covers exit sta
 
 ## test, [ ] and [[ ]]
 
-To compare values you need a command whose job is to succeed or fail on a comparison. Bash has three spellings of it:
+A **test** is a command whose only job is to succeed or fail on a comparison, such as "is this a directory?" or "are these two strings the same?". Bash has three spellings of it:
 
 ```bash
 test -d /etc
@@ -52,7 +58,9 @@ test is a shell builtin
 [[ is a shell keyword
 ```
 
-`[` is the same command as `test`, with a name that looks like a bracket, and it needs `]` as its last argument. Because it is an ordinary command, Bash splits and globs its arguments before `[` sees them, the same as for `ls` or `rm`. `[[` is part of Bash's own grammar, so Bash knows it is a test and is more careful with what is inside.
+- `[` is the same command as `test`, with a name that looks like a bracket. It needs `]` as its last argument.
+- Because `[` is an ordinary command, Bash splits and globs its arguments before `[` sees them, the same as for `ls` or `rm`.
+- `[[` is a **keyword**, part of Bash's own grammar. Bash knows it is a test and is more careful with what is inside.
 
 | | `[ ]` and `test` | `[[ ]]` |
 | --- | --- | --- |
@@ -64,7 +72,9 @@ test is a shell builtin
 | Regular expression | No | `[[ $x =~ ^[0-9]+$ ]]` |
 | `<` and `>` | Redirections, so they create files | String comparisons |
 
-This skill uses `[[ ]]` in Bash scripts. You still need to read `[ ]`, because older scripts and anything written for sh use it. Quoting variables is a good habit in both, and inside `[ ]` it is required.
+- This skill uses `[[ ]]` in Bash scripts.
+- You still need to read `[ ]`, because older scripts and anything written for sh use it.
+- Quoting variables is a good habit in both, and inside `[ ]` it is required.
 
 ## String, number and file tests
 
@@ -87,7 +97,8 @@ These work in both `[ ]` and `[[ ]]`. Leave a space on both sides of every opera
 | `-r`, `-w`, `-x "$path"` | You can read, write or run it |
 | `! test` | The test is false |
 
-Words are for numbers and symbols are for strings, which is the opposite of most languages. The numeric tests work on whole numbers only; the *Arithmetic and strings* topic deals with decimals.
+- Words such as `-eq` are for numbers, and symbols such as `=` are for strings. Most programming languages do the opposite.
+- The numeric tests work on whole numbers only. The *Arithmetic and strings* topic deals with decimals.
 
 ## elif, else and combining tests
 
@@ -137,7 +148,8 @@ root@lab:~/scripts# ./disk-alert.sh
 OK: / is 5% full
 ```
 
-`df --output=pcent` prints a header and a value like ` 5%`; `tail` keeps the last line and `tr -dc '0-9'` deletes everything except digits. The order of the checks matters: test for 90 before 75, or a full disk would only ever reach the warning.
+- `df --output=pcent` prints a header and a value like ` 5%`. `tail` keeps the last line, and `tr -dc '0-9'` deletes everything except digits.
+- The order of the checks matters. Test for 90 before 75, or a full disk would only ever reach the warning.
 
 Inside `[[ ]]`, combine tests with `&&` (and), `||` (or) and `!` (not), and group them with parentheses:
 
@@ -151,7 +163,8 @@ if [[ $APP_ENV == production || $APP_ENV == staging ]]; then
 fi
 ```
 
-With `[ ]`, write two tests joined by the shell's own `&&`: `[ -f "$log" ] && [ -r "$log" ]`. You will also see `-a` and `-o` inside `[ ]`; they are old and easy to get wrong, so don't use them in new scripts.
+- With `[ ]`, write two tests joined by the shell's own `&&`: `[ -f "$log" ] && [ -r "$log" ]`.
+- You will also see `-a` and `-o` inside `[ ]`. They are old and easy to get wrong, so don't use them in new scripts.
 
 `[[ ]]` can also match patterns, with the same `*` and `?` as file names. The pattern must not be quoted, or it is compared as plain text:
 
@@ -163,7 +176,7 @@ fi
 
 ## case for many choices
 
-When you compare one value against several options, a chain of `elif` gets long. `case` is shorter and accepts patterns:
+`case` compares one value against several patterns and runs the commands for the first one that matches. A chain of `elif` doing the same job gets long; `case` is shorter:
 
 ```bash
 #!/bin/bash
@@ -205,55 +218,62 @@ Unknown environment: 'test'
 
 ## Common mistakes with if and tests
 
-**Missing spaces in `[ ]`.** `[` is a command, so it needs spaces around it like any other command:
+1. **Missing spaces in `[ ]`**
+   - `[` is a command, so it needs spaces around it like any other command:
 
-```bash
-#!/bin/bash
-count=3
-if [$count -gt 2]; then
-    echo "more than two"
-fi
-```
+   ```bash
+   #!/bin/bash
+   count=3
+   if [$count -gt 2]; then
+       echo "more than two"
+   fi
+   ```
 
-```bash
-root@lab:~/scripts# ./count.sh
-./count.sh: line 3: [3: command not found
-```
+   ```bash
+   root@lab:~/scripts# ./count.sh
+   ./count.sh: line 3: [3: command not found
+   ```
 
-Bash looked for a command called `[3`. Write `[ $count -gt 2 ]`, with a space after `[`, before `]` and around the operator. A missing space around the operator gives a different error: `[ "$count"-gt 2 ]` reports `[: 3-gt: unary operator expected`.
+   - Bash looked for a command called `[3`. Write `[ $count -gt 2 ]`, with a space after `[`, before `]` and around the operator.
+   - A missing space around the operator gives a different error: `[ "$count"-gt 2 ]` reports `[: 3-gt: unary operator expected`.
 
-**`=` where you meant `-eq`.** Both run without an error, but they compare differently:
+2. **`=` where you meant `-eq`**
+   - Both run without an error, but they compare differently:
 
-```bash
-root@lab:~/scripts# [[ 007 = 7 ]] && echo same || echo different
-different
-root@lab:~/scripts# [[ 007 -eq 7 ]] && echo same || echo different
-same
-root@lab:~/scripts# [[ 10 < 9 ]] && echo smaller || echo bigger
-smaller
-```
+   ```bash
+   root@lab:~/scripts# [[ 007 = 7 ]] && echo same || echo different
+   different
+   root@lab:~/scripts# [[ 007 -eq 7 ]] && echo same || echo different
+   same
+   root@lab:~/scripts# [[ 10 < 9 ]] && echo smaller || echo bigger
+   smaller
+   ```
 
-`=` compares text, and `<` puts text in dictionary order, where `1` comes before `9`. For numbers, use `-eq`, `-lt` and the rest. In `[ ]`, `<` and `>` are redirections: `[ 10 > 9 ]` creates a file called `9`.
+   - `=` compares text, and `<` puts text in dictionary order, where `1` comes before `9`. For numbers, use `-eq`, `-lt` and the rest.
+   - In `[ ]`, `<` and `>` are redirections: `[ 10 > 9 ]` creates a file called `9`.
 
-**Unquoted empty variables in `[ ]`.** If a variable is empty, an unquoted `$role` disappears completely:
+3. **Unquoted empty variables in `[ ]`**
+   - If a variable is empty, an unquoted `$role` disappears completely:
 
-```bash
-#!/bin/bash
-role=""
-if [ $role = "admin" ]; then
-    echo "admin"
-else
-    echo "not admin"
-fi
-```
+   ```bash
+   #!/bin/bash
+   role=""
+   if [ $role = "admin" ]; then
+       echo "admin"
+   else
+       echo "not admin"
+   fi
+   ```
 
-```bash
-root@lab:~/scripts# ./role.sh
-./role.sh: line 3: [: =: unary operator expected
-not admin
-```
+   ```bash
+   root@lab:~/scripts# ./role.sh
+   ./role.sh: line 3: [: =: unary operator expected
+   not admin
+   ```
 
-`[` received `= admin ]`, which is not a valid test, so it failed and the script fell into `else` with an error on the screen. Quote it, `[ "$role" = "admin" ]`, and `[` sees an empty string instead: the test is false and there is no error. `[[ $role = admin ]]` is safe either way, which is one reason to prefer it.
+   - `[` received `= admin ]`, which is not a valid test, so it failed and the script fell into `else` with an error on the screen.
+   - Quote it, `[ "$role" = "admin" ]`, and `[` sees an empty string instead: the test is false and there is no error.
+   - `[[ $role = admin ]]` is safe either way, which is one reason to prefer it.
 
 ## Tasks
 

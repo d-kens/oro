@@ -1,10 +1,10 @@
-In the cloud, every resource is measured and billed monthly. A forgotten test server or a busy download link shows up on that bill.
-
-This topic covers how cloud pricing works, the main ways to pay less, the costs people forget, and the habits that keep a bill under control. The prices here are made-up round numbers to show how pricing works. Real prices differ by provider and region, and change over time. By the end you can estimate what something will cost and spot the usual causes of a surprise bill.
-
 ## Pay for what you use
 
 **Pay-as-you-go:** A pricing model where you pay only for the resources you use, for as long as you use them, with no up-front payment or long-term contract.
+
+In the cloud, every resource is measured and billed monthly. A forgotten test server or a busy download link shows up on that bill.
+
+The prices in this topic are made-up round numbers to show how pricing works. Real prices differ by provider and region, and change over time.
 
 | What | Measured by | Example rate |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ Turning things off saves money too: a development server used during working hou
 
 Most surprise bills come from the same few places:
 
-- **Data leaving the cloud.** Data sent out of the provider's network is called **egress**, and data sent in is **ingress**. Ingress is usually free. Sending it *out*, to users or to another provider, is charged per GB, and it adds up for video, downloads and backups copied elsewhere. Traffic between zones and regions often costs too.
+- **Data leaving the cloud.** **Egress** is data sent out of the provider's network, and **ingress** is data sent in. Ingress is usually free. Sending data *out*, to users or to another provider, is charged per GB, and it adds up for video, downloads and backups copied elsewhere. Traffic between zones and regions often costs too.
 - **Things left running.** A test server, a database or a load balancer created for an experiment and never deleted keeps charging, every hour.
 - **Storage that outlives its server.** Deleting a server may leave its disk and its snapshots behind, still billed each month.
 - **Idle extras.** Public IP addresses, NAT gateways and load balancers charge by the hour even when nothing uses them.

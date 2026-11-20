@@ -1,6 +1,15 @@
-A backup you have to remember to take is a backup that will be missing on the day you need it. In this project you write a script that archives a directory, keeps the newest seven copies, and logs everything it does. Then you schedule it to run every night and prove you can restore from it.
+## The project
 
-From this skill it uses *Arguments and input*, *Functions*, *Exit codes and errors* and *Robust scripts*. From the Linux skill it uses *Archives with tar and zip* for `tar`, *Scheduling jobs with cron* for cron, and *Searching for files and text* for `find`.
+A **backup** is a copy of data kept so you can get it back if the original is lost. A backup you have to remember to take is a backup that will be missing on the day you need it. You write a script that:
+
+- archives a directory
+- keeps the newest seven copies
+- logs everything it does
+
+Then you schedule it to run every night and prove you can **restore** from it, meaning get the data back from a copy.
+
+- From this skill it uses *Arguments and input*, *Functions*, *Exit codes and errors* and *Robust scripts*.
+- From the Linux skill it uses *Archives with tar and zip* for `tar`, *Scheduling jobs with cron* for cron, and *Searching for files and text* for `find`.
 
 ## What you need
 
@@ -10,7 +19,7 @@ A Docker container is enough. Start one, and keep it running until you finish, b
 $ docker run -it --rm --hostname lab ubuntu:24.04
 ```
 
-Install an editor and cron, then start the cron service. The Docker image has no init system, so services do not start on their own; `service cron start` starts the cron daemon by hand.
+Install an editor and cron, then start the cron service. The Docker image has no **init system**, the program that starts services at boot, so services do not start on their own. `service cron start` starts the cron **daemon**, the background service, by hand.
 
 ```bash
 # apt update && apt install -y nano cron
@@ -19,7 +28,8 @@ Install an editor and cron, then start the cron service. The Docker image has no
    ...done.
 ```
 
-The prompt ends in `#` because you are root in the container, which is how a backup job normally runs. On WSL, a Multipass VM or a Linux machine, cron is usually installed and running already; put `sudo` in front of the commands that write to `/srv`, `/var` or `/usr/local/bin`.
+- The prompt ends in `#` because you are root in the container, which is how a backup job normally runs.
+- On WSL, a Multipass VM or a Linux machine, cron is usually installed and running already. Put `sudo` in front of the commands that write to `/srv`, `/var` or `/usr/local/bin`.
 
 ## The brief
 
@@ -35,9 +45,13 @@ The prompt ends in `#` because you are root in the container, which is how a bac
 
 ### Make something to back up
 
-Create `/srv/data` and put a few files in it, including one inside a subdirectory. Then try the core of the job by hand before you write any script: archive the directory with `tar` into `/tmp`, with a name built from `date`.
+1. Create `/srv/data` and put a few files in it, including one inside a subdirectory.
+2. Try the core of the job by hand before you write any script: archive the directory with `tar` into `/tmp`, with a name built from `date`.
 
-Hint: `date '+%Y-%m-%d-%H%M%S'` prints a timestamp with no spaces or colons, which keeps it safe in a file name and makes the names sort in date order. To store `data/` in the archive rather than `/srv/data/`, tell `tar` to change into `/srv` first with `-C /srv`.
+Hints:
+
+- `date '+%Y-%m-%d-%H%M%S'` prints a timestamp with no spaces or colons, which keeps it safe in a file name and makes the names sort in date order.
+- To store `data/` in the archive instead of `/srv/data/`, tell `tar` to change into `/srv` first with `-C /srv`.
 
 <details>
 <summary>Show a solution</summary>
@@ -59,7 +73,8 @@ data/notes/todo.txt
 data/users.csv
 ```
 
-Your timestamp will differ. `-t` lists what is in an archive without unpacking it, a quick way to check you archived what you meant to.
+- Your timestamp will differ.
+- `-t` lists what is in an archive without unpacking it, a quick way to check you archived what you meant to.
 
 </details>
 
@@ -136,19 +151,24 @@ log "Finished. Archives kept: $(find "$backup_dir" -maxdepth 1 -name "$name-*.ta
 2026-10-24 11:18:30 Finished. Archives kept: 1
 ```
 
-`/usr/local/bin` is on your `PATH`, so you can call the script by name. A command followed by `|| fail` does not trigger `set -e` when it fails; the `||` handles the failure instead, which is how the script gets to log a message before it exits.
-
-The usage error exits with `2` rather than `1`, a common convention for "you called me wrongly" as opposed to "I tried and failed".
+- `/usr/local/bin` is on your `PATH`, so you can call the script by name.
+- A command followed by `|| fail` does not trigger `set -e` when it fails. The `||` handles the failure instead, which is how the script gets to log a message before it exits.
+- The usage error exits with `2` instead of `1`, a common convention for "you called me wrongly" as opposed to "I tried and failed".
 
 </details>
 
 ### Keep the newest seven
 
-Each run adds an archive, so without a clean-up the backup directory grows until the disk is full. Because the timestamp in each name sorts in date order, the list of archives sorted in reverse puts the newest first. Everything after the seventh line is old.
+Each run adds an archive, so without a clean-up the backup directory grows until the disk is full.
 
-Hint: `tail -n +8` prints from the eighth line onwards. Feed those names to a `while read` loop that removes each one and logs it. Only match archives for this source, so a second backup job sharing the directory is left alone.
+- The timestamp in each name sorts in date order, so the list of archives sorted in reverse puts the newest first.
+- Everything after the seventh line is old.
 
-To test it you need nine archives with different names. The timestamp has one-second resolution, so wait a second between runs.
+Hints:
+
+- `tail -n +8` prints from the eighth line onwards. Feed those names to a `while read` loop that removes each one and logs it.
+- Only match archives for this source, so a second backup job sharing the directory is left alone.
+- To test it you need nine archives with different names. The timestamp has one-second resolution, so wait a second between runs.
 
 <details>
 <summary>Show a solution</summary>
@@ -172,11 +192,16 @@ The `find ... | sort -r | tail -n +$((keep + 1))` pipeline in the script above d
 
 ### Run it every night
 
-Add a cron entry for root that runs the script at 02:30 every day. Cron runs jobs with a very short `PATH` and no terminal, so use the full path to the script, and send its output to `/dev/null`: the script writes its own log, so you lose nothing.
+Add a cron entry for root that runs the script at 02:30 every day.
 
-You will not want to wait until 02:30 to see whether it works. Add a second, temporary entry that runs every minute, watch for a new archive, then remove it.
+- Cron runs jobs with a very short `PATH` and no terminal, so use the full path to the script.
+- Send its output to `/dev/null`. The script writes its own log, so you lose nothing.
+- You will not want to wait until 02:30 to see whether it works. Add a second, temporary entry that runs every minute, watch for a new archive, then remove it.
 
-Hint: the five time fields are minute, hour, day of month, month and day of week. `crontab -e` opens root's crontab in an editor; set `EDITOR=nano` so it does not ask which editor to use.
+Hints:
+
+- The five time fields are minute, hour, day of month, month and day of week.
+- `crontab -e` opens root's crontab in an editor. Set `EDITOR=nano` so it does not ask which editor to use.
 
 <details>
 <summary>Show a solution</summary>
@@ -203,17 +228,26 @@ Sat Oct 24 11:21:14 UTC 2026
 2026-10-24 11:22:01 Removed old archive /var/backups/data/data-2026-10-24-111950.tar.gz
 ```
 
-A line stamped at the start of a minute that you did not type yourself is cron's work. Now open `crontab -e` again and delete the every-minute line, so you are left with the nightly one.
-
-If nothing appears, check that cron is running with `service cron status`. On a machine with systemd, `systemctl status cron` and `journalctl -u cron` show whether the job started.
+- A line stamped at the start of a minute that you did not type yourself is cron's work.
+- Now open `crontab -e` again and delete the every-minute line, so you are left with the nightly one.
+- If nothing appears, check that cron is running with `service cron status`. On a machine with systemd, `systemctl status cron` and `journalctl -u cron` show whether the job started.
 
 </details>
 
 ### Restore from an archive
 
-A backup is only as good as your last successful restore. Pick the newest archive, unpack it somewhere other than its original place, and compare the result with the live data. Never test a restore by unpacking over the data you are protecting.
+A backup is only as good as your last successful restore.
 
-Hint: `tar -xzf ARCHIVE -C DIR` unpacks into `DIR`, which must exist. `diff -r` compares two directory trees and prints nothing when they match.
+1. Pick the newest archive.
+2. Unpack it somewhere other than its original place.
+3. Compare the result with the live data.
+
+Never test a restore by unpacking over the data you are protecting.
+
+Hints:
+
+- `tar -xzf ARCHIVE -C DIR` unpacks into `DIR`, which must exist.
+- `diff -r` compares two directory trees and prints nothing when they match.
 
 <details>
 <summary>Show a solution</summary>

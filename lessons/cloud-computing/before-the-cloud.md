@@ -1,18 +1,28 @@
-Until the late 2000s, a company that wanted to run software bought its own servers. Many still do. Knowing what that involved explains why the cloud took over so quickly, and also when owning servers is still the better choice.
-
-This topic walks through what it takes to run your own servers, the problems that come with it, and the ones the cloud solves. By the end you can explain why companies stopped buying servers, and name the cases where some still do.
-
 ## Running your own servers
 
 **On-premises (on-prem):** Computing resources that an organisation buys, owns and runs itself, in its own building or in space it rents in a data centre.
 
-To put one new application online, a company had to guess how many servers it would need for the next three to five years, buy them and wait weeks for delivery, find a room with power and cooling, set them up, keep them running, and replace them when they got old. From deciding to build something to having it running often took two or three months.
+Until the late 2000s, a company that wanted to run software bought its own servers. Many still do. Knowing what that involved explains why the cloud took over so quickly, and also when owning servers is still the better choice.
+
+To put one new application online, a company had to:
+
+1. Guess how many servers it would need for the next three to five years.
+2. Buy them and wait weeks for delivery.
+3. Find a room with power and cooling.
+4. Set them up and keep them running.
+5. Replace them when they got old.
+
+From deciding to build something to having it running often took two or three months.
 
 ## The problems with owning
 
 **Capacity planning:** Estimating how much computing power, storage and network a system will need in the future, so it is bought in time.
 
-**Guessing capacity is hard.** If you buy too few servers, the site slows down or falls over when customers arrive. If you buy too many, you paid for machines that sit idle. Most companies bought for their busiest day, so most of the year their servers were mostly idle.
+**Guessing capacity is hard.**
+
+- If you buy too few servers, the site slows down or falls over when customers arrive.
+- If you buy too many, you paid for machines that sit idle.
+- Most companies bought for their busiest day, so most of the year their servers were mostly idle.
 
 **Utilisation:** The share of a resource's capacity that is actually in use.
 
@@ -25,7 +35,10 @@ Utilisation of 10 to 20 percent was common: a shop that sells most in one week o
 
 A large capex purchase needs approval, and a small team or a new company may simply not have the money.
 
-**It is slow.** An idea that needs new servers waits for the purchase, the delivery and the setup. Teams stop trying ideas that might not work, because each one costs months.
+**It is slow.**
+
+- An idea that needs new servers waits for the purchase, the delivery and the setup.
+- Teams stop trying ideas that might not work, because each one costs months.
 
 ## What the cloud changed
 

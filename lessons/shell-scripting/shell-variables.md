@@ -1,10 +1,13 @@
-A script that only runs fixed commands is hard to reuse. **Variables** let you name a value once, such as a host, a file or a date, and use it wherever you need it. They are also where most shell bugs start, because of how Bash treats spaces and quotes.
+## What a variable is
 
-This topic covers setting and reading variables, the two kinds of quotes, running a command and keeping its output, and passing values to other programs. By the end you can write scripts that build names and paths from variables and keep working when a value contains a space.
+A **variable** is a name that holds a value, such as a host, a file or a date. You set the value once and use the name wherever you need it.
+
+- A script that only runs fixed commands is hard to reuse. Variables let the same script work with different values.
+- Variables are also where most shell bugs start, because of how Bash treats spaces and quotes.
 
 ## Setting and reading a variable
 
-Set a variable with `name=value` and read it with a `$` in front of the name. Save this as `greet.sh`:
+Set a variable with `name=value`, and read it with a `$` in front of the name. Reading a variable this way is called **expanding** it: Bash replaces `$name` with the value before it runs the command. Save this as `greet.sh`:
 
 ```bash
 #!/bin/bash
@@ -34,9 +37,9 @@ root@lab:~/scripts# ./greet.sh
 name is
 ```
 
-With spaces, Bash reads `name` as a command and `=` and `sam` as its arguments. A space only after the `=` is wrong too: `name= sam` sets `name` to nothing for one command and then tries to run `sam`, which gives `sam: command not found`.
-
-Reading a variable that was never set is not an error. You get an empty string, which is why the script carried on and printed `name is`. The *Robust scripts* topic shows how to make Bash stop instead.
+- With spaces, Bash reads `name` as a command, and `=` and `sam` as its arguments.
+- A space only after the `=` is wrong too. `name= sam` sets `name` to nothing for one command, then tries to run `sam`, which gives `sam: command not found`.
+- Reading a variable that was never set is not an error. You get an **empty string**, a value with no characters in it, which is why the script carried on and printed `name is`. The *Robust scripts* topic shows how to make Bash stop instead.
 
 ### When to use `${name}`
 
@@ -55,7 +58,9 @@ Backup: .log
 Backup: app_backup.log
 ```
 
-The first line looked for a variable called `file_backup`, found none, and printed nothing in its place. A `.` or `-` or `/` cannot be part of a name, so `"$file.log"` and `"$dir/$file"` work without braces. When in doubt, use them.
+- The first line looked for a variable called `file_backup`, found none, and printed nothing in its place.
+- A `.`, `-` or `/` cannot be part of a name, so `"$file.log"` and `"$dir/$file"` work without braces.
+- When in doubt, use the braces.
 
 ## Double quotes and single quotes
 
@@ -66,7 +71,7 @@ The two kinds of quotes do different jobs:
 | Double `"..."` | Expanded | `echo "Hello $user"` | `Hello priya` |
 | Single `'...'` | Left exactly as typed | `echo 'Hello $user'` | `Hello $user` |
 
-Inside double quotes, a backslash stops one character from being special, so `\$` prints a dollar sign and `\"` prints a double quote:
+Inside double quotes, a backslash **escapes** the next character: it stops that character from being special. `\$` prints a dollar sign and `\"` prints a double quote:
 
 ```bash
 #!/bin/bash
@@ -109,7 +114,10 @@ ls: cannot access 'monthly': No such file or directory
 ls: cannot access 'report.txt': No such file or directory
 ```
 
-`touch "$file"` created one file called `monthly report.txt`. `ls -l $file` was split into two arguments, `monthly` and `report.txt`, and neither exists. Quote it and it works:
+- `touch "$file"` created one file called `monthly report.txt`.
+- `ls -l $file` was split into two arguments, `monthly` and `report.txt`, and neither exists.
+
+Quote it and it works:
 
 ```bash
 ls -l "$file"
@@ -139,11 +147,13 @@ root@lab:~/scripts/t# echo "$msg"
 Total: * files
 ```
 
-Unquoted, the `*` was replaced by the names of the files in the folder. The rule is simple: **put double quotes around every `$variable` and every `$( )`**, unless you have a clear reason not to. The *Arrays* topic covers the right way to hold a list of file names.
+Unquoted, the `*` was replaced by the names of the files in the folder.
+
+The rule: **put double quotes around every `$variable` and every `$( )`**, unless you have a clear reason not to. The *Arrays* topic covers the right way to hold a list of file names.
 
 ## Command substitution
 
-`$(command)` runs a command and puts its output in place. This is how you store the result of a command in a variable:
+**Command substitution**, written `$(command)`, runs a command and puts its output in place. This is how you store the result of a command in a variable:
 
 ```bash
 #!/bin/bash
@@ -159,13 +169,13 @@ Today is 2026-10-25
 This machine has 19 accounts
 ```
 
-Trailing newlines in the output are removed, so you get `2026-10-25` and not `2026-10-25` followed by a blank line. Everything else is kept, including spaces, which is another reason to quote: `echo "$(who)"` keeps the lines and columns; `echo $(who)` squashes them into one line.
-
-You will see an older form with backticks, `` today=`date +%F` ``. It does the same thing but is hard to read and awkward to nest. Use `$( )` in new scripts.
+- Trailing newlines in the output are removed, so you get `2026-10-25` and not `2026-10-25` followed by a blank line.
+- Everything else is kept, including spaces, which is another reason to quote. `echo "$(who)"` keeps the lines and columns; `echo $(who)` squashes them into one line.
+- You will see an older form with backticks, `` today=`date +%F` ``. It does the same thing but is hard to read and awkward to nest. Use `$( )` in new scripts.
 
 ## Constants with readonly
 
-Some values should never change once set, such as the folder backups go to. `readonly` makes a later assignment fail:
+A **constant** is a variable whose value should never change once set, such as the folder backups go to. `readonly` makes a later assignment fail:
 
 ```bash
 #!/bin/bash
@@ -182,11 +192,16 @@ Saving to /var/backups
 Still saving to /var/backups
 ```
 
-The bad assignment is refused with an error, and the value stays the same. The script itself carries on, so this protects the value, not the run. A read-only variable also cannot be removed with `unset`.
+- The bad assignment is refused with an error, and the value stays the same.
+- The script itself carries on, so this protects the value, not the run.
+- A read-only variable also cannot be removed with `unset`.
 
 ## Environment variables and export
 
-A script's variables belong to that script's shell. When the script starts another program, including another script, the program does not see them unless they are **exported**. Exported variables are called **environment variables**, and every process gets a copy of its parent's environment when it starts.
+A script's variables belong to that script's shell. When the script starts another program, including another script, the program does not see them unless they are exported.
+
+- An **environment variable** is a variable that has been **exported**, marked to be passed on to every program the shell starts.
+- The **environment** is the set of environment variables a process has. Every process gets a copy of its parent's environment when it starts.
 
 Two small scripts show the difference. `child.sh`:
 
@@ -209,7 +224,8 @@ root@lab:~/scripts# ./parent.sh
 child sees app_env='' and APP_ENV='staging'
 ```
 
-Only the exported one reached the child. It is a copy: if the child changes `APP_ENV`, the parent's value does not change, which is the same reason `./setenv.sh` could not change your shell in the *Shell scripting basics* topic.
+- Only the exported one reached the child.
+- It is a copy. If the child changes `APP_ENV`, the parent's value does not change. That is the same reason `./go.sh` could not change your shell's directory in the *Shell scripting basics* topic.
 
 You can also set a variable for one command only by putting it in front of the command. It is exported to that command and nowhere else:
 
@@ -229,7 +245,8 @@ HOME=/root
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ```
 
-Programs read their settings this way: a script can read `$HOME` without setting it. The set you get depends on how the script started, though. This container has no `$USER`, and cron jobs get only a handful of variables, so don't assume one is there.
+- Programs read their settings this way: a script can read `$HOME` without setting it.
+- The set you get depends on how the script started. This container has no `$USER`, and cron jobs get only a handful of variables, so don't assume one is there.
 
 ### Naming conventions
 

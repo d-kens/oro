@@ -1,8 +1,9 @@
-On a real server you rarely know exactly where things are. Somewhere among thousands of files is the config file that sets the database host, the log line that explains the crash, or the old dump that is filling the disk. Two commands find them: `grep` searches *inside* files for text, and `find` searches for files by their name, size or age.
-
-By the end you can search one file or a whole directory tree for a word, and find files by name, type, size and modified time.
-
 ## Searching inside files with grep
+
+Two commands find things on a machine:
+
+- `grep` searches *inside* files for text.
+- `find` searches for the files themselves, by name, size or age.
 
 `grep` prints every line of a file that contains the text you give it. The text comes first, then the file:
 
@@ -12,7 +13,7 @@ $ grep ERROR logs/app.log
 09:03:41 ERROR database timeout
 ```
 
-The text is called the **pattern**. If it contains spaces, put it in quotes, or `grep` takes the second word as a file name:
+The text you search for is called the **pattern**. If it contains spaces, put it in quotes. Otherwise `grep` takes the second word as a file name:
 
 ```bash
 $ grep "database timeout" logs/app.log
@@ -25,9 +26,8 @@ logs/app.log:09:01:14 WARN retrying database connection
 logs/app.log:09:03:41 ERROR database timeout
 ```
 
-When nothing matches, `grep` prints nothing. That is not an error; there is simply no such line.
-
-Like everything else in Linux, `grep` is case-sensitive. `ERROR` does not match `error`.
+- When nothing matches, `grep` prints nothing. That is not an error; there is simply no such line.
+- `grep` is case-sensitive. `ERROR` does not match `error`.
 
 ## grep options
 
@@ -70,11 +70,11 @@ $ grep -v INFO logs/app.log
 09:03:41 ERROR database timeout
 ```
 
-`grep` can do far more than match fixed text. The pattern is a *regular expression*, where some characters have special meanings. For now, keep to plain words; the *Pipes and text processing* topic goes further.
+The pattern can be more than fixed text. It is a **regular expression**: a pattern in which some characters, such as `.` and `*`, have special meanings. For now, keep to plain words. The *Pipes and text processing* topic goes further.
 
 ## Searching a directory with grep -r
 
-`-r` (*recursive*) searches every file under a directory. Each match is printed with the file it came from:
+`-r` (*recursive*) searches every file under a directory, and every directory inside it. Each match is printed with the file it came from:
 
 ```bash
 $ grep -r db_host .
@@ -82,7 +82,10 @@ $ grep -r db_host .
 ./config/db.conf:db_host=db-01
 ```
 
-The `.` means "start here". This is how you answer "which config file sets this?" on a machine you do not know. Add `-l` when you only want the file names, and `-n` when you want to open the file at the right line:
+The `.` means "start in the working directory". This is how you answer "which config file sets this?" on a machine you do not know.
+
+- Add `-l` when you only want the file names.
+- Add `-n` when you want to open the file at the right line.
 
 ```bash
 $ grep -rl db_host .
@@ -97,11 +100,11 @@ Notice that `port` also matched `db_port`. `-w` limits the match to the whole wo
 
 Searching a big tree such as `/` or `/usr` can take a long time and match binary files. Start the search as close to the files as you can, for example `/etc` for configuration.
 
-## Finding files with find
+## Finding files by name with find
 
-`grep` looks at what is in files. `find` looks at the files themselves. Give it a directory to start from and a test to apply; it walks down through every subdirectory and prints each path that passes.
+`find` searches for files and directories. Give it a directory to start from and one or more **tests**, conditions a file must meet. It walks down through every directory below the starting point and prints each path that passes.
 
-`-name` matches the file name. Use `*` to match any characters, and put the pattern in quotes so the shell passes it to `find` unchanged instead of expanding it first:
+`-name` matches the file name:
 
 ```bash
 $ find . -name "*.conf"
@@ -111,7 +114,11 @@ $ find /etc -name hostname
 /etc/hostname
 ```
 
-`-iname` is the same but ignores case. `-type` limits the results to files (`f`) or directories (`d`):
+- Use `*` to match any characters.
+- Put the pattern in quotes, so the shell passes it to `find` unchanged instead of expanding it first.
+- `-iname` is the same as `-name` but ignores case.
+
+`-type` limits the results to files (`f`) or directories (`d`):
 
 ```bash
 $ find . -type d
@@ -123,7 +130,7 @@ $ find . -type d
 
 `find` prints paths in the order it meets them on disk, not sorted.
 
-When several tests are given, a file must pass all of them:
+When you give several tests, a file must pass all of them:
 
 ```bash
 $ find . -type f -name "app*"
@@ -135,14 +142,21 @@ $ find . -type f -name "app*"
 
 Two more tests answer the questions you ask when a disk is filling up.
 
-`-size` finds files by size. `+` means more than, `-` means less than, and the units are `k`, `M` and `G`:
+`-size` finds files by size:
+
+- `+` means more than, and `-` means less than.
+- The units are `k`, `M` and `G`.
 
 ```bash
 $ find . -size +1M
 ./old/dump.sql
 ```
 
-`-mtime` finds files by when their contents last changed, counted in days. `-mtime +30` means more than 30 days ago, and `-mtime -1` means within the last day. `-mmin` does the same in minutes.
+`-mtime` finds files by when their contents last changed, counted in days:
+
+- `-mtime +30` means more than 30 days ago.
+- `-mtime -1` means within the last day.
+- `-mmin` does the same in minutes.
 
 ```bash
 $ find . -mtime +30
@@ -154,7 +168,7 @@ $ find . -type f -mtime -1
 ./config/db.conf
 ```
 
-Some tests worth knowing:
+The tests you will use most:
 
 | Test | Matches |
 | --- | --- |
@@ -166,9 +180,19 @@ Some tests worth knowing:
 | `-mmin -10` | Changed in the last 10 minutes |
 | `-maxdepth 1` | Only look this many levels down |
 
-When you search from `/` as an ordinary user, `find` prints `Permission denied` for every directory you cannot read. Add `2>/dev/null` to the end to hide those messages; the *Pipes and text processing* topic explains how that works.
+## Common find mistakes
 
-`find` can also act on what it finds, for example `-delete`, or `-exec` to run a command on each file. Always run the same `find` without the action first and read the list. A wrong test followed by `-delete` removes files just as quickly as `rm -r`.
+1. **Permission denied everywhere**
+   - When you search from `/` as an ordinary user, `find` prints `Permission denied` for every directory you cannot read.
+   - Add `2>/dev/null` to the end of the command to hide those messages. The *Pipes and text processing* topic explains how that works.
+
+2. **A pattern without quotes**
+   - `find . -name *.conf` lets the shell expand `*.conf` first, using the files in your working directory. `find` then searches for the wrong names, or fails.
+   - Always quote the pattern: `find . -name "*.conf"`.
+
+3. **Acting on files before checking them**
+   - `find` can act on what it finds: `-delete` deletes each file, and `-exec` runs a command on each one.
+   - A wrong test followed by `-delete` removes files as quickly as `rm -r`. Always run the same `find` without the action first, and read the list.
 
 ## Tasks
 

@@ -1,6 +1,11 @@
-Plain HTTP crosses the network as readable text. Anyone on the path, such as a shared Wi-Fi network, a compromised router or a misconfigured proxy, can read it and change it. **TLS** (Transport Layer Security) wraps the connection so they cannot, and **HTTPS** is simply HTTP sent inside TLS, usually on port 443.
+## What TLS and HTTPS are
 
-You will spend more time fixing TLS than setting it up: certificates expire, names do not match, a server forgets to send part of its chain. By the end you can explain what TLS protects, read a certificate and its chain, inspect any site's certificate with openssl and curl, recognise the common errors from their messages, and sign a certificate with a certificate authority of your own.
+Plain HTTP crosses the network as readable text. Anyone on the path, such as a shared Wi-Fi network, a compromised router or a misconfigured proxy, can read it and change it.
+
+- **TLS** (*Transport Layer Security*) wraps a connection so they cannot.
+- **HTTPS** is HTTP sent inside TLS, usually on port 443.
+
+You will spend more time fixing TLS than setting it up: certificates expire, names do not match, a server forgets to send part of its chain.
 
 ## What TLS gives you
 
@@ -12,15 +17,31 @@ TLS provides three things:
 | **Integrity** | Any change to the data in transit is detected | A proxy could insert content into a page |
 | **Authentication** | The client can check that it is talking to the real server for that name | An attacker could pose as the site and read everything |
 
-Encryption alone is not enough. If you encrypt a conversation with an impostor, the impostor reads it. The third property is what certificates are for.
+- **Encryption** means scrambling data so only someone with the right key can read it.
+- Encryption alone is not enough. If you encrypt a conversation with an impostor, the impostor reads it. The third property is what certificates are for.
 
-TLS does not hide everything. Anyone on the path can still see the IP addresses, the port, roughly how much data moves, and usually the name of the site, as the section on SNI shows. And it only protects data in transit: once the data reaches the server, TLS has done its job.
+TLS does not hide everything:
+
+- Anyone on the path can still see the IP addresses, the port, roughly how much data moves, and usually the name of the site, as the section on SNI shows.
+- It only protects data in transit. Once the data reaches the server, TLS has done its job.
 
 ## Certificates
 
-A **certificate** is a small signed document that binds a public key to one or more names. The server holds the matching **private key** and never sends it anywhere. During the handshake the server proves it has the private key, and the client checks the certificate to see whose key it is.
+TLS uses keys in pairs:
 
-Look at the certificate example.com sends. `openssl s_client` opens a TLS connection and prints what it receives; piping that into `openssl x509` picks out the certificate and prints chosen fields. Your values will differ, because sites renew their certificates often:
+- A **public key** can be shared with anyone.
+- A **private key** is kept secret. Something done with one key can only be checked or undone with the other.
+
+A **certificate** is a small signed document that binds a public key to one or more names.
+
+- The server holds the matching private key and never sends it anywhere.
+- During the handshake, the server proves it has the private key, and the client checks the certificate to see whose key it is.
+
+Look at the certificate example.com sends:
+
+- `openssl s_client` opens a TLS connection and prints what it receives.
+- Piping that into `openssl x509` picks out the certificate and prints chosen fields.
+- Your values will differ, because sites renew their certificates often.
 
 ```bash
 root@alpha:/# echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
@@ -32,7 +53,8 @@ X509v3 Subject Alternative Name:
     DNS:example.com, DNS:*.example.com
 ```
 
-The `echo |` sends an empty line and closes the connection, so the command ends on its own. The issuer's organisation names are shortened here; you will see the real certificate authority's name.
+- The `echo |` sends an empty line and closes the connection, so the command ends on its own.
+- The issuer's organisation names are shortened here. You will see the real certificate authority's name.
 
 | Field | Meaning |
 | --- | --- |
@@ -41,11 +63,14 @@ The `echo |` sends an empty line and closes the connection, so the command ends 
 | Issuer | Who signed it |
 | `notBefore`, `notAfter` | The period it is valid for |
 
-`*.example.com` is a **wildcard**: it covers any single label in front, such as `www.example.com` or `api.example.com`, but not `example.com` itself and not `a.b.example.com`. That is why the certificate lists both.
+A **wildcard** certificate name, such as `*.example.com`, covers any single label in front, such as `www.example.com` or `api.example.com`. It does not cover `example.com` itself, or `a.b.example.com`. That is why the certificate lists both.
 
 ## The chain of trust
 
-Anyone can make a certificate that says `CN = example.com`. What makes this one believable is the signature from the issuer. The client trusts the issuer because the issuer's own certificate is signed by someone the client already trusts, and so on up to a **root certificate**.
+Anyone can make a certificate that says `CN = example.com`. What makes this one believable is the signature from the issuer.
+
+- The **chain of trust** is the series of certificates that links a site's certificate to one the client already trusts.
+- The client trusts the issuer because the issuer's own certificate is signed by someone the client already trusts, and so on up to a **root certificate**.
 
 ```text
 example.com                    leaf certificate, sent by the server
@@ -57,7 +82,7 @@ example.com                    leaf certificate, sent by the server
 - The **trust store** is the list of root certificates the client trusts. Operating systems and browsers ship one. On Ubuntu it lives in `/etc/ssl/certs/`, managed by the `ca-certificates` package, and the lab image has over a hundred roots in it.
 - Roots sign **intermediate** certificates, and intermediates sign the leaf certificates for sites. The root's private key can then be kept offline.
 
-`openssl s_client` without the `x509` step shows the whole chain the server sent. Each entry has a subject `s:` and an issuer `i:`; the issuer of one is the subject of the next. With the names shortened again:
+`openssl s_client` without the `x509` step shows the whole chain the server sent. Each entry has a subject `s:` and an issuer `i:`, and the issuer of one is the subject of the next. With the names shortened again:
 
 ```bash
 root@alpha:/# echo | openssl s_client -connect example.com:443 -servername example.com
@@ -79,11 +104,19 @@ New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
 Verify return code: 0 (ok)
 ```
 
-`Verify return code: 0 (ok)` means openssl built a chain from the leaf to a root in its trust store. The server must send the intermediates itself. A server configured with only its leaf certificate works in some browsers, which have cached the intermediate from other sites, and fails in curl and in applications, with `unable to get local issuer certificate`. That inconsistency makes it a confusing fault to track down.
+- `Verify return code: 0 (ok)` means openssl built a chain from the leaf to a root in its trust store.
+- The server must send the intermediates itself.
+- A server configured with only its leaf certificate works in some browsers, which have cached the intermediate from other sites, and fails in curl and in applications with `unable to get local issuer certificate`. That inconsistency makes it a confusing fault to track down.
 
 ## The handshake and SNI
 
-Before any HTTP is sent, client and server run the **TLS handshake**: they agree on a TLS version and a cipher, the server sends its certificate chain and proves it holds the private key, and both work out shared keys for encrypting the rest. `curl -v` shows each step. With the byte counts and some lines removed:
+The **TLS handshake** is the exchange that sets up a TLS connection, before any HTTP is sent:
+
+1. Client and server agree on a TLS version and a **cipher**, the method of encryption.
+2. The server sends its certificate chain and proves it holds the private key.
+3. Both work out shared keys for encrypting the rest.
+
+`curl -v` shows each step. With the byte counts and some lines removed:
 
 ```bash
 root@alpha:/# curl -v https://example.com/ -o /dev/null
@@ -112,9 +145,23 @@ root@alpha:/# curl -v https://example.com/ -o /dev/null
 ...
 ```
 
-Read it as a checklist: the TCP connection, the hello messages, the certificate arriving, the name matched against the SAN, the chain verified, and only then the HTTP request. **ALPN** is how the two sides agree on HTTP/2 during the handshake. The *HTTP* topic showed the result.
+Read it as a checklist:
 
-There is one problem to solve first. One IP address often hosts many HTTPS sites, each with its own certificate. The `Host` header would tell the server which site you want, but it is inside the encrypted part, so the server needs to pick a certificate before it can read it. **SNI** (Server Name Indication) solves this: the client puts the site name in its first, unencrypted hello message. That is also why the site name is visible to anyone watching.
+1. the TCP connection
+2. the hello messages
+3. the certificate arriving
+4. the name matched against the SAN
+5. the chain verified
+6. only then, the HTTP request
+
+**ALPN** (*Application-Layer Protocol Negotiation*) is how the two sides agree on HTTP/2 during the handshake. The *HTTP* topic showed the result.
+
+## SNI
+
+One IP address often hosts many HTTPS sites, each with its own certificate. The `Host` header would tell the server which site you want, but it is inside the encrypted part, so the server needs to pick a certificate before it can read it.
+
+- **SNI** (*Server Name Indication*) solves this: the client puts the site name in its first, unencrypted hello message.
+- That is also why the site name is visible to anyone watching.
 
 `-servername` sets SNI in openssl, and `-brief` prints a short summary. Connect to example.com's address twice, asking for different names:
 
@@ -147,9 +194,15 @@ Note that openssl's `Verification: OK` only checks the chain. It does not check 
 
 ## Expiry
 
-Every certificate has a `notAfter` date, and public certificates now last months rather than years, so renewal must be automated. An expired certificate is one of the most common causes of an outage that "nobody changed anything" for.
+Every certificate has a `notAfter` date.
 
-`-checkend` takes a number of seconds and says whether the certificate expires within that time. Its exit status is 0 if not, so it fits into a monitoring script. 2,592,000 seconds is 30 days:
+- Public certificates now last months rather than years, so renewal must be automated.
+- An expired certificate is one of the most common causes of an outage that "nobody changed anything" for.
+
+`-checkend` takes a number of seconds and says whether the certificate expires within that time.
+
+- Its exit status is 0 if not, so it fits into a monitoring script.
+- 2,592,000 seconds is 30 days:
 
 ```bash
 root@alpha:/# echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -checkend 2592000
@@ -160,7 +213,11 @@ root@alpha:/# echo $?
 
 ## Common errors
 
-To see the errors in the lab, give beta a quick certificate that no CA has signed. `openssl req -x509` makes a **self-signed** certificate, signed by its own key, valid here for the name `web-01`. `openssl s_server` then runs a minimal TLS server on port 4433. The next section signs a certificate properly; this is just enough to break things:
+To see the errors in the lab, give beta a quick certificate that no CA has signed.
+
+- A **self-signed** certificate is one signed by its own key instead of by a CA. `openssl req -x509` makes one, valid here for the name `web-01`.
+- `openssl s_server` then runs a minimal TLS server on port 4433.
+- The next section signs a certificate properly. This is just enough to break things:
 
 ```bash
 root@beta:/# cd /root
@@ -187,13 +244,24 @@ curl refuses before sending any HTTP. These are the errors you will meet most, w
 | `no alternative certificate subject name matches target host name` | The same, when the certificate has a SAN list | As above |
 | `certificate has expired` | The current time is after `notAfter` | Renew it, and check the client's clock |
 
-`curl -k` (or `--insecure`) skips all these checks and connects anyway. It is fine for a quick look in a lab, but it removes the authentication part of TLS, so never put it in a script or a health check. The connection would still be encrypted, but possibly to an impostor.
+`curl -k` (or `--insecure`) skips all these checks and connects anyway.
+
+- It is fine for a quick look in a lab.
+- It removes the authentication part of TLS, so never put it in a script or a health check. The connection would still be encrypted, but possibly to an impostor.
 
 ## A certificate authority of your own
 
-Internal services, test environments and labs often use a **private CA**: a CA key and certificate that you make yourself, and that only your own machines trust. It signs server certificates the same way a public CA does, and clients that have its certificate in their trust store accept them without `-k`.
+A **private CA** is a CA key and certificate that you make yourself, and that only your own machines trust. Internal services, test environments and labs often use one.
 
-It takes four `openssl` commands. First the CA: a key and a self-signed certificate. Then the server: a key and a **certificate signing request** (CSR), which holds the server's public key and the name it wants. Last, the CA signs the request. Modern clients check the SAN rather than `CN`, so the signed certificate must carry the name as `subjectAltName`, given here in a small extensions file:
+- It signs server certificates the same way a public CA does.
+- Clients that have its certificate in their trust store accept them without `-k`.
+
+It takes four steps:
+
+1. Make the CA: a key and a self-signed certificate.
+2. Make the server's key and a **certificate signing request** (CSR), which holds the server's public key and the name it wants.
+3. Write the name into a small extensions file. Modern clients check the SAN instead of `CN`, so the signed certificate must carry the name as `subjectAltName`.
+4. Have the CA sign the request.
 
 ```bash
 root@beta:~# mkdir ca && cd ca
@@ -207,9 +275,18 @@ root@beta:~/ca# openssl verify -CAfile ca.crt web-01.crt
 web-01.crt: OK
 ```
 
-The `openssl req` commands also print lines of dots and plus signs while they make the keys; that is normal. `-nodes` leaves the private keys unencrypted, so a server can read them at start-up. `openssl verify` checks the chain: the server certificate was signed by the CA.
+- The `openssl req` commands also print lines of dots and plus signs while they make the keys. That is normal.
+- `-nodes` leaves the private keys unencrypted, so a server can read them at start-up.
+- `openssl verify` checks the chain: the server certificate was signed by the CA.
 
-A server uses `web-01.crt` and `web-01.key`, for example `openssl s_server -cert web-01.crt -key web-01.key`, or nginx's `ssl_certificate` and `ssl_certificate_key`. A client trusts the CA in one of two ways: for one command, with `curl --cacert ca.crt`; for the whole machine, by copying `ca.crt` into `/usr/local/share/ca-certificates/` with a `.crt` ending and running `update-ca-certificates`. After that, every program on the client that uses the system trust store accepts certificates the CA signs.
+## Using the certificate and trusting the CA
+
+A server uses `web-01.crt` and `web-01.key`, for example `openssl s_server -cert web-01.crt -key web-01.key`, or nginx's `ssl_certificate` and `ssl_certificate_key`.
+
+A client trusts the CA in one of two ways:
+
+- For one command, with `curl --cacert ca.crt`.
+- For the whole machine, by copying `ca.crt` into `/usr/local/share/ca-certificates/` with a `.crt` ending and running `update-ca-certificates`. After that, every program on the client that uses the system trust store accepts certificates the CA signs.
 
 `ca.key` is the most sensitive file here. Anyone who has it can sign certificates your clients will trust, so in real use it never sits on a web server, and a client is only ever given `ca.crt`.
 

@@ -1,10 +1,20 @@
-In this project you take a company's servers and write a one-page plan for moving them to the cloud: what moves first, what each part runs on, how it survives failure, and who keeps it safe.
+## The project
+
+**Migration:** Moving an organisation's applications and data from one place to another, here from its own servers to the cloud.
+
+You take a company's servers and write a one-page migration plan that says:
+
+- what moves first
+- what each part runs on
+- how it survives failure
+- who keeps it safe
 
 It draws on every topic in this skill, especially *Service models*, *Deployment models*, *Regions and zones*, *Scaling and elasticity* and *Shared responsibility*.
 
 ## What you need
 
-A text editor or a document. The plan should fit on one page. There is no single right answer; the solution shows one good plan and the reasons behind it.
+- A text editor or a document. The plan should fit on one page.
+- There is no single right answer. The solution shows one good plan and the reasons behind it.
 
 ## The company
 
@@ -42,7 +52,14 @@ Write a plan with these sections, a few lines each:
 
 ### Read the brief for clues
 
-Each fact about the company points at a decision. Before writing, list what each one tells you: the 18-month lease, the law about patient data, the air-conditioning failure, the single engineer, the Monday mornings, the backups in the same room.
+Each fact about the company points at a decision. Before writing, list what each one tells you:
+
+- the 18-month lease
+- the law about patient data
+- the air-conditioning failure
+- the single engineer
+- the Monday mornings
+- the backups in the same room
 
 <details>
 <summary>Show a solution</summary>
@@ -108,7 +125,7 @@ Check your plan against these points. A good plan:
 - Finishes before the lease ends, with some margin.
 - Fits on one page.
 
-If your plan puts the database on a virtual server instead (IaaS), that can be a fair choice, but it should say who patches it and how backups and the standby copy work, since the company now owns those jobs.
+If your plan puts the database on a virtual server instead (IaaS), that can be a fair choice. It should then say who patches it and how backups and the standby copy work, since the company now owns those jobs.
 
 ## Going further
 

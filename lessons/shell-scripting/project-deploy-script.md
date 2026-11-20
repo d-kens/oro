@@ -1,6 +1,25 @@
-Copying new files over a live site works until the day a copy stops halfway or the new version is broken, and then there is no quick way back. In this project you write `deploy.sh`, a script that puts each release in its own timestamped directory, switches the live site to it in one step with a symlink, checks it, and switches back by itself if the check fails. It keeps the last five releases, refuses to run twice at once, and can roll back on request.
+## The project
 
-It uses *Arguments and input* for `getopts` and the usage message, *Functions* and *Arrays* for the structure and the release list, *Exit codes and errors* for the status it returns, *Robust scripts* for `set -euo pipefail`, a trap and a lock file, and *Real-world scripts* for logging. From the Linux skill it draws on *Hard and symbolic links* for symlinks and *Creating, copying and deleting files* for `cp` and `mv`.
+**Deploying** means putting a new version of software live. A **release** is one version of it. A **rollback** is switching back to an earlier release.
+
+Copying new files over a live site works until the day a copy stops halfway or the new version is broken, and then there is no quick way back. You write `deploy.sh`, a script that:
+
+- puts each release in its own timestamped directory
+- switches the live site to it in one step, with a symlink
+- checks it, and switches back by itself if the check fails
+- keeps the last five releases
+- refuses to run twice at once
+- can roll back on request
+
+From this skill it uses:
+
+- *Arguments and input* for `getopts` and the usage message
+- *Functions* and *Arrays* for the structure and the release list
+- *Exit codes and errors* for the status it returns
+- *Robust scripts* for `set -euo pipefail`, a trap and a lock file
+- *Real-world scripts* for logging
+
+From the Linux skill it draws on *Hard and symbolic links* for symlinks, and *Creating, copying and deleting files* for `cp` and `mv`.
 
 ## What you need
 
@@ -12,7 +31,10 @@ $ docker run -it --rm --hostname lab -v "$PWD":/root/scripts -w /root/scripts ub
 root@lab:~/scripts#
 ```
 
-Install ShellCheck, Python and curl. Python is only there to serve the site with its built-in web server, and curl to fetch pages from it:
+Install ShellCheck, Python and curl:
+
+- Python is only there to serve the site with its built-in web server.
+- curl fetches pages from it.
 
 ```bash
 root@lab:~/scripts# apt update && apt install -y shellcheck python3 curl
@@ -41,7 +63,10 @@ And a one-line stylesheet:
 root@lab:~/scripts# echo "body { font-family: sans-serif; }" > site/style.css
 ```
 
-The `deploy-check` line is the **marker**: text that every good release contains. The script looks for it after each switch. A real site might use a version string or a health page instead; the idea is the same.
+The `deploy-check` line is the **marker**: text that every good release contains.
+
+- The script looks for it after each switch.
+- A real site might use a version string or a health page instead. The idea is the same.
 
 ## The brief
 
@@ -60,7 +85,12 @@ The `deploy-check` line is the **marker**: text that every good release contains
 
 The whole design rests on one idea: the web server serves `/srv/site/current`, and `current` is a symlink to one release directory. Deploying means pointing the symlink somewhere else.
 
-The obvious command, `ln -sfn NEW current`, is not one step. It removes the old link and then creates the new one, and for that moment `current` does not exist. A request arriving then gets an error. The safe way is to make the new link under a temporary name and then rename it over the old one. A rename within one file system is atomic: anyone looking sees the old link or the new one, never neither.
+The obvious command, `ln -sfn NEW current`, is not one step:
+
+- It removes the old link and then creates the new one, and for that moment `current` does not exist.
+- A request arriving then gets an error.
+
+The safe way is to make the new link under a temporary name, then rename it over the old one. A rename within one file system is **atomic**: anyone looking sees the old link or the new one, never neither.
 
 Hint: `mv` on a symlink to a directory moves the link into that directory, which is not what you want. `mv -T` treats the destination as a plain name to replace.
 
@@ -107,7 +137,11 @@ Write the steps down before the code. A deploy that is safe to interrupt at any 
 5. Switch `current` to the new release and run the check.
 6. If the check passes, delete old releases beyond the newest five, skipping the live one. If it fails, switch back to the previous release and delete the failed one.
 
-Hint: write a `check_site` function that returns 0 or 1 and logs why it failed. For the HTTP part, capture the page with `body=$(curl -fsS --max-time 5 "$url")` and then test `[[ $body == *"$marker"* ]]`. Piping `curl` into `grep -q` looks shorter but can fail under `pipefail`: `grep -q` exits at the first match, and curl, still writing, is killed by the closed pipe.
+Hints:
+
+- Write a `check_site` function that returns 0 or 1 and logs why it failed.
+- For the HTTP part, capture the page with `body=$(curl -fsS --max-time 5 "$url")`, then test `[[ $body == *"$marker"* ]]`.
+- Piping `curl` into `grep -q` looks shorter but can fail under `pipefail`. `grep -q` exits at the first match, and curl, still writing, is killed by the closed pipe.
 
 <details>
 <summary>Show a solution</summary>
@@ -137,9 +171,9 @@ check_site() {
 }
 ```
 
-`curl -f` makes an HTTP error such as 404 a failure, rather than printing the error page and exiting 0. `--max-time` stops a hung server from hanging the deploy.
-
-The check runs after the switch, so a broken release is live for a moment before the rollback. Checking the release directory before switching as well catches most problems with no visible effect; the check after the switch catches the rest, such as a server that cannot read the new files.
+- `curl -f` makes an HTTP error such as 404 a failure, instead of printing the error page and exiting 0.
+- `--max-time` stops a hung server from hanging the deploy.
+- The check runs after the switch, so a broken release is live for a moment before the rollback. Checking the release directory before switching as well catches most problems with no visible effect. The check after the switch catches the rest, such as a server that cannot read the new files.
 
 </details>
 
@@ -151,7 +185,10 @@ Three pieces remain.
 - **Pruning.** Build an array of release directories from a glob, oldest first, and remove entries from the front until five are left, skipping whichever one `current` points to. After a rollback the live release may be an old one, and deleting it would take the site down.
 - **Rollback.** Find the live release in the array and switch to the one before it. If it is the first one, there is nothing older; say so and exit 1.
 
-Hint: `getopts` only handles short options like `-r`. To accept `--rollback` too, loop over the arguments first and replace `--rollback` with `-r`, then `set -- "${args[@]}"` and run `getopts` as usual. A function can fill an array named by its caller with `local -n out=$1`, a **name reference**.
+Hints:
+
+- `getopts` only handles short options like `-r`. To accept `--rollback` too, loop over the arguments first and replace `--rollback` with `-r`, then `set -- "${args[@]}"` and run `getopts` as usual.
+- A function can fill an array named by its caller with `local -n out=$1`. This is a **name reference**: a variable that stands for another variable.
 
 <details>
 <summary>Show a solution</summary>
@@ -352,7 +389,8 @@ main() {
 main "$@"
 ```
 
-`-b` exists so you can test against a directory in `/tmp` without touching `/srv`. `[[ -d $dir ]]` in `list_releases` guards against the glob matching nothing: then the loop gets the pattern itself as a single word, and the test throws it away.
+- `-b` exists so you can test against a directory in `/tmp` without touching `/srv`.
+- `[[ -d $dir ]]` in `list_releases` guards against the glob matching nothing. Then the loop gets the pattern itself as a single word, and the test throws it away.
 
 ```bash
 root@lab:~/scripts# chmod +x deploy.sh
@@ -364,9 +402,15 @@ root@lab:~/scripts#
 
 ### Deploy, break it, roll back
 
-Deploy version 1, start a web server on the live link, and deploy version 2 with the HTTP check. Then deploy a broken version 3 and watch the script undo it. Finally, roll back by hand.
+1. Deploy version 1.
+2. Start a web server on the live link, and deploy version 2 with the HTTP check.
+3. Deploy a broken version 3, and watch the script undo it.
+4. Roll back by hand.
 
-Hint: `python3 -m http.server 8080 --directory /srv/site/current` serves the directory through the symlink. It resolves the path on every request, so a switch shows up straight away without a restart. Run it in the background with `&`. Wait a second between deploys, because two in the same second would get the same release name and the script refuses that.
+Hints:
+
+- `python3 -m http.server 8080 --directory /srv/site/current` serves the directory through the symlink. It resolves the path on every request, so a switch shows up straight away without a restart. Run it in the background with `&`.
+- Wait a second between deploys. Two in the same second would get the same release name, and the script refuses that.
 
 <details>
 <summary>Show a solution</summary>
@@ -418,7 +462,8 @@ root@lab:~/scripts# ls /srv/site/releases
 20261025-091810
 ```
 
-Version 2 is still live, and the failed release is gone. A manual rollback goes back one more step, to version 1. A second one has nowhere to go:
+- Version 2 is still live, and the failed release is gone.
+- A manual rollback goes back one more step, to version 1. A second one has nowhere to go:
 
 ```bash
 root@lab:~/scripts# ./deploy.sh --rollback

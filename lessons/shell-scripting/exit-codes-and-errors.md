@@ -1,10 +1,13 @@
-Every command you run reports back whether it worked. It does this with a small number called its **exit status**. A script that ignores these numbers carries on after a failure as if nothing happened, and a script that sets them carelessly tells cron, a monitor or another script that all is well when it is not.
+## What an exit status is
 
-This topic is about reading, checking and setting exit statuses. By the end you can check whether a command worked, react to failure with `&&`, `||` and `if`, send error messages to the right place, and exit with a code that means something.
+An **exit status**, or **exit code**, is a number from 0 to 255 that every command hands back to the shell when it finishes. It reports whether the command worked.
 
-## Every command has an exit status
+- A script that ignores these numbers carries on after a failure as if nothing happened.
+- A script that sets them carelessly tells cron, a monitor or another script that all is well when it is not.
 
-When a command finishes, it hands the shell a number from 0 to 255. **0 means success. Anything else means failure.** The shell keeps the status of the last command in the special variable `$?`.
+## Reading the exit status with $?
+
+**0 means success. Anything else means failure.** The shell keeps the status of the last command in the special variable `$?`.
 
 ```bash
 #!/bin/bash
@@ -23,7 +26,13 @@ ls of a missing file: 2
 and $? now: 0
 ```
 
-The last line is the trap to remember: `$?` is replaced after *every* command, including `echo`. By the third line it holds the status of the `echo` before it, which worked. If you need a status later, copy it into a variable straight away, for example `status=$?`.
+The last line is the trap to remember:
+
+- `$?` is replaced after *every* command, including `echo`.
+- By the third line it holds the status of the `echo` before it, which worked.
+- If you need a status later, copy it into a variable straight away, for example `status=$?`.
+
+## Common exit codes
 
 Zero for success can feel backwards. It makes sense once you see that there is one way to succeed and many ways to fail, and the non-zero values can say which. Some codes are used by the shell itself:
 
@@ -34,7 +43,7 @@ Zero for success can feel backwards. It makes sense once you see that there is o
 | 2 | Wrong usage, such as a bad option or a missing file for `ls` and `grep` |
 | 126 | The file was found but could not be run, usually no execute permission |
 | 127 | Command not found |
-| 130 | Stopped with Ctrl+C |
+| 130 | Stopped with <kbd>Ctrl</kbd>+<kbd>C</kbd> |
 | 128 + n | Killed by signal number n: 143 is SIGTERM (15), 137 is SIGKILL (9) |
 
 You can see several of them at the prompt:
@@ -51,9 +60,9 @@ root@lab:~/scripts# echo $?
 126
 ```
 
-130 is 128 plus 2, the number of SIGINT, the signal Ctrl+C sends. The Linux skill's *Processes* topic lists the signals.
+130 is 128 plus 2, the number of SIGINT, the signal <kbd>Ctrl</kbd>+<kbd>C</kbd> sends. The Linux skill's *Processes* topic lists the signals.
 
-## Checking whether a command worked
+## Checking whether a command worked with if
 
 `if` does not need `[ ]`. It runs any command and takes the *then* branch when that command exits with 0. So the cleanest check is to put the command itself after `if`:
 
@@ -96,6 +105,8 @@ Copying missing.conf
 
 The `if` tested the `echo`, which worked, so the failure was never reported. `if cp ...; then` cannot go wrong this way.
 
+## Short checks with && and ||
+
 For short checks, two operators do the same job on one line:
 
 - `a && b` runs `b` only if `a` succeeded.
@@ -117,7 +128,12 @@ When the middle command can fail, write a real `if`.
 
 ## Errors belong on stderr
 
-Every process has two output streams: **stdout** for its normal output and **stderr** for messages about problems. Both appear on your terminal, so the difference is easy to miss until the output is piped or captured. Here is a script that writes its error to stdout:
+Every process has two output streams:
+
+- **stdout** (*standard output*) for its normal output
+- **stderr** (*standard error*) for messages about problems
+
+Both appear on your terminal, so the difference is easy to miss until the output is piped or captured. Here is a script that writes its error to stdout:
 
 ```bash
 #!/bin/bash
@@ -149,7 +165,9 @@ root@lab:~/scripts# echo "Users: $n"
 Users: 
 ```
 
-Now the message reaches the person at the terminal, and the variable stays empty instead of holding text that looks like a result. The rule is simple: results to stdout, everything else to stderr. Start each error with the script's name, so that when several scripts run together, as they do under cron, you can tell which one complained.
+- Now the message reaches the person at the terminal, and the variable stays empty instead of holding text that looks like a result.
+- The rule: results to stdout, everything else to stderr.
+- Start each error with the script's name, so that when several scripts run together, as they do under cron, you can tell which one complained.
 
 ## Stopping with a message: the die pattern
 
@@ -159,7 +177,8 @@ Most checks in a script have the same shape: try something, and if it fails, pri
 cd "$dest" || { echo "cannot enter $dest" >&2; exit 1; }
 ```
 
-The spaces inside the braces and the `;` before `}` are required. Do not use `( )` here: parentheses run their contents in a subshell, so `exit` leaves the subshell and the script keeps going.
+- The spaces inside the braces and the `;` before `}` are required.
+- Do not use `( )` here. Parentheses run their contents in a **subshell**, a copy of the shell, so `exit` leaves the subshell and the script keeps going.
 
 When a script has many of these, give the pattern a name. A function called `die` is the usual choice:
 
@@ -211,7 +230,7 @@ root@lab:~/scripts# echo $?
 0
 ```
 
-Cron, a CI pipeline or a monitoring check would record this run as a success. Check the commands that matter and exit with a non-zero code when they fail. Some habits:
+Cron, a CI pipeline or a monitoring check would record this run as a success. Check the commands that matter, and exit with a non-zero code when they fail. Some habits:
 
 - Use `exit 1` for "it failed" and `exit 2` for "you called me wrongly", as many standard tools do.
 - If your script has several distinct failures a caller might act on differently, document the codes in the comment at the top.
@@ -238,7 +257,10 @@ grep: /no/such/app.log: No such file or directory
 PIPESTATUS: 2 0 0
 ```
 
-`grep` failed with 2, but `uniq` worked, so the pipeline reported 0. Bash keeps every command's status from the most recent pipeline in the array `PIPESTATUS`, one entry per command, left to right. Like `$?`, it is replaced by the next command, so read it immediately. The *Robust scripts* topic shows `set -o pipefail`, which makes a pipeline fail when any part of it fails.
+- `grep` failed with 2, but `uniq` worked, so the pipeline reported 0.
+- Bash keeps every command's status from the most recent pipeline in the array **`PIPESTATUS`**, one entry per command, left to right.
+- Like `$?`, it is replaced by the next command, so read it immediately.
+- The *Robust scripts* topic shows `set -o pipefail`, which makes a pipeline fail when any part of it fails.
 
 ## Example: grep's three exit codes
 
@@ -264,7 +286,9 @@ root@lab:~/scripts# echo $?
 2
 ```
 
-This is why `if grep -q ERROR app.log; then` reads so naturally: `-q` prints nothing and only sets the status. It also shows why "non-zero" does not always mean "broken". For grep, 1 is a normal answer. A script that treats every non-zero status from grep as an error will stop when a log is simply clean. Task 2 uses all three outcomes.
+- This is why `if grep -q ERROR app.log; then` reads so naturally: `-q` prints nothing and only sets the status.
+- It also shows why "non-zero" does not always mean "broken". For grep, 1 is a normal answer. A script that treats every non-zero status from grep as an error will stop when a log is simply clean.
+- Task 2 uses all three outcomes.
 
 ## Tasks
 

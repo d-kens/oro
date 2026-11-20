@@ -1,10 +1,10 @@
-Most of what you look at on a server is text: logs, config files, the output of other commands. Linux gives you many small commands that each do one thing to text, and a way to join them so the output of one becomes the input of the next. Put together, they answer questions that would otherwise need a script.
+## Text processing on Linux
 
-By the end you can send output and errors where you want them, chain commands with pipes, and cut, count, sort and rewrite lines until a log file tells you what you need to know.
+Most of what you look at on a server is text: logs, config files, the output of other commands. Linux gives you many small commands that each do one thing to text, and a way to join them so the output of one becomes the input of the next. Put together, they answer questions that would otherwise need a script.
 
 ## Creating a sample log
 
-The examples in this topic use a small web server access log. Create it in your home directory so you can follow along. Everything between the first line and `EOF` goes into the file:
+The examples in this topic use a small web server access log. An **access log** is a file in which a web server writes one line for every request it receives. Create one in your home directory so you can follow along. Everything between the first line and `EOF` goes into the file:
 
 ```bash
 $ cat > access.log <<'EOF'
@@ -21,7 +21,7 @@ $ cat > access.log <<'EOF'
 EOF
 ```
 
-Each line is one request. Split on spaces, the fields you care about are:
+Each line is one request. A **field** is one piece of a line, here separated from the next by a space. The fields you care about are:
 
 | Field | Example | Meaning |
 | --- | --- | --- |
@@ -34,7 +34,7 @@ Each line is one request. Split on spaces, the fields you care about are:
 
 ## stdin, stdout and stderr
 
-Every program starts with three **streams** already open:
+A **stream** is a channel that text flows through, into or out of a program. Every program starts with three streams already open:
 
 | Stream | Number | Normally connected to |
 | --- | --- | --- |
@@ -42,9 +42,14 @@ Every program starts with three **streams** already open:
 | **stdout** (standard output) | 1 | Your screen |
 | **stderr** (standard error) | 2 | Your screen |
 
-Normal output goes to stdout and error messages go to stderr. Both appear on your screen, so they look the same, but the shell can send them to different places.
+- Normal output goes to stdout, and error messages go to stderr.
+- Both appear on your screen, so they look the same, but the shell can send them to different places.
 
-You already know `>` and `>>`. They redirect stdout. Errors still reach the screen:
+## Redirecting output and errors
+
+**Redirection** is sending a stream somewhere other than its normal place, such as a file.
+
+You already know `>` and `>>`. They redirect stdout, so errors still reach the screen:
 
 ```bash
 $ ls /root /nope > out.txt
@@ -75,7 +80,7 @@ $ echo $?
 2
 ```
 
-`$?` holds the exit code of the last command. Zero means success; anything else means it failed.
+`$?` holds the **exit code** of the last command, a number every command returns when it finishes. Zero means success; anything else means it failed.
 
 `<` goes the other way and feeds a file to a command's stdin. `wc -l` counts lines, and when it reads from stdin it has no file name to print:
 
@@ -86,6 +91,14 @@ $ wc -l < access.log
 10
 ```
 
+| Symbol | What it does |
+| --- | --- |
+| `>` | Send stdout to a file, replacing it |
+| `>>` | Send stdout to the end of a file |
+| `2>` | Send stderr to a file |
+| `2>&1` | Send stderr to the same place as stdout |
+| `<` | Read stdin from a file |
+
 ## Pipes
 
 A **pipe**, written `|`, connects the stdout of one command to the stdin of the next. Nothing is written to disk in between.
@@ -95,20 +108,25 @@ $ grep " 404 " access.log | wc -l
 3
 ```
 
-`grep` picks out the lines with a 404 status, and `wc -l` counts them. You can chain as many commands as you like. Each one is a step, and you can build a pipeline one step at a time, checking the output before adding the next.
+`grep` picks out the lines with a 404 status, and `wc -l` counts them.
 
-`wc` on its own counts lines, words and bytes:
+- You can chain as many commands as you like. A chain of commands joined by pipes is called a **pipeline**.
+- Build a pipeline one step at a time, checking the output before adding the next.
+- Pipes carry stdout only. Errors still go to the screen unless you add `2>&1` before the `|`.
+
+`wc` on its own counts lines, words and bytes. Use `-l` for lines, `-w` for words and `-c` for bytes:
 
 ```bash
 $ wc access.log
  10 100 767 access.log
 ```
 
-Use `-l` for lines, `-w` for words and `-c` for bytes. Pipes carry stdout only. Errors still go to the screen unless you add `2>&1` before the `|`.
+## Taking out columns with cut
 
-## Cutting, counting and sorting
+`cut` takes columns out of each line.
 
-**`cut`** takes columns out of each line. `-d` sets the delimiter, the character that separates fields, and `-f` picks the fields:
+- `-d` sets the **delimiter**, the character that separates fields.
+- `-f` picks the fields.
 
 ```bash
 $ cut -d " " -f 1 access.log
@@ -133,7 +151,10 @@ GET /login HTTP/1.1
 GET /about HTTP/1.1
 ```
 
-**`sort`** puts lines in order. **`uniq`** removes a line when it is the same as the one before it, so it only works on sorted input. With `-c` it also counts how many times each line appeared:
+## Sorting and counting with sort and uniq
+
+- `sort` puts lines in order.
+- `uniq` removes a line when it is the same as the one before it, so it only works on sorted input. With `-c` it also counts how many times each line appeared.
 
 ```bash
 $ cut -d " " -f 1 access.log | sort | uniq -c
@@ -151,7 +172,7 @@ $ cut -d " " -f 9 access.log | uniq -c | head -n 3
       1 302
 ```
 
-`sort` compares text by default, so `1024` comes before `128`. Use `-n` to sort as numbers and `-r` to reverse:
+`sort` compares text by default, so `1024` comes before `128`. Use `-n` to sort as numbers:
 
 | Option | Effect |
 | --- | --- |
@@ -171,7 +192,9 @@ $ cut -d " " -f 9 access.log | sort | uniq -c | sort -rn
       1 302
 ```
 
-**`tr`** translates characters. It reads only stdin, so you always pipe into it:
+## Changing characters with tr
+
+`tr` (*translate*) replaces characters with other characters. It reads only stdin, so you always pipe into it:
 
 ```bash
 $ echo "web-01 web-02 web-03" | tr " " "\n"
@@ -182,11 +205,14 @@ $ echo "Hello World" | tr a-z A-Z
 HELLO WORLD
 ```
 
-`tr -s " "` squeezes runs of spaces into one, which helps before `cut` when columns are lined up with several spaces.
+`tr -s " "` squeezes runs of spaces into one. That helps before `cut` when columns are lined up with several spaces.
 
-## sed and awk
+## Replacing text with sed
 
-**`sed`** edits a stream of text. You will mostly use it for one thing, substitution: `s/old/new/` replaces the first match on each line, and `s/old/new/g` replaces every match.
+`sed` (*stream editor*) edits text as it flows through. You will mostly use it for **substitution**, replacing one piece of text with another:
+
+- `s/old/new/` replaces the first match on each line.
+- `s/old/new/g` replaces every match.
 
 ```bash
 $ sed "s/HTTP\/1.1/HTTP\/2/" access.log | head -n 2
@@ -194,11 +220,14 @@ $ sed "s/HTTP\/1.1/HTTP\/2/" access.log | head -n 2
 198.51.100.7 - - [24/Oct/2026:09:00:03 +0000] "GET /login HTTP/2" 200 1024
 ```
 
-The slashes in the path need a backslash in front so `sed` does not read them as separators. Any character can be the separator, so `s|HTTP/1.1|HTTP/2|` is easier to read.
+- The slashes in the text need a backslash in front, so `sed` does not read them as separators.
+- Any character can be the separator, so `s|HTTP/1.1|HTTP/2|` is easier to read.
 
 `sed` prints the changed text and leaves the file alone. `sed -i` edits the file in place. Try the command without `-i` first, and only add it once the output looks right.
 
-**`awk`** splits each line on whitespace into fields named `$1`, `$2` and so on, and runs a small program on them. Unlike `cut`, it treats any run of spaces as one separator.
+## Working with fields in awk
+
+`awk` splits each line on whitespace into fields named `$1`, `$2` and so on, and runs a small program on them. Unlike `cut`, it treats any run of spaces as one separator.
 
 ```bash
 $ awk '{print $1, $9}' access.log | head -n 3
@@ -224,11 +253,12 @@ $ awk '{sum += $10} END {print sum}' access.log
 9152
 ```
 
-Use single quotes around `awk` programs. In double quotes the shell would replace `$1` with its own variable before `awk` sees it. `-F` sets a different separator, for example `awk -F: '{print $1}' /etc/passwd` for the user names.
+- Use single quotes around `awk` programs. In double quotes the shell would replace `$1` with its own variable before `awk` sees it.
+- `-F` sets a different separator, for example `awk -F: '{print $1}' /etc/passwd` for the user names.
 
 ## tee, xargs and $(…)
 
-**`tee`** copies its input to a file and also passes it on down the pipe. Use it to save a step's output while you keep working on it:
+`tee` copies its input to a file and also passes it on down the pipe. Use it to save a step's output while you keep working on it:
 
 ```bash
 $ grep " 404 " access.log | tee notfound.log | wc -l
@@ -239,15 +269,16 @@ $ wc -l < notfound.log
 
 `tee -a` appends instead of replacing.
 
-**`xargs`** turns lines from stdin into arguments for another command. Some commands, such as `rm` and `wc` with file names, take their input as arguments rather than reading stdin, and `xargs` bridges the gap:
+`xargs` turns lines from stdin into arguments for another command. Some commands, such as `rm`, and `wc` with file names, take their input as arguments rather than reading stdin, and `xargs` bridges the gap:
 
 ```bash
 $ find /var/log -name "*.log" | xargs wc -l
 ```
 
-This counts the lines in every `.log` file `find` returns. File names with spaces confuse plain `xargs`; for those use `find … -print0 | xargs -0`.
+- This counts the lines in every `.log` file `find` returns.
+- File names with spaces confuse plain `xargs`. For those, use `find … -print0 | xargs -0`.
 
-**`$(…)`** runs a command and puts its output in place, as you saw in the first topic. It works anywhere in a command line:
+`$(…)` runs a command and puts its output in place, as you saw in the first topic. It works anywhere in a command line:
 
 ```bash
 $ echo "access.log has $(wc -l < access.log) requests"
@@ -258,20 +289,20 @@ access.log has 10 requests
 
 Say you want to know which client caused the most errors. Build the answer one step at a time.
 
-Keep only the failed requests, those with a status that is not 200:
+1. Keep only the failed requests, those with a status that is not 200:
 
-```bash
-$ grep -v " 200 " access.log
-```
+   ```bash
+   $ grep -v " 200 " access.log
+   ```
 
-Take the IP address from each of those lines, count each one, put the largest count first, and keep the top line:
+2. Take the IP address from each of those lines, count each one, put the largest count first, and keep the top line:
 
-```bash
-$ grep -v " 200 " access.log | awk '{print $1}' | sort | uniq -c | sort -rn | head -n 1
-      3 203.0.113.5
-```
+   ```bash
+   $ grep -v " 200 " access.log | awk '{print $1}' | sort | uniq -c | sort -rn | head -n 1
+         3 203.0.113.5
+   ```
 
-Each part is simple. Reading it back from left to right tells you exactly how the answer was reached, which is why people paste pipelines like this into incident notes. The same shape answers "which paths are requested most", "which status codes appear" or "which hours were busiest". Only the first step and the field you pick change.
+Each part is simple, and reading it back from left to right tells you exactly how the answer was reached. The same shape answers "which paths are requested most", "which status codes appear" or "which hours were busiest". Only the first step and the field you pick change.
 
 ## Tasks
 

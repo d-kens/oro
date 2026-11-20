@@ -1,6 +1,12 @@
-Almost every service you run in the cloud speaks HTTP: websites, APIs, health checks, the calls a load balancer makes to see whether a server is alive. When a request fails, the answer is usually written in plain text in the response, if you know where to look.
+## What HTTP is
 
-HTTP is a text conversation over a TCP connection. The client sends a request, the server sends back a response, and both follow a fixed shape. This topic covers that shape, methods and status codes, the headers that matter, redirects, and sending JSON. By the end you can read a request and a response line by line, tell what a status code means from its first digit, debug a redirect, and call an API with curl.
+**HTTP** (*Hypertext Transfer Protocol*) is the protocol web browsers, APIs and health checks use to ask a server for something and get an answer. It is a text conversation over a TCP connection:
+
+- The client sends a **request**.
+- The server sends back a **response**.
+- Both follow a fixed shape.
+
+Almost every service you run in the cloud speaks HTTP: websites, APIs, health checks, the calls a load balancer makes to see whether a server is alive. When a request fails, the answer is usually written in plain text in the response, if you know where to look.
 
 ## A request and a response
 
@@ -41,6 +47,8 @@ root@alpha:/# curl -v http://beta:8000/
 
 The lines starting with `*` are curl's own notes: the name lookup and the TCP connection, which earlier topics covered. Then comes HTTP itself.
 
+## The parts of a request and a response
+
 The **request** has three parts:
 
 - The **request line**: `GET / HTTP/1.1`. A method, a path, and the protocol version.
@@ -59,7 +67,12 @@ On beta, the server logs one line per request, with the client's address, the re
 10.10.0.2 - - [25/Oct/2026 07:25:58] "GET / HTTP/1.1" 200 -
 ```
 
-Because HTTP/1.1 is plain text, you can also send a request without curl. `nc`, from the *Ports and sockets* topic, opens the TCP connection, and you supply the text. Each line must end in a carriage return and a newline (`\r\n`), and a blank line ends the headers:
+## Sending a request by hand with nc
+
+Because HTTP/1.1 is plain text, you can also send a request without curl. `nc`, from the *Ports and sockets* topic, opens the TCP connection, and you supply the text.
+
+- Each line must end in a carriage return and a newline (`\r\n`).
+- A blank line ends the headers.
 
 ```bash
 root@alpha:/# printf "GET / HTTP/1.1\r\nHost: beta\r\n\r\n" | nc -N beta 8000
@@ -77,7 +90,7 @@ This is everything a browser does when it fetches a page, apart from the extra h
 
 ## Methods
 
-The **method** says what the client wants to do with the resource named by the path.
+A **resource** is the thing a path names on the server, such as a page, a file or a record in an API. The **method** says what the client wants to do with it.
 
 | Method | Meaning | Has a request body |
 | --- | --- | --- |
@@ -88,9 +101,16 @@ The **method** says what the client wants to do with the resource named by the p
 | `PATCH` | Change part of the resource | Yes |
 | `DELETE` | Remove the resource | Usually no |
 
-`GET` and `HEAD` should never change anything on the server, so they are safe to retry. `PUT` and `DELETE` should give the same result if repeated. `POST` makes no such promise: sending the same order twice may create two orders. Load balancers and HTTP clients use these rules to decide what they may retry after a timeout.
+- `GET` and `HEAD` should never change anything on the server, so they are safe to retry.
+- `PUT` and `DELETE` should give the same result if repeated.
+- `POST` makes no such promise: sending the same order twice may create two orders.
+- Load balancers and HTTP clients use these rules to decide what they may retry after a timeout.
 
-curl sends `GET` by default. `-I` sends `HEAD`, which is handy for checking a server without downloading a large body. `-X` sets any method, and `-i` prints the response headers before the body:
+curl sends `GET` by default:
+
+- `-I` sends `HEAD`, which is handy for checking a server without downloading a large body.
+- `-X` sets any method.
+- `-i` prints the response headers before the body.
 
 ```bash
 root@alpha:/# curl -i -X POST http://beta:8000/
@@ -123,11 +143,24 @@ root@alpha:/# curl http://beta:9999/
 curl: (7) Failed to connect to beta port 9999 after 0 ms: Couldn't connect to server
 ```
 
-A 404 is still a successful conversation: the network worked, the server is running, and it answered. The second request got no HTTP at all, only a refused TCP connection. When you troubleshoot, always ask first whether you got a status code. If you did, the network is fine and the problem is in the application or its configuration. The `502` and `504` codes come from a proxy in front of the application, and mean the proxy could not get a good answer from it; the *Reverse proxy and load balancing* topic covers them.
+- A 404 is still a successful conversation: the network worked, the server is running, and it answered.
+- The second request got no HTTP at all, only a refused TCP connection.
+
+When you troubleshoot, always ask first whether you got a status code. If you did, the network is fine and the problem is in the application or its configuration.
+
+The `502` and `504` codes come from a **proxy**, a server that sits in front of the application and passes requests on to it. They mean the proxy could not get a good answer from the application. The *Reverse proxy and load balancing* topic covers them.
 
 ## Headers
 
-Stop the file server with <kbd>Ctrl</kbd>+<kbd>C</kbd>. In its place, run a small server that answers every `GET` with a JSON description of the request it received, has two paths that redirect, and accepts JSON sent with `POST`. Paste this whole block into beta's shell:
+A **header** is one `Name: value` line in a request or a response, giving extra information about it.
+
+Stop the file server with <kbd>Ctrl</kbd>+<kbd>C</kbd>. In its place, run a small server that:
+
+- answers every `GET` with a JSON description of the request it received
+- has two paths that redirect
+- accepts JSON sent with `POST`
+
+Paste this whole block into beta's shell:
 
 ```bash
 root@beta:/# cat > /root/echo.py <<'EOF'
@@ -197,13 +230,33 @@ These are the request headers you will meet most:
 | `Content-Type` | The format of the request body, when there is one |
 | `Authorization` | Credentials or a token |
 
-`Host` is the most important. One IP address can serve many sites, and the server picks which one by reading `Host`. If you call a server by its IP address, or through a tunnel, and get the wrong site or a 404, a wrong `Host` is a likely reason. Headers starting with `X-` are not part of the standard; applications and proxies make them up for their own use, such as tracing one request through several services. `Authorization` headers carry secrets, and `curl -v` prints them, so do not paste its output into tickets or chat.
+`Host` is the most important:
 
-On the response side, a group of headers controls **caching**: whether a browser, a proxy or a content delivery network may keep a copy and reuse it instead of asking again. `Cache-Control: max-age=14400` allows a copy to be reused for four hours, and `Cache-Control: no-store` forbids keeping one. `Age` says how many seconds an answer has sat in a cache. `curl -sI https://example.org/` shows real values. Caching explains a common puzzle: you deploy a change, but some users still see the old page, because a cache has not yet expired its copy.
+- One IP address can serve many sites, and the server picks which one by reading `Host`.
+- If you call a server by its IP address, or through a tunnel, and get the wrong site or a 404, a wrong `Host` is a likely reason.
+
+Two more things to know about request headers:
+
+- Headers starting with `X-` are not part of the standard. Applications and proxies make them up for their own use, such as tracing one request through several services.
+- `Authorization` headers carry secrets, and `curl -v` prints them, so do not paste its output into tickets or chat.
+
+## Caching headers
+
+**Caching**, in HTTP, means a browser, a proxy or a content delivery network keeping a copy of a response and reusing it instead of asking again. A group of response headers controls it:
+
+- `Cache-Control: max-age=14400` allows a copy to be reused for four hours.
+- `Cache-Control: no-store` forbids keeping one.
+- `Age` says how many seconds an answer has sat in a cache.
+
+`curl -sI https://example.org/` shows real values. Caching explains a common puzzle: you deploy a change, but some users still see the old page, because a cache has not yet expired its copy.
 
 ## Redirects
 
-A `3xx` status with a `Location` header tells the client to ask somewhere else. Sites use redirects to move pages, to send `http://` to `https://`, and to add or remove `www.`. By default curl shows the redirect and stops, which is what you want when you are debugging one. Add `-L` to follow it. With `-i` as well, you see each response in turn; `grep` keeps just the status lines and the `Location`:
+A **redirect** is a `3xx` response with a `Location` header, telling the client to ask somewhere else. Sites use redirects to move pages, to send `http://` to `https://`, and to add or remove `www.`.
+
+- By default curl shows the redirect and stops, which is what you want when you are debugging one.
+- Add `-L` to follow it.
+- With `-i` as well, you see each response in turn. `grep` keeps just the status lines and the `Location`:
 
 ```bash
 root@alpha:/# curl -siL http://beta:8000/old | grep -E '^(HTTP|Location)'
@@ -221,13 +274,23 @@ root@alpha:/# curl -L http://beta:8000/loop
 curl: (47) Maximum (50) redirects followed
 ```
 
-In a browser the same thing shows as "too many redirects". In real systems a loop usually comes from two layers disagreeing: for example, a load balancer that ends HTTPS and talks plain HTTP to the server, and a server that redirects every plain HTTP request to HTTPS.
+- In a browser the same thing shows as "too many redirects".
+- In real systems a loop usually comes from two layers disagreeing. For example, a load balancer that ends HTTPS and talks plain HTTP to the server, and a server that redirects every plain HTTP request to HTTPS.
 
 ## Sending JSON
 
-**JSON** is the usual format for API bodies: objects in braces with quoted keys, lists in square brackets, strings in double quotes, and numbers, `true`, `false` and `null` as they are.
+**JSON** (*JavaScript Object Notation*) is the usual format for API bodies:
 
-To send it with curl, put the body after `-d`, which makes the request a `POST` on its own. Wrap the JSON in single quotes so the shell leaves the double quotes alone, and set `Content-Type`, because curl otherwise labels the body as form data:
+- objects in braces, with quoted keys
+- lists in square brackets
+- strings in double quotes
+- numbers, `true`, `false` and `null` as they are
+
+To send it with curl:
+
+- Put the body after `-d`, which makes the request a `POST` on its own.
+- Wrap the JSON in single quotes, so the shell leaves the double quotes alone.
+- Set `Content-Type`, because curl otherwise labels the body as form data.
 
 ```bash
 root@alpha:/# curl -i -H "Content-Type: application/json" -d '{"name": "web-01", "port": 8080}' http://beta:8000/servers
@@ -245,11 +308,19 @@ Content-Length: 63
 }
 ```
 
-Many real APIs check `Content-Type` and answer `415 Unsupported Media Type` or a confusing `400` without it. Newer versions of curl have `--json`, which sets both `Content-Type` and `Accept` for you. Unquoted keys, single quotes and a trailing comma are the usual mistakes in JSON. To read a JSON response that arrives on one long line, pipe it through `python3 -m json.tool`.
+- Many real APIs check `Content-Type` and answer `415 Unsupported Media Type`, or a confusing `400`, without it.
+- Newer versions of curl have `--json`, which sets both `Content-Type` and `Accept` for you.
+- Unquoted keys, single quotes and a trailing comma are the usual mistakes in JSON.
+- To read a JSON response that arrives on one long line, pipe it through `python3 -m json.tool`.
 
 ## HTTP/2
 
-Over HTTPS, most sites use **HTTP/2**. It carries the same methods, headers and status codes in a binary format, and can send many requests at once over one connection. curl and the server agree on it during the TLS handshake; `curl -s -o /dev/null -w "%{http_version}\n" https://example.com/` prints `2`. In HTTP/2 output, header names are in lower case and the status line has no reason phrase. The *TLS and HTTPS* topic covers the encryption underneath.
+**HTTP/2** is the newer version of HTTP that most sites use over HTTPS.
+
+- It carries the same methods, headers and status codes in a binary format, and can send many requests at once over one connection.
+- curl and the server agree on it during the TLS handshake. `curl -s -o /dev/null -w "%{http_version}\n" https://example.com/` prints `2`.
+- In HTTP/2 output, header names are in lower case and the status line has no reason phrase.
+- The *TLS and HTTPS* topic covers the encryption underneath.
 
 ## Tasks
 

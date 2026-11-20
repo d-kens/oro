@@ -1,8 +1,6 @@
-Linux was built for many people sharing one machine, and servers still work that way. Every file has an owner, every running program runs as some user, and a short set of permissions decides who can read a file, change it or run it. When a command fails with `Permission denied`, the answer is almost always in this topic.
+## Users and user IDs
 
-By the end you can create users and groups, read the permissions in a long listing, change them with `chmod` in both of its forms, change a file's owner with `chown`, and run a single command as root with `sudo`.
-
-## Users and groups
+A **user** is an account on a Linux machine. Every file has a user that owns it, and every running program runs as some user. Linux was built for many people sharing one machine, and servers still work that way.
 
 Every user has a name and a number, the **user ID** or *UID*. The kernel only cares about the number; the name is for you. `id` shows who you are and which groups you belong to:
 
@@ -11,11 +9,13 @@ $ id
 uid=0(root) gid=0(root) groups=0(root)
 ```
 
-**root** always has UID 0 and can do anything. Everyone else is an ordinary user, limited by permissions.
+- **root** always has UID 0 and can do anything.
+- Everyone else is an ordinary user, limited by permissions.
+- When a command fails with `Permission denied`, the answer is almost always in this topic.
 
-A **group** is a named set of users. Groups let you give several people the same access without listing each one: you give the access to the group, then add people to it.
+## Creating users with useradd
 
-Create a user called `sam`. `-m` makes a home directory and `-s` sets the login shell:
+`useradd` creates a user. Create one called `sam`:
 
 ```bash
 $ useradd -m -s /bin/bash sam
@@ -23,18 +23,37 @@ $ id sam
 uid=1001(sam) gid=1001(sam) groups=1001(sam)
 ```
 
-The Ubuntu image already has a user called `ubuntu` with UID 1000, so `sam` gets 1001. Each new user also gets a group of the same name. Users are stored one per line in `/etc/passwd`:
+- `-m` makes a home directory, `/home/sam`.
+- `-s` sets the **login shell**, the shell the user gets when they log in.
+- The Ubuntu image already has a user called `ubuntu` with UID 1000, so `sam` gets 1001.
+- Each new user also gets a group of the same name.
+
+Users are stored one per line in `/etc/passwd`:
 
 ```bash
 $ grep sam /etc/passwd
 sam:x:1001:1001::/home/sam:/bin/bash
 ```
 
-The fields are the name, a placeholder for the password, the UID, the main group's ID, a comment, the home directory and the shell. Passwords themselves are stored, scrambled, in `/etc/shadow`, which only root can read. Set one with `passwd sam`.
+The fields, separated by `:`, are:
+
+1. the name
+2. a placeholder for the password (`x`)
+3. the UID
+4. the ID of the user's main group
+5. a comment, empty here
+6. the home directory
+7. the shell
+
+Passwords themselves are stored, scrambled, in `/etc/shadow`, which only root can read. Set one with `passwd sam`.
 
 On Debian and Ubuntu you will also meet `adduser`, a friendlier command that asks questions as it goes. `useradd` works the same on every distribution.
 
-Now create a group and add `sam` to it:
+## Groups
+
+A **group** is a named set of users. Groups let you give several people the same access without listing each one: you give the access to the group, then add people to it.
+
+Create a group and add `sam` to it:
 
 ```bash
 $ groupadd devs
@@ -43,11 +62,13 @@ $ id sam
 uid=1001(sam) gid=1001(sam) groups=1001(sam),1002(devs)
 ```
 
-`-aG` means *append to these groups*. Without the `-a`, `usermod -G` replaces all of the user's extra groups with the ones you list, which can silently remove someone's access.
+- `groupadd` creates a group.
+- `usermod` changes an existing user.
+- `-aG` means *append to these groups*. Without the `-a`, `usermod -G` replaces all of the user's extra groups with the ones you list, which can silently remove someone's access.
 
 ## Switching user with su
 
-`su` (*substitute user*) starts a shell as another user. With `-` it starts a fresh login, so you land in that user's home directory with their settings. As root you are not asked for a password.
+`su` (*substitute user*) starts a shell as another user:
 
 ```bash
 $ su - sam
@@ -59,11 +80,16 @@ sam@lab:~$ exit
 logout
 ```
 
-The prompt ends in `$` again, because `sam` is an ordinary user. `exit` takes you back to root. A user's group membership is read when they log in, so after you add someone to a group they need to log in again, or run a new `su -`, before it takes effect.
+- With `-`, it starts a fresh login, so you land in that user's home directory with their settings.
+- As root you are not asked for a password.
+- The prompt ends in `$` again, because `sam` is an ordinary user. `exit` takes you back to root.
+- `su - sam -c '…'` runs one command as `sam` and comes straight back.
+
+A user's groups are read when they log in. After you add someone to a group, they need to log in again, or run a new `su -`, before it takes effect.
 
 ## Reading permissions
 
-The long listing from `ls -l` shows permissions in the first column:
+**Permissions** decide who can read a file, change it or run it. The long listing from `ls -l` shows them in the first column:
 
 ```bash
 $ ls -l /etc/passwd /etc/shadow
@@ -80,7 +106,11 @@ Read `-rw-r-----` in four parts:
 | Group | `r--` | Members of the group `shadow` can read |
 | Others | `---` | Everyone else can do nothing |
 
-Linux checks only one set: if you are the owner, it uses the owner's; if you are in the group, the group's; otherwise the others'.
+Linux checks only one of the three sets:
+
+- If you are the owner, it uses the owner's set.
+- Otherwise, if you are in the file's group, it uses the group's set.
+- Otherwise it uses the others' set.
 
 The three letters mean slightly different things for files and directories:
 
@@ -97,13 +127,15 @@ $ su - sam -c 'ls /root'
 ls: cannot open directory '/root': Permission denied
 ```
 
-`su - sam -c '…'` runs one command as `sam` and comes straight back.
-
 ## Changing permissions with chmod
 
-Only a file's owner and root can change its permissions. `chmod` takes the new permissions in one of two forms.
+`chmod` (*change mode*) changes a file's permissions. Only the file's owner and root can use it. It takes the new permissions in one of two forms.
 
-The **symbolic** form names who, an operator and the permissions. Who is `u` (user, the owner), `g` (group), `o` (others) or `a` (all three). The operator is `+` to add, `-` to remove or `=` to set exactly.
+The **symbolic form** is written as who, an operator, and the permissions:
+
+- Who is `u` (user, the owner), `g` (group), `o` (others) or `a` (all three).
+- The operator is `+` to add, `-` to remove, or `=` to set exactly.
+- `u+x` means "give the owner execute". `go-r` means "take read away from the group and others".
 
 ```bash
 $ echo 'echo hello' > hello.sh
@@ -117,7 +149,7 @@ $ ls -l hello.sh
 -rwx------ 1 root root 11 Oct 24 11:19 hello.sh
 ```
 
-The **octal** form gives all three sets as one number each. Add up `r` = 4, `w` = 2 and `x` = 1:
+The **octal form** gives each of the three sets as one digit. Add up `r` = 4, `w` = 2 and `x` = 1, so `rwx` is 7, `rw-` is 6 and `r-x` is 5:
 
 | Number | Letters | Common use |
 | --- | --- | --- |
@@ -133,11 +165,15 @@ $ ls -l hello.sh
 -rw-r----- 1 root root 11 Oct 24 11:19 hello.sh
 ```
 
-Use the symbolic form to change one thing and leave the rest alone, and the octal form to set everything at once. `chmod -R` changes a whole directory tree; be careful with it.
+Which form to use:
+
+- The symbolic form changes one thing and leaves the rest alone.
+- The octal form sets everything at once.
+- `chmod -R` changes a whole directory tree. Be careful with it.
 
 ## Changing owners with chown
 
-`chown` changes a file's owner, and with `owner:group` the group as well. `chgrp` changes only the group. Only root can give a file away:
+`chown` (*change owner*) changes a file's owner, and with `owner:group` the group as well. `chgrp` changes only the group. Only root can give a file to another user:
 
 ```bash
 $ touch /tmp/app.log
@@ -148,13 +184,15 @@ $ su - sam -c 'chown root /tmp/app.log'
 chown: changing ownership of '/tmp/app.log': Operation not permitted
 ```
 
-`sam` owns the file now, but still cannot hand it to someone else.
-
-`chown -R sam:devs /srv/app` changes a directory and everything in it.
+- `sam` owns the file now, but still cannot hand it to someone else.
+- `chown -R sam:devs /srv/app` changes a directory and everything in it.
 
 ## Running a command as root with sudo
 
-On a real server you log in as yourself and become root only for the commands that need it. `sudo` runs one command as root, after asking for *your* password. It also records who ran what, so a team can see who changed the machine.
+`sudo` (*superuser do*) runs one command as root, after asking for *your* password.
+
+- On a real server you log in as yourself and become root only for the commands that need it.
+- `sudo` records who ran what, so a team can see who changed the machine.
 
 The Docker image does not include `sudo`, so install it, give `sam` a password, and try it:
 
@@ -167,7 +205,12 @@ sam@lab:~$ sudo whoami
 sam is not in the sudoers file.
 ```
 
-`sudo` only works for users it has been told to trust. On Ubuntu that means members of the group `sudo`; on Red Hat and Amazon Linux the group is called `wheel`. Back as root, add `sam` to the group and try again:
+`sudo` only works for users it has been told to trust:
+
+- On Ubuntu, that means members of the group `sudo`.
+- On Red Hat and Amazon Linux, the group is called `wheel`.
+
+Back as root, add `sam` to the group and try again:
 
 ```bash
 $ usermod -aG sudo sam
@@ -177,7 +220,8 @@ sam@lab:~$ sudo whoami
 root
 ```
 
-`sudo -l` lists what you are allowed to run. Use `sudo` for the one command that needs root, such as `sudo nano /etc/hosts`, rather than staying logged in as root.
+- `sudo -l` lists what you are allowed to run.
+- Use `sudo` for the one command that needs root, such as `sudo nano /etc/hosts`, rather than staying logged in as root.
 
 ## Tasks
 

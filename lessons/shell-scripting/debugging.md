@@ -1,6 +1,14 @@
-Shell scripts fail in quiet ways. A file name with a space splits into two words, a variable is empty when you thought it was set, a test compares text when you meant numbers. The script often finishes and prints a cheerful message, and the problem shows up later somewhere else.
+## What debugging is
 
-This topic gives you the tools to see what a script is actually doing. By the end you can check a script's syntax without running it, trace every command it runs with line numbers, use ShellCheck to find bugs before they happen, and follow a steady method to track a fault down to one line.
+**Debugging** is finding out why a program does not do what you expected, and fixing it. A fault in a program is called a **bug**.
+
+Shell scripts fail in quiet ways:
+
+- A file name with a space splits into two words.
+- A variable is empty when you thought it was set.
+- A test compares text when you meant numbers.
+
+The script often finishes and prints a cheerful message, and the problem shows up later somewhere else. This topic gives you the tools to see what a script is actually doing.
 
 ## Reading the error and checking the syntax
 
@@ -11,7 +19,7 @@ root@lab:~/scripts# ./backup-home.sh nosuch
 ./backup-home.sh: line 6: cd: /home/nosuch: No such file or directory
 ```
 
-Syntax errors are different, because the line number can point well past the real mistake. This script is missing its `fi`:
+A **syntax error** is a mistake in the grammar of the script, such as a missing `fi` or quote. Syntax errors are different, because the line number can point well past the real mistake. This script is missing its `fi`:
 
 ```bash
 #!/bin/bash
@@ -32,11 +40,14 @@ root@lab:~/scripts# echo $?
 2
 ```
 
-The script has seven lines. "Unexpected end of file" means Bash reached the end while still waiting for something to be closed: a `fi`, `done`, `esac`, `}` or a quote. Look back from the end for the block that was opened and never closed. `bash -n` is quick and safe, so it is worth running before you try a script that deletes or moves things. It does not catch mistakes in logic, only in grammar.
+- The script has seven lines. "Unexpected end of file" means Bash reached the end while still waiting for something to be closed: a `fi`, `done`, `esac`, `}` or a quote.
+- Look back from the end for the block that was opened and never closed.
+- `bash -n` is quick and safe, so it is worth running before you try a script that deletes or moves things.
+- It does not catch mistakes in logic, only in grammar.
 
 ## Tracing with set -x
 
-**`set -x`** makes Bash print each command just before it runs it, after variables and substitutions have been expanded. You see what the script really did, not what you meant it to do.
+**Tracing** is printing each command as it runs. **`set -x`** turns it on: Bash prints each command just before it runs it, after variables and substitutions have been expanded. You see what the script really did, not what you meant it to do.
 
 Here is a script that should move week-old `.log` files into an archive folder. It has bugs:
 
@@ -97,9 +108,11 @@ mv: cannot stat './web': No such file or directory
 ...
 ```
 
-Each `+` line is a command; `++` means it ran inside a command substitution. The trace shows the problem directly: the loop got `./web` and `01.log` as two separate values. The unquoted `$(find ...)` was split on the space in `web 01.log`, exactly the word splitting the *Shell variables* topic warned about.
+- Each `+` line is a command; `++` means it ran inside a command substitution.
+- The trace shows the problem directly: the loop got `./web` and `01.log` as two separate values.
+- The unquoted `$(find ...)` was split on the space in `web 01.log`, exactly the word splitting the *Shell variables* topic warned about.
 
-### Line numbers in the trace
+## Line numbers in the trace
 
 The `+` at the start of each line comes from the variable **`PS4`**. Set it to include `$LINENO` and every traced line says where it came from. Put it in single quotes, so the line number is filled in as each command runs:
 
@@ -109,7 +122,7 @@ PS4='+ line ${LINENO}: '
 
 Bash does not take `PS4` from the environment when you are root, so set it inside the script, near the top.
 
-### Tracing part of a script
+## Tracing part of a script
 
 A full trace of a long script is hard to read. Turn tracing on just before the part you suspect with `set -x`, and off again with `set +x`:
 
@@ -143,11 +156,12 @@ mv: cannot stat './web': No such file or directory
 Archived logs from /var/log/app to /tmp/archive
 ```
 
-The trace goes to stderr, so `./script.sh 2> trace.txt` saves it to a file while normal output stays on the screen. Take tracing out again when you are done: it prints the values of every variable, including any secrets.
+- The trace goes to stderr, so `./script.sh 2> trace.txt` saves it to a file while normal output stays on the screen.
+- Take tracing out again when you are done. It prints the values of every variable, including any secrets.
 
 ## ShellCheck
 
-**ShellCheck** reads a script and points out mistakes that Bash itself accepts: missing quotes, unchecked `cd`, tests that compare the wrong way. It is the closest thing the shell has to a compiler warning, and it would have found every bug in `archive-logs.sh` before it ran. Install it in the container:
+**ShellCheck** is a **linter** for shell scripts: a program that reads code without running it and points out likely mistakes. It finds mistakes that Bash itself accepts, such as missing quotes, an unchecked `cd`, or tests that compare the wrong way. It would have found every bug in `archive-logs.sh` before it ran. Install it in the container:
 
 ```bash
 root@lab:~/scripts# apt update && apt install -y shellcheck
@@ -202,7 +216,11 @@ Every warning has a code, and each code has a page on the ShellCheck wiki at `ht
 | SC2006 | Backticks are the old form of command substitution | Use `$(...)` |
 | SC2071 | `>` inside `[ ]` compares as text, or redirects | Use `-gt` |
 
-The "Did you mean" suggestions are a start, not always the best fix. For `mv $1 $dest/$name.old` it quotes only the parts it is sure of; quoting the whole path, `"$dest/$name.old"`, is clearer. Here is the script with every warning dealt with:
+The "Did you mean" suggestions are a start, not always the best fix. For `mv $1 $dest/$name.old` it quotes only the parts it is sure of; quoting the whole path, `"$dest/$name.old"`, is clearer.
+
+## Fixing the warnings
+
+Here is the script with every warning dealt with:
 
 ```bash
 #!/bin/bash
@@ -234,9 +252,14 @@ root@lab:~/scripts# ls /tmp/archive
 api.log.old  'web 01.log.old'
 ```
 
-No output from ShellCheck means no warnings. `-print0` ends each name with a null character, which cannot appear in a file name, and `read -d ''` splits on it, so names with spaces stay whole. The *Loops* topic covers `while read`.
+- No output from ShellCheck means no warnings.
+- `-print0` ends each name with a null character, which cannot appear in a file name, and `read -d ''` splits on it, so names with spaces stay whole. The *Loops* topic covers `while read`.
 
-Sometimes a warning is wrong for your case. Silence that one line with a comment directly above it, such as `# shellcheck disable=SC2086`, and add a few words on why. Do not silence warnings just to get a clean run. Most editors can run ShellCheck as you type, which catches these mistakes as you write them.
+Sometimes a warning is wrong for your case:
+
+- Silence that one line with a comment directly above it, such as `# shellcheck disable=SC2086`, and add a few words on why.
+- Do not silence warnings just to get a clean run.
+- Most editors can run ShellCheck as you type, which catches these mistakes as you write them.
 
 ## Printing your own debug messages
 
@@ -275,7 +298,8 @@ root@lab:~/scripts# DEBUG=1 ./sum-sizes.sh 2> /dev/null
 Total: 11455 bytes
 ```
 
-`DEBUG=1 ./sum-sizes.sh` sets the variable for that one run. The mistake to avoid is debug `echo`s on stdout: in a script whose output is captured with `$( )`, they become part of the result and cause a second bug while you hunt the first.
+- `DEBUG=1 ./sum-sizes.sh` sets the variable for that one run.
+- The mistake to avoid is debug `echo`s on stdout. In a script whose output is captured with `$( )`, they become part of the result and cause a second bug while you hunt the first.
 
 ## A step-by-step debugging method
 

@@ -1,10 +1,8 @@
-The shell is more than a place to type commands. It keeps settings that every program you start can read, it decides which program a name like `ls` means, and it reads a few files when it starts that you can change. Most "it works in my terminal but not in the script" problems come down to these.
+## Shell variables
 
-By the end you can read and set environment variables, explain how the shell finds a command through `PATH`, add your own directory to it, make aliases, and put your settings in the right startup file so they last.
+The shell keeps settings that every program you start can read, decides which program a name like `ls` means, and reads a few files when it starts. Most "it works in my terminal but not in the script" problems come down to these.
 
-## Variables and the environment
-
-A **shell variable** is a name with a value. Set it with `=` and no spaces around it, and read it with `$` in front:
+A **shell variable** is a name that holds a value. Set it with `=` and no spaces around it, and read it with `$` in front:
 
 ```bash
 $ GREETING=hello
@@ -16,7 +14,11 @@ bash: GREETING: command not found
 
 With spaces, the shell reads `GREETING` as a command name.
 
-Some variables are part of the **environment**: a set of names and values that every program receives from the program that started it. Programs read their settings from it. `env` lists the environment, and `printenv` prints one value:
+## The environment
+
+The **environment** is a set of names and values that every program receives from the program that started it. Programs read their settings from it. Variables in the environment are called **environment variables**.
+
+`env` lists the environment, and `printenv` prints one value:
 
 ```bash
 $ env
@@ -55,7 +57,10 @@ $ bash -c 'echo "child sees: [$APP_ENV]"'
 child sees: [staging]
 ```
 
-You can set and export in one step with `export APP_ENV=staging`. The single quotes stop your shell from replacing `$APP_ENV` itself, so the child shell does it.
+- `bash -c '…'` starts a new shell, a **child** of yours, to run one command.
+- The single quotes stop your shell from replacing `$APP_ENV` itself, so the child shell does it.
+- You can set and export in one step with `export APP_ENV=staging`.
+- `unset APP_ENV` removes a variable.
 
 To give a variable to one command only, put it in front of that command:
 
@@ -63,24 +68,24 @@ To give a variable to one command only, put it in front of that command:
 $ LOG_LEVEL=debug ./app.sh
 ```
 
-`./app.sh` sees `LOG_LEVEL=debug`; your shell does not keep it. `unset APP_ENV` removes a variable.
+`./app.sh` sees `LOG_LEVEL=debug`; your shell does not keep it.
 
-A child gets a **copy**. Changes it makes never reach the parent shell. That is why a script that runs `export` or `cd` does not change your shell once it finishes.
+A child gets a **copy** of the environment. Changes it makes never reach the parent shell. That is why a script that runs `export` or `cd` does not change your shell once it finishes.
 
 ## PATH and how a command is found
 
-When you type `ls`, the shell has to find a program called `ls`. It checks in this order:
-
-1. **Aliases**, which are covered below.
-2. **Built-in commands**, part of the shell itself, such as `cd`, `echo` and `export`.
-3. Each directory in **`PATH`**, from left to right. The first match wins.
-
-`PATH` is a list of directories separated by colons:
+**`PATH`** is the environment variable that lists the directories the shell searches for commands. The directories are separated by colons:
 
 ```bash
 $ echo $PATH
 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ```
+
+When you type `ls`, the shell has to find a program called `ls`. It checks in this order:
+
+1. **Aliases**, which are covered below.
+2. **Built-in commands**, part of the shell itself, such as `cd`, `echo` and `export`.
+3. Each directory in `PATH`, from left to right. The first match wins.
 
 `type` tells you what a name means and where it was found. `-a` shows every match, not just the first:
 
@@ -94,6 +99,8 @@ echo is a shell builtin
 echo is /usr/bin/echo
 echo is /bin/echo
 ```
+
+## Adding a directory to PATH
 
 A program that is not in any `PATH` directory is not found by its name, even if it is in the current directory. You run it by its path instead:
 
@@ -116,9 +123,9 @@ $ command -v hello
 /root/bin/hello
 ```
 
-If you set `PATH` to something without `:$PATH`, commands like `ls` stop working in that shell. Close the shell and open a new one; the change was never saved.
-
-Putting your directory first lets your programs override system ones with the same name. Putting it last, `"$PATH:$HOME/bin"`, means system programs win.
+- Putting your directory first lets your programs override system ones with the same name.
+- Putting it last, `"$PATH:$HOME/bin"`, means system programs win.
+- If you set `PATH` without `:$PATH`, commands like `ls` stop working in that shell. Close the shell and open a new one; the change was never saved.
 
 ## Aliases
 
@@ -134,23 +141,30 @@ alias ports='ss -tlnp'
 $ unalias ports
 ```
 
-Ubuntu already defines several, such as `ll`, `la`, and `ls` with colours. Aliases only work in an interactive shell you are typing into. Scripts ignore them, so do not rely on one inside a script; write the full command there.
+- Ubuntu already defines several, such as `ll`, `la`, and `ls` with colours.
+- Aliases only work in an interactive shell you are typing into.
+- Scripts ignore them, so do not rely on one inside a script; write the full command there.
 
 ## Shell startup files
 
-Everything above disappears when you close the shell. To keep it, put it in a file the shell reads when it starts. Which file depends on how the shell was started:
+Everything above disappears when you close the shell. To keep it, put it in a **startup file**: a file the shell reads when it starts. Which file depends on how the shell was started:
+
+- A **login shell** is the shell you get when you log in, over SSH or at a console.
+- An **interactive shell** is any shell you type into. A new terminal tab, `docker run -it`, or typing `bash` gives you an interactive shell that is not a login shell.
 
 | File | Read by | Put here |
 | --- | --- | --- |
-| `~/.profile` | **Login shells**: when you log in over SSH or at a console | Environment variables, `PATH` |
-| `~/.bashrc` | **Interactive** shells that are not login shells: a new terminal tab, `docker run -it`, or typing `bash` | Aliases, prompt, shell options |
+| `~/.profile` | Login shells | Environment variables, `PATH` |
+| `~/.bashrc` | Interactive shells that are not login shells | Aliases, prompt, shell options |
 | `/etc/profile`, `/etc/bash.bashrc` | The same shells, for every user | Settings for all users; needs root |
 
-On Ubuntu, `~/.profile` also reads `~/.bashrc`, so a login shell gets both. If a `~/.bash_profile` exists, Bash reads it instead of `~/.profile`, which is a common reason for settings that seem to be ignored.
+- On Ubuntu, `~/.profile` also reads `~/.bashrc`, so a login shell gets both.
+- If a `~/.bash_profile` exists, Bash reads it instead of `~/.profile`. That is a common reason for settings that seem to be ignored.
+- Scripts and **cron jobs read neither file**. A command that works in your terminal because of something in `~/.bashrc` can fail when cron runs it. The *Scheduling jobs with cron* topic deals with this.
 
-Scripts and **cron jobs read neither file**. A command that works in your terminal because of something in `~/.bashrc` can fail when cron runs it. The *Scheduling jobs with cron* topic deals with this.
+## Applying changes with source
 
-Editing the file changes nothing in shells that are already running. `source` reads a file into the current shell, so you can apply a change without logging out:
+Editing a startup file changes nothing in shells that are already running. `source` reads a file into the current shell, so you can apply a change without logging out:
 
 ```bash
 $ echo 'alias c=clear' >> ~/.bashrc
@@ -161,18 +175,27 @@ $ type c
 c is aliased to `clear'
 ```
 
-`. ~/.bashrc`, with a dot, does the same thing. Running the file as a script instead, with `bash ~/.bashrc`, would load it into a child shell that exits straight away.
+- `. ~/.bashrc`, with a dot, does the same thing.
+- Running the file as a script instead, with `bash ~/.bashrc`, would load it into a child shell that exits straight away.
 
-## Changing the prompt
+## Changing the prompt with PS1
 
-The prompt is the value of the variable **`PS1`**. Ubuntu sets it in `~/.bashrc`. Special sequences stand for live values: `\u` the user, `\h` the host name, `\w` the current directory, `\t` the time, and `\$` a `$`, or `#` for root.
+The prompt is the value of the variable **`PS1`**. Ubuntu sets it in `~/.bashrc`. Special sequences stand for live values:
+
+| Sequence | Shows |
+| --- | --- |
+| `\u` | The user |
+| `\h` | The host name |
+| `\w` | The current directory |
+| `\t` | The time |
+| `\$` | `$`, or `#` for root |
 
 ```bash
 root@lab:~# PS1='\u@\h [\t] \w\$ '
 root@lab [11:27:12] ~#
 ```
 
-Showing the host name in the prompt is the useful part: it tells you which server you are typing into before you run something. To keep a new prompt, set `PS1` in `~/.bashrc`.
+Showing the host name in the prompt tells you which server you are typing into before you run something. To keep a new prompt, set `PS1` in `~/.bashrc`.
 
 ## Tasks
 

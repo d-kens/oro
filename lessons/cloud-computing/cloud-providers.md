@@ -1,8 +1,8 @@
-There are many cloud providers, but three are much larger than the rest, and all of them offer the same basic building blocks under different names. Once you understand the ideas in this skill, moving between providers is mostly a matter of learning new names.
-
-This topic covers the main providers, how their core services line up, and how to think about choosing one. By the end you can translate a service name from one provider to another, and explain why this roadmap teaches AWS.
+## Cloud service providers
 
 **Cloud service provider (CSP):** A company that offers cloud computing services, such as servers, storage and databases, to other organisations and individuals.
+
+There are many cloud providers, but three are much larger than the rest, and all of them offer the same basic building blocks under different names. Once you understand the ideas in this skill, moving between providers is mostly a matter of learning new names.
 
 ## The big three
 
@@ -29,15 +29,27 @@ Every major provider offers the same core building blocks:
 | Identity and permissions | IAM | Entra ID and Azure RBAC | Cloud IAM |
 | Monitoring and logs | CloudWatch | Azure Monitor | Cloud Monitoring and Logging |
 
-The details differ: how permissions are written, how networks are laid out, what each service can do. But a virtual server is a virtual server, and the concepts from this skill, regions and zones, service models, scaling, pricing and shared responsibility, apply to all of them.
+- The details differ: how permissions are written, how networks are laid out, what each service can do.
+- But a virtual server is a virtual server. The concepts from this skill, regions and zones, service models, scaling, pricing and shared responsibility, apply to all of them.
 
 ## Choosing a provider
 
-Companies usually choose based on what they already use (a company on Microsoft products often picks Azure), the services and regions they need, the skills of their team, and price.
+Companies usually choose based on:
+
+- what they already use (a company on Microsoft products often picks Azure)
+- the services and regions they need
+- the skills of their team
+- price
 
 ## Why this roadmap teaches AWS
 
-The Cloud engineer roadmap uses AWS because it is the largest provider, it appears in the most job adverts, and it has the most learning material around it. Learning one provider well is worth more than learning three a little. Everything you learn transfers: the second provider takes weeks to learn, not months.
+The Cloud engineer roadmap uses AWS because:
+
+- it is the largest provider
+- it appears in the most job adverts
+- it has the most learning material around it
+
+Learning one provider well is worth more than learning three a little. Everything you learn transfers: the second provider takes weeks to learn, not months.
 
 ## Tasks
 

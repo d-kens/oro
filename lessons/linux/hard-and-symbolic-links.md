@@ -1,10 +1,18 @@
-A file can have more than one name. Linux has two ways to do this, hard links and symbolic links, and they behave very differently when the original is moved or deleted. You meet symbolic links all the time on servers: in system directories, in web server configuration, and in the way many teams deploy new versions of an application.
+## Links
 
-By the end you can tell what a link points at, create both kinds, predict what happens when the target goes away, and switch a link from one release to another safely.
+A **link** is an extra name for a file. Linux has two kinds, and they behave very differently when the original is moved or deleted:
+
+- A **hard link** is a second name for the same file on disk.
+- A **symbolic link** is a small file that holds the path of another file.
+
+You meet symbolic links all the time on servers: in system directories, in web server configuration, and in the way many teams deploy new versions of an application. To see how the two kinds differ, you first need to know what an inode is.
 
 ## Inodes
 
-On disk, a file has two parts. The **inode** holds everything about the file except its name: its size, owner, permissions, timestamps, and where its data lives. Each inode has a number that is unique within its file system. The name lives in the directory, which is just a list that pairs names with inode numbers.
+On disk, a file has two parts:
+
+- The **inode** holds everything about the file except its name: its size, owner, permissions, timestamps, and where its data lives. Each inode has a number that is unique within its file system.
+- The **name** lives in the directory. A directory is a list that pairs names with inode numbers.
 
 `ls -i` shows the inode number in front of each name:
 
@@ -25,11 +33,11 @@ Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
 ...
 ```
 
-A file system has a fixed number of inodes, set when it is created. `df -i` shows how many are used. A disk can fill up with millions of tiny files and refuse new ones while `df -h` still shows free space, because it has run out of inodes rather than bytes.
+A file system has a fixed number of inodes, set when it is created. As the *Disks and disk space* topic showed, `df -i` shows how many are used, and a disk with millions of tiny files can run out of inodes while it still has free space.
 
 ## Hard links
 
-A **hard link** is a second name for the same inode. `ln` makes one. The first argument is the existing file and the second is the new name:
+`ln` (*link*) makes a hard link. The first argument is the existing file and the second is the new name:
 
 ```bash
 $ ln notes.txt notes-hard.txt
@@ -38,7 +46,9 @@ $ ls -li notes*
 352844 -rw-r--r-- 2 root root 6 Oct 24 11:15 notes.txt
 ```
 
-Both names show the same inode number, and the link count is now 2. Neither name is the original; they are equal. A change made through one name shows up through the other, because there is only one file:
+- Both names show the same inode number, and the link count is now 2.
+- Neither name is the original; they are equal.
+- A change made through one name shows up through the other, because there is only one file:
 
 ```bash
 $ echo "second line" >> notes-hard.txt
@@ -56,7 +66,10 @@ hello
 second line
 ```
 
-Hard links have two limits. You cannot hard link a directory, and you cannot hard link across file systems, because an inode number only means something on its own file system:
+Hard links have two limits:
+
+1. You cannot hard link a directory.
+2. You cannot hard link across file systems, because an inode number only means something on its own file system.
 
 ```bash
 $ ln /root /root/dirlink
@@ -69,7 +82,9 @@ In daily work you rarely make hard links yourself. Backup tools use them to keep
 
 ## Symbolic links
 
-A **symbolic link**, or **symlink**, is a small file of its own whose content is a path. When a program opens the symlink, the kernel follows the path and opens whatever is there. `ln -s` makes one, in the same order as `ln`: target first, then the link's name.
+A **symbolic link**, or **symlink**, is a small file of its own whose content is a path. When a program opens the symlink, the kernel follows the path and opens whatever is there.
+
+`ln -s` makes one, in the same order as `ln`: the target first, then the link's name.
 
 ```bash
 $ ln -s notes-hard.txt notes-link.txt
@@ -78,7 +93,11 @@ $ ls -li notes*
 352833 lrwxrwxrwx 1 root root 14 Oct 24 11:15 notes-link.txt -> notes-hard.txt
 ```
 
-The symlink has its own inode. The `l` at the start of the permissions marks it as a link, and `->` shows where it points. Its size, 14, is the length of the path it holds. Its permissions are always `rwxrwxrwx` and mean nothing; the target's permissions are the ones that count.
+- The symlink has its own inode.
+- The `l` at the start of the permissions marks it as a link, and `->` shows where it points.
+- Its size, 14, is the length of the path it holds.
+- Its permissions are always `rwxrwxrwx` and mean nothing. The target's permissions are the ones that count.
+- Unlike hard links, symlinks can point at directories and at other file systems.
 
 `readlink` prints the path stored in the link. `readlink -f` follows every link in the chain and prints the full path at the end:
 
@@ -89,7 +108,18 @@ $ readlink -f notes-link.txt
 /root/notes-hard.txt
 ```
 
-Unlike hard links, symlinks can point at directories and at other file systems.
+## Hard and symbolic links compared
+
+| | Hard link | Symbolic link |
+| --- | --- | --- |
+| Made with | `ln target name` | `ln -s target name` |
+| Points at | The inode | A path |
+| Own inode | No | Yes |
+| Works for directories | No | Yes |
+| Across file systems | No | Yes |
+| If the target name is deleted | Still works | Breaks |
+
+## Relative targets in symbolic links
 
 A relative target is resolved **from the directory the link is in**, not from where you were when you made it. This catches everyone once:
 
@@ -101,20 +131,12 @@ $ cat enabled/site.conf
 cat: enabled/site.conf: No such file or directory
 ```
 
-The link looks for `enabled/conf/site.conf`, which does not exist. The target should have been `../conf/site.conf`, or the absolute path `/root/conf/site.conf`.
-
-| | Hard link | Symbolic link |
-| --- | --- | --- |
-| Made with | `ln target name` | `ln -s target name` |
-| Points at | The inode | A path |
-| Own inode | No | Yes |
-| Works for directories | No | Yes |
-| Across file systems | No | Yes |
-| If the target name is deleted | Still works | Breaks |
+- The link looks for `enabled/conf/site.conf`, which does not exist.
+- The target should have been `../conf/site.conf`, or the absolute path `/root/conf/site.conf`.
 
 ## Broken symbolic links
 
-A symlink only stores a path. It does not notice when the file at that path is renamed or deleted. The link stays, but now it points at nothing. This is a **dangling** or **broken** link:
+A symlink only stores a path. It does not notice when the file at that path is renamed or deleted. The link stays, but now it points at nothing. This is a **broken** or *dangling* link:
 
 ```bash
 $ mv notes-hard.txt moved.txt
@@ -124,9 +146,13 @@ $ cat notes-link.txt
 cat: notes-link.txt: No such file or directory
 ```
 
-The error is confusing, because `ls` clearly shows a file called `notes-link.txt`. When you see "No such file" for a name that exists, check whether it is a broken symlink. If a new file appears at the old path, the link works again and shows the new file.
+- The error is confusing, because `ls` clearly shows a file called `notes-link.txt`. When you see "No such file" for a name that exists, check whether it is a broken symlink.
+- If a new file appears at the old path, the link works again and shows the new file.
+- `rm` on a symlink removes the link and leaves the target alone.
 
-`readlink -f` still prints a path for a broken link. `readlink -e` prints nothing and fails instead, so use `-e` in scripts that must know the target exists. To find every broken link under a directory:
+`readlink -f` still prints a path for a broken link. `readlink -e` prints nothing and fails instead, so use `-e` in scripts that must know the target exists.
+
+To find every broken link under a directory:
 
 ```bash
 $ find /root -xtype l
@@ -136,48 +162,58 @@ $ find /root -xtype l
 
 The second one is the `enabled/site.conf` link from the previous section, which never worked.
 
-`rm` on a symlink removes the link and leaves the target alone.
-
 ## Where symbolic links are used
 
-**System directories.** On current Ubuntu, `/bin` and `/sbin` are links into `/usr`:
+1. **System directories**
+   - On current Ubuntu, `/bin`, `/lib` and `/sbin` are links into `/usr`:
 
-```bash
-$ ls -l / | grep -- "->"
-lrwxrwxrwx   1 root root    7 Apr 22  2024 bin -> usr/bin
-lrwxrwxrwx   1 root root    7 Apr 22  2024 lib -> usr/lib
-lrwxrwxrwx   1 root root    8 Apr 22  2024 sbin -> usr/sbin
-```
+   ```bash
+   $ ls -l / | grep -- "->"
+   lrwxrwxrwx   1 root root    7 Apr 22  2024 bin -> usr/bin
+   lrwxrwxrwx   1 root root    7 Apr 22  2024 lib -> usr/lib
+   lrwxrwxrwx   1 root root    8 Apr 22  2024 sbin -> usr/sbin
+   ```
 
-**`/etc/alternatives`.** When several programs can do the same job, Debian and Ubuntu use a chain of links to pick one. `awk` is a link to `/etc/alternatives/awk`, which is a link to the program actually installed:
+2. **`/etc/alternatives`**
+   - When several programs can do the same job, Debian and Ubuntu use a chain of links to pick one.
+   - `awk` is a link to `/etc/alternatives/awk`, which is a link to the program actually installed:
 
-```bash
-$ ls -l /usr/bin/awk /etc/alternatives/awk
-lrwxrwxrwx 1 root root 13 Sep 30 14:25 /etc/alternatives/awk -> /usr/bin/mawk
-lrwxrwxrwx 1 root root 21 Apr  8  2024 /usr/bin/awk -> /etc/alternatives/awk
-$ readlink -f /usr/bin/awk
-/usr/bin/mawk
-```
+   ```bash
+   $ ls -l /usr/bin/awk /etc/alternatives/awk
+   lrwxrwxrwx 1 root root 13 Sep 30 14:25 /etc/alternatives/awk -> /usr/bin/mawk
+   lrwxrwxrwx 1 root root 21 Apr  8  2024 /usr/bin/awk -> /etc/alternatives/awk
+   $ readlink -f /usr/bin/awk
+   /usr/bin/mawk
+   ```
 
-The `update-alternatives` command changes the second link when you want a different program.
+   - The `update-alternatives` command changes the second link when you want a different program.
 
-**Enabled configuration.** nginx on Debian and Ubuntu keeps every site's configuration in `/etc/nginx/sites-available/` and reads only `/etc/nginx/sites-enabled/`. Turning a site on means creating a link; turning it off means deleting the link, and the configuration file stays where it was:
+3. **Enabled configuration**
+   - nginx on Debian and Ubuntu keeps every site's configuration in `/etc/nginx/sites-available/` and reads only `/etc/nginx/sites-enabled/`.
+   - Turning a site on means creating a link. Turning it off means deleting the link, and the configuration file stays where it was:
 
-```bash
-$ ln -s /etc/nginx/sites-available/example.com /etc/nginx/sites-enabled/example.com
-```
+   ```bash
+   $ ln -s /etc/nginx/sites-available/example.com /etc/nginx/sites-enabled/example.com
+   ```
 
-**Releases.** A common way to deploy is to unpack each version into its own directory and point a link called `current` at the one that should run. The service always starts from `current`, and going back to the previous version means changing one link:
+4. **Releases**
+   - A common way to deploy is to unpack each version into its own directory and point a link called `current` at the one that should run.
+   - The service always starts from `current`, and going back to the previous version means changing one link:
 
-```text
-/srv/app/
-├── current -> releases/release-2
-└── releases/
-    ├── release-1/
-    └── release-2/
-```
+   ```text
+   /srv/app/
+   ├── current -> releases/release-2
+   └── releases/
+       ├── release-1/
+       └── release-2/
+   ```
 
-To repoint an existing link, use `ln -sfn`. `-f` replaces the link if it exists. `-n` matters when the link points at a directory: without it, `ln` follows `current` into the old release and creates the new link inside it, leaving `current` unchanged.
+## Repointing a link with ln -sfn
+
+To point an existing link at a new target, use `ln -sfn`:
+
+- `-f` replaces the link if it exists.
+- `-n` matters when the link points at a directory. Without it, `ln` follows `current` into the old release and creates the new link inside it, leaving `current` unchanged.
 
 ## Tasks
 

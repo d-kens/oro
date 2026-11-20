@@ -1,10 +1,14 @@
-A script that only does one fixed thing is rarely useful for long. The same backup script should work for any directory, and the same log filter for any file. You give a script what it needs to work on through **arguments** on the command line, through **options** such as `-v`, or by asking for input while it runs.
+## Giving a script input
 
-This topic covers all three. By the end you can read positional arguments safely, check you were given the right number, parse options with `getopts`, prompt for input, and write a script that reads from a file or from a pipe.
+A script that only does one fixed thing is rarely useful for long. The same backup script should work for any directory, and the same log filter for any file. There are three ways to give a script what it needs to work on:
+
+- **Arguments**: words typed after the script's name on the command line, such as `./backup.sh /etc`.
+- **Options**: arguments that start with a dash and change how the script behaves, such as `-v`.
+- **Input**: text the script reads while it runs, from the keyboard, a file or a pipe.
 
 ## Positional arguments
 
-When you run `./args.sh web-01 app.log`, Bash stores each word after the script name in a numbered variable. These are the **positional parameters**:
+**Positional parameters** are the numbered variables in which Bash stores a script's arguments. When you run `./args.sh web-01 app.log`, each word after the script name goes into one:
 
 | Variable | Holds |
 | --- | --- |
@@ -36,9 +40,8 @@ Second:
 Count:  0
 ```
 
-An argument that was not given is simply empty. Bash does not complain, so the script carries on with an empty value unless you check, which the next sections do.
-
-Arguments are split by the shell you type them in, before the script starts. To pass a value containing a space as one argument, quote it when you run the script: `./args.sh "my file.txt"`.
+- An argument that was not given is simply empty. Bash does not complain, so the script carries on with an empty value unless you check, which the next sections do.
+- Arguments are split by the shell you type them in, before the script starts. To pass a value containing a space as one argument, quote it when you run the script: `./args.sh "my file.txt"`.
 
 ## "$@", "$*" and $@
 
@@ -78,7 +81,7 @@ With $@ unquoted:
 
 The same rule applies to single arguments: write `"$1"`, not `$1`, whenever you use it.
 
-## shift and checking the count
+## Moving through arguments with shift
 
 **`shift`** throws away `$1` and moves every other argument down one place: `$2` becomes `$1`, and `$#` goes down by one. It is the usual way to take a fixed first argument and then treat the rest as a list:
 
@@ -102,7 +105,13 @@ Would copy a.conf to web-01
 Would copy b c.conf to web-01
 ```
 
-A script should check it was given what it needs before doing any work, and if not, print a **usage message** and stop. The usage message says how to run the script. It goes to standard error with `>&2`, and the script exits with a non-zero status so that whatever called it knows it failed. The *Exit codes and errors* topic covers both properly.
+## Checking the count and printing usage
+
+A script should check it was given what it needs before doing any work. If not, it prints a usage message and stops.
+
+- A **usage message** says how to run the script.
+- It goes to standard error with `>&2`.
+- The script exits with a non-zero status, so that whatever called it knows it failed. The *Exit codes and errors* topic covers both properly.
 
 Because the same message is needed in several places, it is usually written as a small function called `usage`. The *Functions* topic explains functions; for now, read it as a named group of commands that runs when you type its name:
 
@@ -139,11 +148,19 @@ Copying app.log to web-01
 Copying old app.log to web-01
 ```
 
-The usual conventions in a usage line: `UPPERCASE` for a value you fill in, `[ ]` for something optional, and `...` for "one or more".
+The usual conventions in a usage line:
+
+- `UPPERCASE` for a value you fill in
+- `[ ]` for something optional
+- `...` for "one or more"
 
 ## Options with getopts
 
-Options are the dash arguments, like `-v` or `-d /srv/backup`. You could test `$1` for each one by hand, but Bash's built-in **`getopts`** does it for you and handles the details: options in any order, grouped flags like `-vd`, and missing values.
+Options are the dash arguments, like `-v` or `-d /srv/backup`. You could test `$1` for each one by hand, but Bash's built-in **`getopts`** does it for you. It handles the details:
+
+- options in any order
+- grouped options, like `-vd`
+- options that are missing their value
 
 ```bash
 #!/bin/bash
@@ -200,7 +217,10 @@ root@lab:~/scripts# ./backup.sh -d
 Usage: ./backup.sh [-v] [-d DEST] SOURCE
 ```
 
-Two limits to know. `getopts` handles only short, single-letter options, not long ones like `--verbose`. And it stops at the first argument that is not an option, so options must come before the other arguments: `./backup.sh /etc -v` treats `-v` as a second argument, and this script prints its usage.
+Two limits to know:
+
+- `getopts` handles only short, single-letter options, not long ones like `--verbose`.
+- It stops at the first argument that is not an option, so options must come before the other arguments. `./backup.sh /etc -v` treats `-v` as a second argument, and this script prints its usage.
 
 Forgetting the `shift $((OPTIND - 1))` line is the common mistake. Without it, `$1` is still `-v` or `-d`, and the script works on the wrong thing.
 
@@ -239,9 +259,8 @@ root@lab:~/scripts# echo "$p"
 C:\temp\new
 ```
 
-Always use `-r` unless you have a reason not to. ShellCheck, from the *Debugging* topic, warns when it is missing.
-
-Prompting is fine for a script a person runs. A script that runs from cron or a pipeline has nobody to answer, so anything it needs should come from arguments, options or a file instead.
+- Always use `-r` unless you have a reason not to. ShellCheck, from the *Debugging* topic, warns when it is missing.
+- Prompting is fine for a script a person runs. A script that runs from cron or a pipeline has nobody to answer, so anything it needs should come from arguments, options or a file instead.
 
 ## Reading from a file or from standard input
 
@@ -271,7 +290,8 @@ while IFS= read -r line; do
 done < "$input"
 ```
 
-`${1:-/dev/stdin}` means "the first argument, or `/dev/stdin` if there isn't one". `/dev/stdin` is a special file that is whatever the script's standard input is: the pipe, a redirected file, or the keyboard.
+- `${1:-/dev/stdin}` means "the first argument, or `/dev/stdin` if there isn't one".
+- **`/dev/stdin`** is a special file that is whatever the script's standard input is: the pipe, a redirected file, or the keyboard.
 
 ```bash
 root@lab:~/scripts# cat app.log
@@ -288,7 +308,7 @@ root@lab:~/scripts# ./errors.sh missing.log
 ./errors.sh: cannot read missing.log
 ```
 
-If you run it with no file and nothing piped in, it waits for you to type lines. Press Ctrl+D to end the input.
+If you run it with no file and nothing piped in, it waits for you to type lines. Press <kbd>Ctrl</kbd>+<kbd>D</kbd> to end the input.
 
 ## Tasks
 

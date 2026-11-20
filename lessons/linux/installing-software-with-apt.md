@@ -1,19 +1,22 @@
-On Linux you rarely download an installer from a website. Software comes as **packages** from your distribution, and a **package manager** fetches them, installs them, and keeps them up to date. On Ubuntu and Debian that is `apt`. Every server you build starts with a few `apt` commands, and keeping it patched is a job that never ends.
-
-By the end you can install and remove software with `apt`, explain where packages come from, keep a machine up to date, see which files a package put on disk, and find out where a command lives.
-
 ## Packages and package managers
 
-A **package** is an archive that holds a program, the files it needs, and a description: its name, its version, and the other packages it **depends** on. On Debian and Ubuntu, packages are `.deb` files.
+On Linux you rarely download an installer from a website. Software comes as packages from your distribution.
 
-The package manager does the work you would otherwise do by hand. It downloads the package, installs the packages it depends on first, puts every file in the right place, and records what it did, so it can remove the same files later.
+A **package** is an archive that holds a program, the files it needs, and a description: its name, its version, and the other packages it **depends** on, meaning the packages it needs in order to work. On Debian and Ubuntu, packages are `.deb` files.
+
+A **package manager** is the program that installs packages for you. It:
+
+- downloads the package
+- installs the packages it depends on first
+- puts every file in the right place
+- records what it did, so it can remove the same files later
 
 There are two layers on Ubuntu:
 
 - `dpkg` is the low-level tool. It installs a single `.deb` file and keeps the list of what is installed. It does not download anything or resolve dependencies.
 - `apt` sits on top. It knows where to download packages from, works out dependencies, and then calls `dpkg`.
 
-You will use `apt` almost all the time and `dpkg` for questions about what is already installed.
+You will use `apt` almost all the time, and `dpkg` for questions about what is already installed.
 
 Other distributions use other package managers. The ideas are the same; the commands differ:
 
@@ -28,9 +31,9 @@ Other distributions use other package managers. The ideas are the same; the comm
 
 Older Red Hat systems use `yum` instead of `dnf`. The options are nearly the same, and on newer systems `yum` is just another name for `dnf`.
 
-## Repositories and apt update
+## Repositories
 
-Packages come from **repositories**: web servers that hold thousands of packages and an index of what they contain. Your machine's list of repositories lives in `/etc/apt/sources.list.d/`. On Ubuntu 24.04 the main file looks like this, without its comments:
+A **repository** is a web server that holds thousands of packages and an index of what they contain. Your machine's list of repositories lives in `/etc/apt/sources.list.d/`. On Ubuntu 24.04 the main file looks like this, without its comments:
 
 ```bash
 $ grep -v '^#' /etc/apt/sources.list.d/ubuntu.sources
@@ -42,7 +45,20 @@ Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 ...
 ```
 
-`noble` is the code name of Ubuntu 24.04. `noble-updates` and `noble-security` hold fixes released after the version came out. **Components** split the repository by who maintains the software: `main` is supported by Ubuntu, `universe` by the community. `Signed-By` names the key used to check that packages really come from Ubuntu and were not changed on the way.
+- `noble` is the code name of Ubuntu 24.04.
+- `noble-updates` and `noble-security` hold fixes released after the version came out.
+- **Components** split the repository by who maintains the software: `main` is supported by Ubuntu, `universe` by the community.
+- `Signed-By` names the key used to check that packages really come from Ubuntu and were not changed on the way.
+
+A **third-party repository** is one run by someone other than your distribution, such as a database vendor that publishes its latest release there. To add one:
+
+1. Add a file for it to `/etc/apt/sources.list.d/`.
+2. Add the vendor's signing key, usually to `/etc/apt/keyrings/`.
+3. Run `apt update`.
+
+Follow the vendor's own instructions for this, and only add repositories you trust: anything in them can be installed as root.
+
+## Refreshing the package list with apt update
 
 Your machine keeps a local copy of each repository's index. `apt update` downloads a fresh copy of that index. It installs nothing:
 
@@ -65,9 +81,7 @@ $ apt install -y tree
 E: Unable to locate package tree
 ```
 
-Software that is not in Ubuntu's own repositories, such as a database vendor's latest release, comes from a **third-party repository**. You add a file to `/etc/apt/sources.list.d/` and the vendor's signing key, usually to `/etc/apt/keyrings/`, then run `apt update`. Follow the vendor's own instructions for this, and only add repositories you trust: anything in them can be installed as root.
-
-## Installing and removing
+## Installing packages with apt install
 
 To look before you install, search the index and read a package's description:
 
@@ -97,22 +111,23 @@ The following NEW packages will be installed:
 Setting up jq (1.7.1-3ubuntu0.24.04.2) ...
 ```
 
-You asked for one package and got three: `jq` depends on two libraries, so `apt` installed them too. Installing something that is already there changes nothing:
+- You asked for one package and got three: `jq` depends on two libraries, so `apt` installed them too.
+- Installing something that is already there changes nothing:
 
 ```bash
 $ apt install -y jq
 jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
 ```
 
-To remove software:
+In scripts, prefer `apt-get` over `apt`. They do the same job, but `apt-get` keeps its output the same between versions, while `apt` is designed for people and warns you if you pipe its output.
+
+## Removing packages
 
 | Command | What it does |
 | --- | --- |
 | `apt remove jq` | Removes the program and keeps its config files |
 | `apt purge jq` | Removes the program and its config files |
 | `apt autoremove` | Removes dependencies nothing needs any more, such as `libjq1` above |
-
-On a server, prefer `apt-get` over `apt` in scripts. They do the same job, but `apt-get` keeps its output stable between versions, while `apt` is designed for people and warns you if you pipe its output.
 
 ## Keeping a machine up to date
 
@@ -133,15 +148,20 @@ zlib1g/noble-updates,noble-security 1:1.3.dfsg-3.1ubuntu2.3 amd64 [upgradable fr
 $ apt upgrade -y
 ```
 
-`apt upgrade` never removes a package. If an upgrade needs a package removed or replaced, it holds that package back. `apt full-upgrade` is allowed to remove packages to complete the upgrade, so read its list before you agree.
+- `apt upgrade` never removes a package. If an upgrade needs a package removed or replaced, it holds that package back.
+- `apt full-upgrade` is allowed to remove packages to complete the upgrade, so read its list before you agree.
 
-Some upgrades only take effect after a restart: a new kernel needs a reboot, and a new library needs the services that use it restarted. On Ubuntu, the file `/var/run/reboot-required` exists when a reboot is needed.
+Some upgrades only take effect after a restart:
+
+- A new kernel needs a reboot.
+- A new library needs the services that use it restarted.
+- On Ubuntu, the file `/var/run/reboot-required` exists when a reboot is needed.
 
 Most security fixes arrive in `noble-security`. Ubuntu servers install those automatically through the `unattended-upgrades` package, which runs on a schedule. The *Scheduling jobs with cron* topic shows how that kind of job works.
 
 ## Finding the files a package installed
 
-`dpkg` answers questions about installed packages. `dpkg -L` lists every file a package installed:
+`dpkg` answers questions about installed packages. `dpkg -L` lists every file a package installed. This is how you find a package's config file or its program:
 
 ```bash
 $ dpkg -L jq
@@ -155,7 +175,7 @@ $ dpkg -L jq
 ...
 ```
 
-This is how you find a package's config file or its program. `dpkg -S` works the other way round and tells you which package a file came from:
+`dpkg -S` works the other way round and tells you which package a file came from. `dpkg -l` shows whether a package is installed:
 
 ```bash
 $ dpkg -S /usr/bin/jq
@@ -168,7 +188,9 @@ ii  jq     1.7.1-3ubuntu0.24.04.2 amd64        lightweight and flexible command-
 
 `ii` at the start of the `dpkg -l` line means the package is installed and working.
 
-To find where a command lives, use `which` or `command -v`:
+## Finding where a command lives
+
+`which` and `command -v` print the full path of a command:
 
 ```bash
 $ which jq
@@ -181,7 +203,10 @@ $ which cd
 $
 ```
 
-Both print nothing and return an error if the command is not found, so they are a quick test of whether something is installed. `command -v` is built into the shell, works on every system, and also knows about built-in commands like `cd`, which `which` does not. Use `command -v` in scripts. The *Environment variables and PATH* topic explains how the shell searches for commands.
+- Both print nothing and return an error if the command is not found, so they are a quick test of whether something is installed.
+- `command -v` is built into the shell and works on every system.
+- It also knows about **built-in commands**, commands that are part of the shell itself, like `cd`. `which` does not.
+- Use `command -v` in scripts. The *Environment variables and PATH* topic explains how the shell searches for commands.
 
 ## Tasks
 

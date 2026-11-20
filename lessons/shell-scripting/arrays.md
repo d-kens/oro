@@ -1,10 +1,19 @@
-A normal variable holds one value. When a script works on a list, such as several hosts, a set of files or the lines of a file, you can squeeze the list into one string separated by spaces, and it works until one of the items contains a space. An **array** holds a list of separate values, so each item stays whole whatever it contains.
+## What an array is
 
-By the end you can create, read, extend and slice indexed arrays, loop over them, load a file or a command's output into one, collect file names without breaking them on spaces, and use associative arrays to look things up and count them.
+An **array** is a variable that holds a list of separate values. Each value is an **item**, and each item stays whole whatever it contains.
+
+- A normal variable holds one value.
+- When a script works on a list, such as several hosts, a set of files or the lines of a file, you can squeeze the list into one string separated by spaces. It works until one of the items contains a space.
+- An array keeps the items apart, so a space inside one does not matter.
+
+Bash has two kinds:
+
+- **Indexed arrays**, whose items are numbered.
+- **Associative arrays**, whose items are looked up by a name.
 
 ## Indexed arrays
 
-An **indexed array** is a list of values numbered from 0. You create one with brackets, and read an item with `${name[index]}`:
+An **indexed array** is a list of values numbered from 0. The number of an item is its **index**. You create an indexed array with brackets, and read an item with `${name[index]}`:
 
 ```bash
 #!/bin/bash
@@ -41,7 +50,7 @@ Second and third: web-02 db-01
 | `"${arr[@]:1:2}"` | A **slice**: 2 items starting at index 1 |
 | `"${!arr[@]}"` | The indexes, `0 1 2 …` |
 
-The braces are required. Without them Bash reads `$servers` as the first item only, and `$servers[1]` as the first item followed by the text `[1]`:
+The braces are required. Without them, Bash reads `$servers` as the first item only, and `$servers[1]` as the first item followed by the text `[1]`:
 
 ```bash
 root@lab:~/scripts# servers=(web-01 web-02 db-01)
@@ -114,7 +123,7 @@ Step 2 of 3: copy files
 Step 3 of 3: start app
 ```
 
-Inside the brackets of an indexed array you can write `i` rather than `$i`, because the index is treated as arithmetic, which the *Arithmetic and strings* topic covers.
+Inside the brackets of an indexed array you can write `i` rather than `$i`, because the index is treated as arithmetic. The *Arithmetic and strings* topic covers arithmetic.
 
 ## Loading lines into an array
 
@@ -145,6 +154,8 @@ Users: root daemon bin
 
 To load a command's output, use `< <(command)`. The `<(command)` part is **process substitution**: Bash runs the command and gives its output a file name, which `mapfile` then reads like any file.
 
+## Why a pipe into mapfile does not work
+
 The obvious alternative, a pipe, does not work:
 
 ```bash
@@ -158,7 +169,9 @@ root@lab:~/scripts# ./pipe-mistake.sh
 Found 0 users
 ```
 
-Each part of a pipeline runs in its own subshell. `mapfile` filled an array in that subshell, which then exited and took the array with it. The same thing happens to `while read` loops at the end of a pipe that set variables.
+- A **subshell** is a copy of the shell that runs part of a command and then exits. Each part of a pipeline runs in its own subshell.
+- `mapfile` filled an array in that subshell, which then exited and took the array with it.
+- The same thing happens to `while read` loops at the end of a pipe that set variables.
 
 Also avoid `hosts=($(cat hosts.txt))`. It splits on every space, not on lines, so a line such as `build box` becomes two items, and words like `*` are expanded as file names.
 
@@ -176,9 +189,10 @@ Found: old
 Found: app.log
 ```
 
-The output of `ls` is just text, and the unquoted `$( )` splits it on spaces. Saving it in a string first, as in `files=$(ls logs)`, has the same problem when you later use `$files`.
+- The output of `ls` is just text, and the unquoted `$( )` splits it on spaces.
+- Saving it in a string first, as in `files=$(ls logs)`, has the same problem when you later use `$files`.
 
-The right way is to let the shell build the list. A **glob** puts each matching name into the array as one item, whatever characters it contains:
+The right way is to let the shell build the list. A **glob**, a file name pattern such as `logs/*.log`, puts each matching name into the array as one item, whatever characters it contains:
 
 ```bash
 #!/bin/bash
@@ -200,7 +214,9 @@ Found: logs/old app.log
 
 If nothing matches, a glob stays as the literal text `logs/*.log`, giving an array of one item that is not a file. Put **`shopt -s nullglob`** near the top of the script and an unmatched glob gives an empty array instead.
 
-When you need `find`, to search subdirectories or match on age or size, have it end each name with a null character rather than a newline, and tell `mapfile` to split on that. A null is the one character that cannot appear in a file name:
+## Collecting the results of find
+
+When you need `find`, to search subdirectories or match on age or size, have it end each name with a null character instead of a newline, and tell `mapfile` to split on that. The **null character** is the character with code 0. It is the one character that cannot appear in a file name:
 
 ```bash
 #!/bin/bash
@@ -222,7 +238,7 @@ The `--` tells `ls` that what follows are file names, not options, in case one o
 
 ## Associative arrays
 
-An **associative array** uses strings as keys instead of numbers, like a small lookup table. You must create it with **`declare -A`** first:
+An **associative array** uses strings as its indexes instead of numbers, like a small lookup table. Each string is a **key**, and the item stored under it is its value. You must create an associative array with **`declare -A`** first:
 
 ```bash
 #!/bin/bash
@@ -249,7 +265,8 @@ db-01 -> priya
 web-01 -> sam
 ```
 
-`"${!owner[@]}"` gives the keys, and `"${owner[@]}"` the values. The keys come out in no particular order, not the order you added them, so pipe the output through `sort` when order matters.
+- `"${!owner[@]}"` gives the keys, and `"${owner[@]}"` the values.
+- The keys come out in no particular order, not the order you added them, so pipe the output through `sort` when order matters.
 
 Leaving out `declare -A` is the classic mistake. Bash then makes an ordinary indexed array, works out each key as a number (an unknown word counts as 0), and every key lands on the same item:
 
@@ -265,7 +282,9 @@ root@lab:~/scripts# ./nodeclare.sh
 web uses port 5432
 ```
 
-**Counting** is the most common use. Take each line, pick out a key, and add one to its count. With this access log:
+## Counting with an associative array
+
+Counting is the most common use. Take each line, pick out a key, and add one to its count. With this access log:
 
 ```bash
 root@lab:~/scripts# cat access.log
@@ -300,9 +319,12 @@ root@lab:~/scripts# ./status-count.sh
 404 2
 ```
 
-`read -r _ _ _ status` splits each line into fields, throws the first three away into `_`, and keeps the fourth. `${count[$status]:-0}` is 0 the first time a status is seen.
+- `read -r _ _ _ status` splits each line into fields, throws the first three away into `_`, and keeps the fourth.
+- `${count[$status]:-0}` is 0 the first time a status is seen.
 
-To **check whether a key exists**, use `[[ -v arr[key] ]]`. It is true for a key that is set, even to an empty value, which testing the value alone cannot tell you:
+## Checking whether a key exists
+
+Use `[[ -v arr[key] ]]`. It is true for a key that is set, even to an empty value, which testing the value alone cannot tell you:
 
 ```bash
 #!/bin/bash

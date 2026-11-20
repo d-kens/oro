@@ -1,22 +1,32 @@
-The service models are about *what* you rent. The deployment models are about *whose* cloud it is and where it runs: a provider's shared cloud, a company's own, or a mix of several.
+## What a deployment model is
 
-This topic covers public, private, community, hybrid and multi-cloud, and the reasons a company picks each. By the end you can describe a company's setup in these terms and explain why it might have ended up that way.
+**Deployment model:** Whose cloud it is and where it runs: a provider's shared cloud, a company's own, or a mix of several.
+
+The service models are about *what* you rent. The deployment models are about *whose* cloud it is. There are five:
+
+- public cloud
+- private cloud
+- community cloud
+- hybrid cloud
+- multi-cloud
 
 ## Public cloud
 
 **Public cloud:** Cloud infrastructure owned and run by a provider and open for anyone to use, from individuals to large companies. It sits in the provider's data centres.
 
-AWS, Microsoft Azure and Google Cloud are public clouds. "Public" does not mean your data is public. It means the hardware is shared between many customers, kept apart by the provider's software.
-
-The public cloud has all five characteristics from the first topic at their fullest: almost unlimited capacity, pay for what you use, and nothing to buy. It is what most people mean by "the cloud", and it is what this roadmap teaches.
+- AWS, Microsoft Azure and Google Cloud are public clouds.
+- "Public" does not mean your data is public. It means the hardware is shared between many customers, kept apart by the provider's software.
+- The public cloud has all five characteristics from the first topic at their fullest: almost unlimited capacity, pay for what you use, and nothing to buy.
+- It is what most people mean by "the cloud", and it is what this roadmap teaches.
 
 ## Private cloud
 
 **Private cloud:** Cloud infrastructure used by one organisation only. The organisation or another company may own and run it, in the organisation's own building or elsewhere.
 
-It runs on hardware set aside for that one organisation, with software that gives its teams self-service: they request VMs, storage and networks from a portal or an API, just as they would in a public cloud. OpenStack and VMware are common ways to build one.
-
-A private cloud gives full control over the hardware and where the data is, which matters for some laws, contracts and security rules. The cost is that the organisation is back to buying hardware and guessing capacity, so its supply is limited to what it owns.
+- It runs on hardware set aside for that one organisation, with software that gives its teams self-service: they request VMs, storage and networks from a portal or an API, just as they would in a public cloud.
+- OpenStack and VMware are common ways to build one.
+- A private cloud gives full control over the hardware and where the data is, which matters for some laws, contracts and security rules.
+- The cost is that the organisation is back to buying hardware and guessing capacity, so its supply is limited to what it owns.
 
 ## Community cloud
 
@@ -28,7 +38,8 @@ Community clouds are less common than the other models. You meet them mostly in 
 
 **Hybrid cloud:** Two or more separate clouds, such as a private and a public cloud, joined so that data and applications can move between them.
 
-In practice, a company joins its own servers or private cloud to a public cloud, so the two work as one setup. They are connected by a private network link or a VPN, and share identities, monitoring and often tooling.
+- In practice, a company joins its own servers or private cloud to a public cloud, so the two work as one setup.
+- They are connected by a private network link or a VPN, and share identities, monitoring and often tooling.
 
 Companies go hybrid for practical reasons:
 
@@ -41,9 +52,14 @@ Companies go hybrid for practical reasons:
 
 **Multi-cloud:** Using the services of more than one public cloud provider, for example AWS for most applications and Google Cloud for data analysis.
 
-Sometimes this is a plan: using the best service from each provider, or avoiding depending on one company. Often it is an accident: one team chose one provider, another team or a bought company chose another.
+- Sometimes this is a plan: using the best service from each provider, or avoiding depending on one company.
+- Often it is an accident: one team chose one provider, another team or a bought company chose another.
 
-It comes at a price. Each provider has its own services, names, permissions and bills, so teams need more skills and more tooling, and moving data between providers costs money. Running one application across two providers so it survives either one failing is much harder than it sounds, and few companies do it.
+It comes at a price:
+
+- Each provider has its own services, names, permissions and bills, so teams need more skills and more tooling.
+- Moving data between providers costs money.
+- Running one application across two providers so it survives either one failing is much harder than it sounds, and few companies do it.
 
 Most companies start in one public cloud. Hybrid and multi-cloud usually come from history, rules or a gradual move, not from a first design.
 

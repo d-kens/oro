@@ -1,10 +1,13 @@
-As a script grows past a screen or two, the same few lines start to appear in several places, and it gets hard to see what the script does as a whole. A **function** gives a group of commands a name. You write the commands once, call them by name wherever they are needed, and the top level of the script reads like a list of steps.
+## What a function is
 
-By the end you can define and call functions, pass them arguments, keep their variables local, get a yes or no or a value back from them, structure a script around a `main` function, and share functions between scripts with a library file.
+A **function** is a group of commands with a name. You write the commands once and run them by typing the name, wherever they are needed. Running a function is called **calling** it.
+
+- As a script grows past a screen or two, the same few lines start to appear in several places, and it gets hard to see what the script does as a whole.
+- With functions, each block of lines is written once, and the top level of the script reads like a list of steps.
 
 ## Defining and calling a function
 
-A function is defined with its name, a pair of brackets, and the commands between braces. You call it by typing its name, like any other command:
+**Defining** a function means writing its name, a pair of brackets, and the commands between braces. You call it by typing its name, like any other command:
 
 ```bash
 #!/bin/bash
@@ -26,9 +29,10 @@ Hello, priya and alex. You passed 2 argument(s) to the function.
 The script itself got 2 argument(s): a b
 ```
 
-The brackets in `greet()` are always empty. Arguments are not declared there; they are passed after the name when you call it, exactly as you pass arguments to a script.
-
-Inside a function, **`$1`, `$2`, `$#` and `"$@"` refer to the function's own arguments**, not the script's. When the function returns, the script's arguments are back as they were. The rules from the *Arguments and input* topic still apply: quote `"$1"` and `"$@"`, and quote an argument with spaces when you call the function. `$0` stays the name of the script.
+- The brackets in `greet()` are always empty. Arguments are not declared there; they are passed after the name when you call it, exactly as you pass arguments to a script.
+- Inside a function, **`$1`, `$2`, `$#` and `"$@"` refer to the function's own arguments**, not the script's. When the function returns, the script's arguments are back as they were.
+- `$0` stays the name of the script.
+- The rules from the *Arguments and input* topic still apply: quote `"$1"` and `"$@"`, and quote an argument with spaces when you call the function.
 
 You may also see `function greet { … }`. It is a Bash-only spelling of the same thing. This skill uses `greet() { … }`, which works in every shell.
 
@@ -47,7 +51,7 @@ root@lab:~/scripts# ./order.sh
 
 ## Local variables
 
-Variables in Bash are **global** by default: a variable set inside a function is the same variable as one with that name anywhere else in the script. That leads to bugs that are hard to spot:
+A **global** variable is one that can be seen and changed anywhere in the script. Variables in Bash are global by default: a variable set inside a function is the same variable as one with that name anywhere else in the script. That leads to bugs that are hard to spot:
 
 ```bash
 #!/bin/bash
@@ -70,7 +74,7 @@ root@lab:~/scripts# ./global.sh
 Working in /etc
 ```
 
-The function overwrote the script's `dir`. Declaring the variables with **`local`** keeps them inside the function:
+The function overwrote the script's `dir`. A **local** variable exists only inside the function that declares it. Declaring the variables with `local` keeps them there:
 
 ```bash
 #!/bin/bash
@@ -94,13 +98,23 @@ root@lab:~/scripts# ./local.sh
 Working in /root/scripts
 ```
 
-Make every variable in a function `local` unless you mean the function to change something outside it. Notice that `total` is declared on one line and set on the next. `local total=$(…)` works, but `local` then hides whether the command inside `$( )` failed, because the status you get back is that of `local` itself. ShellCheck warns about this; the *Exit codes and errors* topic explains statuses.
+- Make every variable in a function `local` unless you mean the function to change something outside it.
+- Notice that `total` is declared on one line and set on the next. `local total=$(…)` works, but `local` then hides whether the command inside `$( )` failed, because the status you get back is that of `local` itself.
+- ShellCheck warns about this. The *Exit codes and errors* topic explains statuses.
 
 ## Returning a result from a function
 
-A function can hand back two different things, and they are easy to mix up.
+A function can hand back two different things, and they are easy to mix up:
 
-**A status, with `return`.** Every command finishes with an exit status from 0 to 255: 0 means success, anything else means failure. A function's status is the status of the last command it ran, or the number given to `return`. Status is for yes or no, not for data. Try to return a number with it and you get the wrong answer, because only 0 to 255 fit:
+- a **status**, with `return`, which answers yes or no
+- a **value**, by printing it, which carries data
+
+### A status, with return
+
+Every command finishes with an exit status from 0 to 255: 0 means success, anything else means failure.
+
+- A function's status is the status of the last command it ran, or the number given to `return`.
+- Status is for yes or no, not for data. Try to return a number with it and you get the wrong answer, because only 0 to 255 fit:
 
 ```bash
 #!/bin/bash
@@ -123,7 +137,9 @@ Size: 120
 
 888 does not fit, so it wrapped round to 120, with no warning.
 
-**A value, by printing it.** To get data out of a function, have it print the value and capture the output with `$( )`, the command substitution from the *Shell variables* topic:
+### A value, by printing it
+
+To get data out of a function, have it print the value and capture the output with `$( )`, the command substitution from the *Shell variables* topic:
 
 ```bash
 #!/bin/bash
@@ -142,7 +158,8 @@ root@lab:~/scripts# ./retgood.sh
 Size: 888 bytes
 ```
 
-This means everything the function prints to standard output ends up in the variable. If a function needs to print a message as well as its value, send the message to standard error with `>&2`, so it shows on the screen but is not captured.
+- Everything the function prints to standard output ends up in the variable.
+- If a function needs to print a message as well as its value, send the message to standard error with `>&2`, so it shows on the screen but is not captured.
 
 ## Functions that return true or false
 
@@ -180,11 +197,12 @@ root exists
 sam does not exist
 ```
 
-Neither function needs `return`. `user_exists` ends with `id`, which fails for an unknown user, and `is_root` ends with a test, so the function's status is the answer. Names like `is_…`, `has_…` and `…_exists` make the `if` lines read naturally.
+- Neither function needs `return`. `user_exists` ends with `id`, which fails for an unknown user, and `is_root` ends with a test, so the function's status is the answer.
+- Names like `is_…`, `has_…` and `…_exists` make the `if` lines read naturally.
 
-A common mistake is `if [ user_exists "$name" ]`. The brackets are the `test` command, which sees the words `user_exists` and `sam` as strings; it never runs the function, and fails with `[: user_exists: unary operator expected`.
+A common mistake is `if [ user_exists "$name" ]`. The brackets are the `test` command, which sees the words `user_exists` and `sam` as strings. It never runs the function, and fails with `[: user_exists: unary operator expected`.
 
-## A main function and library files
+## Structuring a script with a main function
 
 A longer script is easier to read if the top level does nothing but define functions, and one function called `main` runs the steps in order. The last line calls it with the script's arguments:
 
@@ -222,9 +240,17 @@ overlay         453G   18G  412G   5% /
 0.03 0.08 0.06
 ```
 
-This layout has three benefits. You read `main` first to see what the script does, then the helpers for detail. All the variables in `main` can be `local`. And since every function is defined before `main "$@"` runs, the order of the definitions does not matter. Pass `"$@"`, quoted: `main` without it receives no arguments, and `main $@` splits them on spaces.
+This layout has three benefits:
 
-When several scripts need the same functions, put them in a **library file** and **source** it. The *Shell scripting basics* topic showed that `source` runs a file in the current shell, so the functions it defines become available to the script:
+1. You read `main` first to see what the script does, then the helpers for detail.
+2. All the variables in `main` can be `local`.
+3. Every function is defined before `main "$@"` runs, so the order of the definitions does not matter.
+
+Pass `"$@"`, quoted. `main` without it receives no arguments, and `main $@` splits them on spaces.
+
+## Sharing functions with a library file
+
+A **library file** is a file that only defines functions, for several scripts to use. Each script **sources** it: the *Shell scripting basics* topic showed that `source` runs a file in the current shell, so the functions it defines become available to the script:
 
 ```bash
 #!/bin/bash

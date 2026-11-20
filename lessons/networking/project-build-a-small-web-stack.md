@@ -1,19 +1,36 @@
-Most web services you will meet in the cloud have the same shape: a few copies of an application, a load balancer in front of them that handles HTTPS, a DNS name that points at the load balancer, and a firewall that lets in only web traffic. In this project you build that shape in your lab, small enough to see every part.
+## The project
 
-You build two application servers, an nginx proxy that spreads requests across them over HTTPS under the name `shop.lab.internal`, and a client that trusts your own certificate authority. It draws on *Reverse proxy and load balancing*, *TLS and HTTPS*, *DNS basics*, *Firewall basics* and *Serve a website with nginx*.
+A **web stack** is the set of parts that serve a web service together. Most web services you will meet in the cloud have the same shape:
+
+- a few copies of an application
+- a load balancer in front of them that handles HTTPS
+- a DNS name that points at the load balancer
+- a firewall that lets in only web traffic
+
+You build that shape in your lab, small enough to see every part:
+
+- two application servers
+- an nginx proxy that spreads requests across them over HTTPS, under the name `shop.lab.internal`
+- a client that trusts your own certificate authority
+
+It draws on *Reverse proxy and load balancing*, *TLS and HTTPS*, *DNS basics*, *Firewall basics* and *Serve a website with nginx*.
 
 ## What you need
 
 The `netlab` image and the `lab` network from the *What a network is* topic. Everything you need is in the image: `python3`, `nginx`, `openssl`, `iptables`, `curl` and `dig`.
 
-You write the configuration files on your own computer, in a directory that every container mounts at `/stack`. That way the files survive when containers are removed, and you can edit them with your usual editor:
+You write the configuration files on your own computer, in a directory that every container mounts at `/stack`.
+
+- The files survive when containers are removed.
+- You can edit them with your usual editor.
 
 ```bash
 $ mkdir stack
 $ cd stack
 ```
 
-The machines get fixed addresses, so that the name and the checks below can rely on them. If you still have `web` and `client` from *Fix the broken server*, remove them first with `docker rm -f web client`, because the addresses overlap.
+- The machines get fixed addresses, so that the name and the checks below can rely on them.
+- If you still have `web` and `client` from *Fix the broken server*, remove them first with `docker rm -f web client`, because the addresses overlap.
 
 | Machine | Address | Role |
 | --- | --- | --- |
@@ -35,9 +52,18 @@ The machines get fixed addresses, so that the name and the checks below can rely
 
 ### Run the application servers
 
-Write a Python web server in `app.py` that answers every `GET` with `Hello from` and the machine's hostname. Python's built-in `http.server` module is enough: subclass `BaseHTTPRequestHandler`, write a `do_GET` method, and serve it with `HTTPServer` on `0.0.0.0` port 8000. `socket.gethostname()` gives the name.
+Write a Python web server in `app.py` that answers every `GET` with `Hello from` and the machine's hostname. Python's built-in `http.server` module is enough:
 
-Then start it twice. Run each container in the background with `-d`, give it a fixed address with `--ip`, mount the directory with `-v "$PWD":/stack`, and make `python3 /stack/app.py` the command, so the container lives as long as the server does.
+- Subclass `BaseHTTPRequestHandler` and write a `do_GET` method.
+- Serve it with `HTTPServer` on `0.0.0.0` port 8000.
+- `socket.gethostname()` gives the name.
+
+Then start it twice. For each container:
+
+- Run it in the background with `-d`.
+- Give it a fixed address with `--ip`.
+- Mount the directory with `-v "$PWD":/stack`.
+- Make `python3 /stack/app.py` the command, so the container lives as long as the server does.
 
 <details>
 <summary>Show a solution</summary>
@@ -87,7 +113,13 @@ $ docker exec -it proxy bash
 root@proxy:/#
 ```
 
-In `/stack/ca`, make a CA key and a self-signed CA certificate, then a key and a certificate signing request for `shop.lab.internal`, and sign the request with the CA. Modern clients ignore the common name and check the **subject alternative name** instead, so the signed certificate must carry `subjectAltName=DNS:shop.lab.internal`. The section on a certificate authority of your own in *TLS and HTTPS* walks through each command.
+In `/stack/ca`:
+
+1. Make a CA key and a self-signed CA certificate.
+2. Make a key and a certificate signing request for `shop.lab.internal`.
+3. Sign the request with the CA.
+
+Modern clients ignore the common name and check the **subject alternative name** instead, so the signed certificate must carry `subjectAltName=DNS:shop.lab.internal`. The section *A certificate authority of your own* in *TLS and HTTPS* walks through each command.
 
 <details>
 <summary>Show a solution</summary>
@@ -108,7 +140,8 @@ X509v3 Subject Alternative Name:
     DNS:shop.lab.internal
 ```
 
-The `openssl req` commands also print lines of dots and plus signs while they make the keys; that is normal. `ca.key` is the most sensitive file here. Anyone who has it can sign certificates your client will trust, so in real life it never sits on a web server.
+- The `openssl req` commands also print lines of dots and plus signs while they make the keys. That is normal.
+- `ca.key` is the most sensitive file here. Anyone who has it can sign certificates your client will trust, so in real life it never sits on a web server.
 
 </details>
 
@@ -120,7 +153,14 @@ Write `shop.conf` with three parts:
 - A `server` block on port 80 that answers every request with a `301` to the same path on `https://`.
 - A `server` block on port 443 with `ssl`, your certificate and key, and a `location /` that passes requests to the upstream with `proxy_pass`. Set the `Host`, `X-Forwarded-For` and `X-Forwarded-Proto` headers, so the apps could see the original request.
 
-On the proxy, remove the default site, link your file into `/etc/nginx/conf.d/`, test it and start nginx. Then send four requests from the proxy itself with `curl -sk --resolve shop.lab.internal:443:127.0.0.1 https://shop.lab.internal/` and look at which app answers. If one app answers every time, read the hint in the solution.
+On the proxy:
+
+1. Remove the default site.
+2. Link your file into `/etc/nginx/conf.d/`.
+3. Test it and start nginx.
+4. Send four requests from the proxy itself with `curl -sk --resolve shop.lab.internal:443:127.0.0.1 https://shop.lab.internal/`, and look at which app answers.
+
+If one app answers every time, read the explanation of the `zone` line in the solution.
 
 <details>
 <summary>Show a solution</summary>
@@ -168,15 +208,26 @@ LISTEN 0      511          0.0.0.0:80         0.0.0.0:*
 LISTEN 0      511          0.0.0.0:443        0.0.0.0:*
 ```
 
-The `zone` line matters. nginx starts one worker process per CPU core, and without a shared zone each worker keeps its own place in the round robin. Each new connection tends to land on a different worker, and each worker starts with `app1`, so you see `app1` every time. With `zone`, the workers share one counter and the requests alternate.
+The `zone` line matters:
 
-`curl --resolve` sends the request to `127.0.0.1` while still using the name `shop.lab.internal` for the TLS handshake and the `Host` header, which lets you test without relying on name lookup. `-k` skips the certificate check for now.
+- nginx starts one worker process per CPU core, and without a shared zone each worker keeps its own place in the round robin.
+- Each new connection tends to land on a different worker, and each worker starts with `app1`, so you see `app1` every time.
+- With `zone`, the workers share one counter and the requests alternate.
+
+About the test command:
+
+- `curl --resolve` sends the request to `127.0.0.1` while still using the name `shop.lab.internal` for the TLS handshake and the `Host` header. That lets you test without relying on name lookup.
+- `-k` skips the certificate check for now.
 
 </details>
 
 ### Give the stack a name
 
-The client needs `shop.lab.internal` to resolve to the proxy. In the cloud, that is an A record or an alias at your DNS provider. In the lab, Docker's DNS helper at `127.0.0.11` already answers container names on the `lab` network, and `--network-alias` adds another name for a container on that network. You gave the proxy its alias when you started it, so every container on `lab` can already look the name up.
+The client needs `shop.lab.internal` to resolve to the proxy.
+
+- In the cloud, that is an A record or an alias at your DNS provider.
+- In the lab, Docker's DNS helper at `127.0.0.11` already answers container names on the `lab` network, and `--network-alias` adds another name for a container on that network.
+- You gave the proxy its alias when you started it, so every container on `lab` can already look the name up.
 
 Check it from one of the apps, which are on the same network. `getent` uses the system resolver, as a program would:
 
@@ -188,7 +239,8 @@ $ docker exec app1 getent hosts shop.lab.internal
 10.10.0.10      shop.lab.internal
 ```
 
-If it prints nothing, the proxy was started without `--network-alias`. Remove it with `docker rm -f proxy` and start it again with the alias; your files in `/stack` are kept, so you only repeat the setup inside the proxy. A line in the client's `/etc/hosts`, added with `docker run --add-host shop.lab.internal:10.10.0.10`, would also work, but only on that one machine, and `dig` would not see it.
+- If it prints nothing, the proxy was started without `--network-alias`. Remove it with `docker rm -f proxy` and start it again with the alias. Your files in `/stack` are kept, so you only repeat the setup inside the proxy.
+- A line in the client's `/etc/hosts`, added with `docker run --add-host shop.lab.internal:10.10.0.10`, would also work, but only on that one machine, and `dig` would not see it.
 
 </details>
 
@@ -227,13 +279,22 @@ root@client:/# curl https://shop.lab.internal/
 Hello from app1
 ```
 
-The `rehash` warning is harmless. `1 added` is the line that matters. Every program on the client that uses the system trust store, including `curl` and `openssl`, now trusts certificates your CA signs. That is also why a CA key must be guarded: trusting a CA means trusting everything it signs.
+- The `rehash` warning is harmless. `1 added` is the line that matters.
+- Every program on the client that uses the system trust store, including `curl` and `openssl`, now trusts certificates your CA signs.
+- That is also why a CA key must be guarded: trusting a CA means trusting everything it signs.
 
 </details>
 
 ### Lock down the proxy
 
-On the proxy, build an `INPUT` chain that accepts traffic on the loopback, accepts packets that belong to connections already set up, accepts new TCP connections to ports 80 and 443, and drops everything else with the chain's default policy. Set the policy last, after the accept rules, so you never cut off a connection you need while you work.
+On the proxy, build an `INPUT` chain that:
+
+1. accepts traffic on the loopback
+2. accepts packets that belong to connections already set up
+3. accepts new TCP connections to ports 80 and 443
+4. drops everything else, with the chain's default policy
+
+Set the policy last, after the accept rules, so you never cut off a connection you need while you work.
 
 The proxy also opens connections of its own, to the apps on port 8000 and to Docker's DNS helper. The replies to those come back as established traffic, so the second rule covers them.
 
@@ -258,9 +319,9 @@ Hello from app1
 root@proxy:/# python3 -m http.server 8080 >/dev/null 2>&1 &
 ```
 
-The plain listing hides which interface rule 1 applies to. Add `-v` to see `lo` in the `in` column. The proxy can still reach the apps after the policy changes, which shows the established rule works.
-
-Pings to the proxy now go unanswered, because ICMP is not on the list. That is a choice, not an accident: decide whether you want it, and add a rule for `-p icmp` if you do.
+- The plain listing hides which interface rule 1 applies to. Add `-v` to see `lo` in the `in` column.
+- The proxy can still reach the apps after the policy changes, which shows the established rule works.
+- Pings to the proxy now go unanswered, because ICMP is not on the list. Decide whether you want that, and add a rule for `-p icmp` if you do.
 
 </details>
 

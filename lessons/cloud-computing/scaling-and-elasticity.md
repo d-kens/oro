@@ -1,12 +1,10 @@
-In the cloud you can have more servers when you need them and fewer when you do not. Using that well changes how applications are built.
-
-This topic covers scaling up and out, elasticity, and why cloud applications are designed for servers that fail and disappear. By the end you can choose between the two kinds of scaling, and you will have scaled a small service on your own computer.
-
 ## Scaling up and scaling out
 
 **Scalability:** The ability of a system to handle more work by adding resources.
 
-There are two ways to add them:
+In the cloud you can have more servers when you need them and fewer when you do not. Using that well changes how applications are built.
+
+There are two ways to add resources:
 
 - **Scaling up (vertical scaling):** Giving one machine more resources, such as more CPUs or memory.
 - **Scaling out (horizontal scaling):** Adding more machines of the same size and sharing the work between them.
@@ -20,19 +18,21 @@ There are two ways to add them:
 | One failure | Takes everything down | Takes out one copy |
 | Application changes | None | Must be able to run as many copies |
 
-Cloud applications mostly scale out. Databases are the common exception, because they are hard to split, so they are often scaled up and given a standby copy instead.
+- Cloud applications mostly scale out.
+- Databases are the common exception. They are hard to split, so they are often scaled up and given a standby copy instead.
 
 ## Elasticity
 
 **Elasticity:** The ability to add and remove resources automatically as demand rises and falls, so capacity matches demand at any moment.
 
-Scalability is about growing; elasticity is about following demand both ways. When load falls, servers are removed and stop costing money.
+- Scalability is about growing; elasticity is about following demand both ways.
+- When load falls, servers are removed and stop costing money.
 
 **Auto scaling:** A cloud feature that adds or removes servers automatically, following rules you set.
 
-A rule might be "keep average CPU use around 60 percent, with at least 2 servers and at most 20", and the cloud adds or removes servers to follow it. A shop can run on two servers overnight, ten at lunch, and forty during a sale, paying for each only while it runs.
-
-Scaling down matters as much as scaling up. Capacity left running "just in case" is the idle capacity the cloud was supposed to remove.
+- A rule might be "keep average CPU use around 60 percent, with at least 2 servers and at most 20", and the cloud adds or removes servers to follow it.
+- A shop can run on two servers overnight, ten at lunch, and forty during a sale, paying for each only while it runs.
+- Scaling down matters as much as scaling up. Capacity left running "just in case" is the idle capacity the cloud was supposed to remove.
 
 ## Stateless applications
 
@@ -48,9 +48,12 @@ Then a new copy can start and take requests straight away, and a copy can be rem
 
 ## Cattle, not pets
 
-Before the cloud, each server was usually set up by hand, given a name and repaired when it broke. In the cloud, servers are identical, created from the same image or code, and replaced rather than repaired: if one misbehaves, you delete it and a fresh one starts. Engineers call this treating servers as **cattle, not pets**.
+**Cattle, not pets:** Treating servers as identical and replaceable, instead of as individual machines to look after.
 
-This needs server creation to be fully automatic, which is what Docker, Terraform and Kubernetes later on the roadmap provide. It also means you plan for any single server disappearing at any time.
+- Before the cloud, each server was usually set up by hand, given a name and repaired when it broke.
+- In the cloud, servers are identical, created from the same image or code, and replaced rather than repaired. If one misbehaves, you delete it and a fresh one starts.
+- This needs server creation to be fully automatic, which is what Docker, Terraform and Kubernetes later on the roadmap provide.
+- It also means you plan for any single server disappearing at any time.
 
 ## Try it: scale out on your own computer
 
@@ -83,7 +86,9 @@ server {
 }
 ```
 
-`127.0.0.11` is Docker's built-in DNS server. The name `web` resolves to every copy of the `web` service, and the short `valid` time makes nginx notice new copies quickly.
+- `127.0.0.11` is Docker's built-in DNS server.
+- The name `web` resolves to every copy of the `web` service.
+- The short `valid` time makes nginx notice new copies quickly.
 
 Start it with one copy, and ask it who answered:
 

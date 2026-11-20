@@ -1,10 +1,6 @@
-Most of what you need to know about a server is written down in files. Config files say how a service is set up, and log files say what it did and what went wrong. Reading them quickly, without opening an editor, is one of the things you will do most.
-
-By the end you can print a short file, page through a long one, look at just its start or end, and watch a log file as new lines arrive.
-
 ## Printing a file with cat
 
-`cat` prints a whole file to the screen:
+`cat` prints the whole of a file to the screen:
 
 ```bash
 $ cat app.conf
@@ -13,7 +9,7 @@ host=0.0.0.0
 log_level=info
 ```
 
-The name comes from *concatenate*: give it several files and it prints them one after another, as if they were one.
+The name comes from *concatenate*, which means to join things end to end. Give `cat` several files and it prints them one after another, as if they were one:
 
 ```bash
 $ cat app.conf extra.conf
@@ -32,20 +28,35 @@ $ cat -n app.conf
      3	log_level=info
 ```
 
-`cat` is right for short files. On a file with thousands of lines, everything scrolls past and you see only the end. The errors you can expect:
+When to use it:
 
-```bash
-$ cat nothere
-cat: nothere: No such file or directory
-$ cat /etc
-cat: /etc: Is a directory
-```
+- `cat` is right for short files.
+- On a file with thousands of lines, everything scrolls past and you only see the end. Use `less`, below, instead.
+- Only use `cat` on text files. A **binary file** is a file that is not meant to be read as text, such as a program or an image. Printing one fills the screen with junk and can leave your terminal in a strange state. If that happens, type `reset` and press Enter.
 
-Only use `cat` on text. Programs and images are **binary files**, and printing one fills the screen with junk and can leave your terminal in a strange state. If that happens, type `reset` and press Enter.
+## Common cat errors
+
+1. **The file does not exist**
+
+   ```bash
+   $ cat nothere
+   cat: nothere: No such file or directory
+   ```
+
+   - Check the spelling, the case and your working directory.
+
+2. **The path is a directory**
+
+   ```bash
+   $ cat /etc
+   cat: /etc: Is a directory
+   ```
+
+   - `cat` only reads files. To see what is in a directory, use `ls`.
 
 ## Counting lines with wc
 
-Before you open a file, it helps to know how big it is. `wc` (*word count*) counts lines, words and bytes; `-l` gives just the lines:
+Before you open a file, it helps to know how big it is. `wc` (*word count*) counts the lines, words and bytes in a file. `-l` gives just the lines:
 
 ```bash
 $ wc -l app.log
@@ -56,9 +67,12 @@ $ wc app.log
 
 A file of 20 lines is fine for `cat`. A file of 500,000 lines is not.
 
-## Paging with less
+## Paging through a file with less
 
-`less` shows a file one screen at a time and lets you move around in it. It does not load the whole file first, so it opens huge logs quickly.
+A **pager** is a program that shows a long file one screen at a time and lets you move up and down in it. `less` is the pager you will use on Linux.
+
+- It does not load the whole file first, so it opens huge logs quickly.
+- It never changes the file, so you cannot damage anything with it. That makes it the safe way to look at a config file on a production server.
 
 The Docker Ubuntu image does not include `less`. Install it first:
 
@@ -83,15 +97,17 @@ The keys you need:
 | <kbd>/</kbd> then text | Search forward; <kbd>n</kbd> for the next match, <kbd>N</kbd> for the previous |
 | <kbd>q</kbd> | Quit |
 
-`less -N app.log` shows line numbers. `less` never changes the file, so you cannot damage anything with it. That makes it the safe way to look at a config file on a production server. `man` uses the same reader, so these keys work there too.
+- `less -N app.log` shows line numbers.
+- `man` uses the same reader, so these keys work there too.
+- If `less` is missing and you cannot install it, `more` does a simpler job: <kbd>Space</kbd> to go forward and <kbd>q</kbd> to quit.
 
-If `less` is missing and you cannot install it, `more` does a simpler job: <kbd>Space</kbd> to go forward and <kbd>q</kbd> to quit.
-
-## The start and the end: head and tail
+## The start and end of a file: head and tail
 
 Often you only want one end of a file. The start of a CSV file shows its column names. The end of a log shows what happened last.
 
-`head` prints the first 10 lines, and `tail` the last 10. `-n` sets how many:
+- `head` prints the first 10 lines of a file.
+- `tail` prints the last 10 lines.
+- `-n` sets how many lines to print.
 
 ```bash
 $ head -n 3 app.log
@@ -104,7 +120,7 @@ request 499 handled
 request 500 handled
 ```
 
-`tail -n +N` is different: it prints from line `N` to the end. `tail -n +498 app.log` prints lines 498, 499 and 500.
+`tail -n +N` works differently: it prints from line `N` to the end. `tail -n +498 app.log` prints lines 498, 499 and 500.
 
 To see a range in the middle, for example lines 100 to 105, take the first 105 lines and then the last 6 of those:
 
@@ -118,11 +134,13 @@ request 104 handled
 request 105 handled
 ```
 
-The `|` sends what `head` prints into `tail` instead of to the screen. It is called a **pipe**, and the *Pipes and text processing* topic covers it.
+The `|` is a **pipe**: it sends what one command prints into the next command, instead of to the screen. Here `head` passes its 105 lines to `tail`. The *Pipes and text processing* topic covers pipes.
 
 ## Following a log with tail -f
 
-When a service is running, its log keeps growing. `tail -f` (*follow*) prints the last lines and then waits, printing each new line as it is written:
+A **log file** is a file a program writes to as it runs, one line for each thing it did or each error it hit. While a service is running, its log keeps growing.
+
+`tail -f` (*follow*) prints the last lines of a file and then waits, printing each new line as it is written:
 
 ```bash
 $ tail -f /var/log/app/app.log
@@ -131,11 +149,22 @@ $ tail -f /var/log/app/app.log
 2026-10-24 09:41:07 ERROR database connection refused
 ```
 
-It keeps running until you press <kbd>Ctrl</kbd>+<kbd>C</kbd>. A common way to debug is to run `tail -f` on the log in one terminal, then make a request or restart the service in another, and watch what appears.
+It keeps running until you press <kbd>Ctrl</kbd>+<kbd>C</kbd>. A common way to debug:
 
-Logs are often **rotated**: when a log gets large or a day ends, it is renamed to something like `app.log.1` and a new, empty `app.log` is started. Plain `tail -f` keeps following the old, renamed file and goes quiet. `tail -F` follows the *name* instead, and switches to the new file when it appears. On a server, `tail -F` is usually the one you want.
+1. Run `tail -f` on the log in one terminal.
+2. Make a request, or restart the service, in another terminal.
+3. Watch what appears in the first one.
 
-You can follow a log from inside `less` too. Press <kbd>F</kbd> to start following, and <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop and scroll back through what arrived. Logs from services managed by systemd are read with `journalctl`, which the *Services with systemd* topic covers.
+**Log rotation** is when a log that has grown large, or reached the end of a day, is renamed to something like `app.log.1` and a new, empty `app.log` is started. It stops logs from filling the disk, but it affects `tail`:
+
+- Plain `tail -f` keeps following the old, renamed file, and goes quiet.
+- `tail -F` follows the *name* instead, and switches to the new file when it appears.
+- On a server, `tail -F` is usually the one you want.
+
+Two other ways to follow a log:
+
+- Inside `less`, press <kbd>F</kbd> to start following, and <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop and scroll back through what arrived.
+- Logs from services managed by systemd are read with `journalctl`, which the *Services with systemd* topic covers.
 
 ## Tasks
 
