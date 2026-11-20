@@ -1,6 +1,10 @@
-The Linux skill had you type commands one at a time. A **script** is those same commands saved in a file, so you can run them again, share them, schedule them, and get the same result every time. Most of the automation around servers, from setting up a machine to deploying a release, starts as a shell script.
+## What a shell script is
 
-This topic writes and runs your first scripts. By the end you can create a script, make it executable, run it in the three usual ways, and know which shell is running it.
+A **shell script** is a text file that holds shell commands, which the shell runs one after another, from top to bottom.
+
+- In the Linux skill you typed commands one at a time. A script is those same commands saved in a file.
+- You can run it again, share it, schedule it, and get the same result every time.
+- Most of the automation around servers, from setting up a machine to deploying a release, starts as a shell script.
 
 ## Set up your practice machine
 
@@ -31,8 +35,8 @@ A script is a plain text file. Create `hello.sh` with these three lines:
 echo "Hello from $(hostname)"
 ```
 
-- The first line, starting `#!`, is the **shebang**. It tells the system which program should run the file, here `/bin/bash`.
-- Lines starting with `#` after that are **comments**. Bash ignores them; they are for the next person to read the script, which is often you.
+- The **shebang** is the first line, starting `#!`. It tells the system which program should run the file, here `/bin/bash`.
+- A **comment** is a line starting with `#` after that. Bash ignores comments; they are for the next person to read the script, which is often you.
 - The rest are commands, exactly as you would type them at the prompt.
 
 The `.sh` ending is a convention for people. Linux does not need it, and the shebang is what decides how the file is run.
@@ -46,7 +50,10 @@ root@lab:~/scripts# ./hello.sh
 bash: ./hello.sh: Permission denied
 ```
 
-In a folder shared from macOS the message reads `bad interpreter: Permission denied` instead; it means the same thing. A new file is not executable. Give it the execute permission, which the Linux skill's *Users and permissions* topic covered, and run it again:
+- A new file is not **executable**: it does not have the permission that lets it be run as a program.
+- In a folder shared from macOS the message reads `bad interpreter: Permission denied` instead. It means the same thing.
+
+Give it the execute permission, which the Linux skill's *Users and permissions* topic covered, and run it again:
 
 ```bash
 root@lab:~/scripts# chmod +x hello.sh
@@ -56,7 +63,7 @@ root@lab:~/scripts# ./hello.sh
 Hello from lab
 ```
 
-The `./` matters. When you type a bare name like `hello.sh`, the shell looks for it only in the directories listed in `PATH`, and the current directory is not one of them:
+The `./` matters. When you type a bare name like `hello.sh`, the shell looks for it only in the directories listed in `PATH`, and the working directory is not one of them:
 
 ```bash
 root@lab:~/scripts# hello.sh
@@ -73,7 +80,10 @@ bash: hello.sh: command not found
 | `bash hello.sh` | Bash, as a new process; the shebang is ignored | No | No |
 | `source hello.sh` or `. hello.sh` | Your current shell, line by line | No | Yes |
 
-The first two start a **new process**: a fresh shell runs the script and exits, and anything the script changes, such as a variable or the current directory, disappears with it. `source` runs the lines in *your* shell, so their changes stay. You can see the difference with a script that changes directory:
+- The first two start a **new process**: a fresh shell runs the script and exits. Anything the script changes, such as a variable or the working directory, disappears with it.
+- `source` runs the lines in *your* shell, so their changes stay.
+
+You can see the difference with a script that changes directory:
 
 ```bash
 root@lab:~/scripts# printf '#!/bin/bash\ncd /tmp\npwd\n' > go.sh
@@ -85,7 +95,8 @@ root@lab:~/scripts# source go.sh
 root@lab:/tmp#
 ```
 
-After `./go.sh` you are still in `~/scripts`, because only the script's own shell moved. After `source go.sh` your prompt shows `/tmp`: your own shell ran the `cd`. Run `cd ~/scripts` to go back.
+- After `./go.sh` you are still in `~/scripts`, because only the script's own shell moved.
+- After `source go.sh` your prompt shows `/tmp`: your own shell ran the `cd`. Run `cd ~/scripts` to go back.
 
 Use `./script.sh` for scripts. Use `source` only for files whose whole job is to change your shell, such as `~/.bashrc`.
 
@@ -104,7 +115,11 @@ root@lab:~/scripts# chmod +x arr.sh && ./arr.sh
 ./arr.sh: 2: Syntax error: "(" unexpected
 ```
 
-The same file with `#!/bin/bash` prints `web`. Every script in this skill starts with `#!/bin/bash`. You will also see `#!/usr/bin/env bash`, which finds Bash wherever it is installed in `PATH`; it is common on systems where Bash is not in `/bin`, such as some macOS and BSD machines. Both are fine.
+The same file with `#!/bin/bash` prints `web`.
+
+- Every script in this skill starts with `#!/bin/bash`.
+- You will also see `#!/usr/bin/env bash`, which finds Bash wherever it is installed in `PATH`. It is common on systems where Bash is not in `/bin`, such as some macOS and BSD machines.
+- Both are fine.
 
 To check which Bash you have:
 
@@ -113,7 +128,7 @@ root@lab:~/scripts# bash --version | head -n 1
 GNU bash, version 5.2.21(1)-release (aarch64-unknown-linux-gnu)
 ```
 
-## Comments and layout
+## Laying out a script
 
 A script is read far more often than it is written. A few habits from the start:
 
@@ -130,7 +145,7 @@ df -h /
 - Leave blank lines between steps.
 - Comment *why* something is done when it is not obvious. Don't repeat what the command already says.
 
-Long commands can be split over lines by ending each line with a backslash, with nothing after it, not even a space:
+A **line continuation** splits a long command over several lines. End each line with a backslash, with nothing after it, not even a space:
 
 ```bash
 tar -czf backup.tar.gz \

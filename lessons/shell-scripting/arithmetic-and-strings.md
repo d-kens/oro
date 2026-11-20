@@ -1,10 +1,15 @@
-Scripts count things, compare sizes against limits, work out percentages, and print reports that people have to read. Bash can do whole-number arithmetic itself, without calling another program, and its `printf` command lines up text and numbers in neat columns. Both have a few rules that catch people out, mostly around decimals and around comparing numbers as if they were text.
+## Numbers and text in Bash
 
-By the end you can do integer maths with `$(( ))` and `(( ))`, get decimal results when you need them, compare strings and numbers correctly, change the case of text, and format aligned output with `printf`.
+Scripts count things, compare sizes against limits, work out percentages, and print reports that people have to read.
+
+- **Arithmetic** is working with numbers: adding, subtracting, multiplying and dividing. Bash can do whole-number arithmetic itself, without calling another program.
+- A **string** is a piece of text. Bash compares strings, changes their case, and formats them with `printf`.
+
+Both have a few rules that catch people out, mostly around decimals and around comparing numbers as if they were text.
 
 ## Arithmetic with $(( ))
 
-**`$(( expression ))`** works out an integer expression and puts the result in its place, the way `$( )` puts in a command's output:
+An **integer** is a whole number, with no decimal point. **`$(( expression ))`** works out an integer expression and puts the result in its place, the way `$( )` puts in a command's output:
 
 ```bash
 #!/bin/bash
@@ -31,7 +36,8 @@ Power:      125
 Mixed:      44
 ```
 
-Inside `$(( ))` you can leave the `$` off variable names, and spaces are allowed anywhere. The usual order of operations applies, and brackets group as you would expect.
+- Inside `$(( ))` you can leave the `$` off variable names, and spaces are allowed anywhere.
+- The usual order of operations applies, and brackets group as you would expect.
 
 Without `$(( ))`, Bash treats `+` as an ordinary character:
 
@@ -42,7 +48,10 @@ root@lab:~/scripts# echo $total
 3+4
 ```
 
-**`%`** is the **modulo** operator: the remainder after dividing. `n % 2` is 0 for even numbers, and `n % 3 == 0` is true for every third number, which is handy for printing progress now and then rather than on every line:
+**`%`** is the **modulo** operator: it gives the remainder after dividing.
+
+- `n % 2` is 0 for even numbers.
+- `n % 3 == 0` is true for every third number, which is handy for printing progress now and then instead of on every line:
 
 ```bash
 #!/bin/bash
@@ -96,9 +105,13 @@ Check 3
 Count is 11
 ```
 
-Inside `(( ))` you use the familiar symbols `<`, `<=`, `==`, `!=`, `>=` and `>`, which read more easily than `-lt` and `-ge` in `[ ]`. Both work. To change a variable, use `(( count++ ))` to add one, `(( count-- ))` to take one away, and `(( total += n ))` to add any amount.
+- Inside `(( ))` you use the familiar symbols `<`, `<=`, `==`, `!=`, `>=` and `>`, which read more easily than `-lt` and `-ge` in `[ ]`. Both work.
+- To change a variable, use `(( count++ ))` to add one, `(( count-- ))` to take one away, and `(( total += n ))` to add any amount.
 
-One trap: because `(( ))` fails when the result is zero, `(( count++ ))` with `count` at 0 returns a failure status, since `count++` gives the old value, 0. That does not matter in a plain script, but it stops a script that uses `set -e`, from the *Robust scripts* topic. `(( count += 1 ))` gives the new value, so it does not have this problem.
+One trap: because `(( ))` fails when the result is zero, `(( count++ ))` with `count` at 0 returns a failure status, since `count++` gives the old value, 0.
+
+- That does not matter in a plain script, but it stops a script that uses `set -e`, from the *Robust scripts* topic.
+- `(( count += 1 ))` gives the new value, so it does not have this problem.
 
 You will also meet two older forms in existing scripts:
 
@@ -112,7 +125,9 @@ root@lab:~/scripts# expr 3 \* 4
 12
 ```
 
-`let` is the same as `(( ))` with a different spelling. **`expr`** is a separate program from before shells could do maths. It needs spaces around every operator, and `*` has to be escaped, or the shell turns it into a list of file names. Read them when you see them, and write `$(( ))` and `(( ))` yourself.
+- `let` is the same as `(( ))` with a different spelling.
+- **`expr`** is a separate program from before shells could do maths. It needs spaces around every operator, and `*` has to be escaped, or the shell turns it into a list of file names.
+- Read them when you see them, and write `$(( ))` and `(( ))` yourself.
 
 ## Integers only, and getting decimals
 
@@ -125,9 +140,15 @@ root@lab:~/scripts# echo $((1.5 + 1))
 bash: 1.5 + 1: syntax error: invalid arithmetic operator (error token is ".5 + 1")
 ```
 
-This catches percentages in particular. `$((3 / 4 * 100))` is 0, because `3 / 4` is already 0 before the multiplication. Multiply first and it is right: `$((3 * 100 / 4))` is 75. That is often enough.
+This catches percentages in particular:
 
-When you need real decimals, hand the sum to **awk**, which is installed everywhere and which the Linux skill's *Pipes and text processing* topic introduced. Pass values in with `-v` and do the work in a `BEGIN` block, which runs without reading any input:
+- `$((3 / 4 * 100))` is 0, because `3 / 4` is already 0 before the multiplication.
+- Multiply first and it is right: `$((3 * 100 / 4))` is 75. That is often enough.
+
+When you need real decimals, hand the sum to **awk**, which is installed everywhere and which the Linux skill's *Pipes and text processing* topic introduced:
+
+- Pass values in with `-v`.
+- Do the work in a `BEGIN` block, which runs without reading any input.
 
 ```bash
 root@lab:~/scripts# awk 'BEGIN { printf "%.2f\n", 7 / 2 }'
@@ -149,7 +170,9 @@ root@lab:~/scripts# echo "scale=2; 7 / 2" | bc
 
 `scale=2` sets the number of decimal places. Because bc may be missing on a server, awk is the safer choice inside scripts.
 
-One more surprise: Bash reads a number with a leading zero as **octal** (base 8). `08` and `09` are not valid octal, so values like a month from `date +%m` break the arithmetic:
+## Numbers with a leading zero
+
+Bash reads a number with a leading zero as **octal**, a way of writing numbers that uses only the digits 0 to 7 (base 8). `08` and `09` are not valid octal, so values like a month from `date +%m` break the arithmetic:
 
 ```bash
 root@lab:~/scripts# m=08
@@ -161,7 +184,7 @@ root@lab:~/scripts# echo $((10#$m + 1))
 
 `10#` says "read this in base 10". Use it on any value that might have leading zeros.
 
-## Comparing and changing strings
+## Comparing strings and numbers
 
 Numbers and strings are compared differently, and using the wrong kind of comparison gives answers that look right most of the time:
 
@@ -171,7 +194,7 @@ Numbers and strings are compared differently, and using the wrong kind of compar
 | Strings, sort order | `<` and `>` | `\<` and `\>` | |
 | Numbers | `-eq` `-lt` `-gt` … | `-eq` `-lt` `-gt` … | `==` `<` `>` … |
 
-`<` inside `[[ ]]` compares **sort order**, character by character, not size:
+`<` inside `[[ ]]` compares **sort order**, the order a dictionary would put the strings in, character by character. It does not compare size:
 
 ```bash
 #!/bin/bash
@@ -194,7 +217,8 @@ As strings, 10 sorts before 9
 As numbers, 10 is greater than 9
 ```
 
-As text, `10` sorts first because its first character, `1`, comes before `9`. Sort order for letters also depends on the system's locale setting. In the container, which uses the plain C locale, every uppercase letter sorts before every lowercase one, so `Banana` comes before `apple`.
+- As text, `10` sorts first because its first character, `1`, comes before `9`.
+- Sort order for letters also depends on the system's **locale**, its language and region settings. In the container, which uses the plain C locale, every uppercase letter sorts before every lowercase one, so `Banana` comes before `apple`.
 
 In single brackets the mistake is worse. `>` there is not a comparison at all but a redirection, so `[ "$a" > "$b" ]` creates a file called `9` and the test is always true:
 
@@ -209,7 +233,16 @@ root@lab:/tmp# ls -l 9
 
 So: compare numbers with `(( ))` or `-gt`, and strings with `==` and `!=`.
 
-Changing case is built in. `${var^^}` gives the value in uppercase, `${var,,}` in lowercase, and `${var^}` with just the first letter in capitals. `${#var}` is the length, from the *Parameter expansion* topic. Lowercasing an answer before comparing it saves checking every spelling:
+## Changing case
+
+Changing case is built in, as the *Parameter expansion* topic showed:
+
+- `${var^^}` gives the value in uppercase.
+- `${var,,}` gives it in lowercase.
+- `${var^}` gives it with just the first letter in capitals.
+- `${#var}` is the length.
+
+Lowercasing an answer before comparing it saves checking every spelling:
 
 ```bash
 #!/bin/bash
@@ -239,7 +272,11 @@ Continuing
 
 ## Formatting output with printf
 
-`echo` prints its arguments as they are. **`printf`** takes a **format string** and fills in each `%` placeholder with the next argument, which gives you control over width, alignment and decimal places. Unlike `echo`, it adds no newline unless you put `\n` in the format.
+`echo` prints its arguments as they are. `printf` gives you control over width, alignment and decimal places.
+
+- A **format string** is the first argument to `printf`: text with `%` placeholders in it.
+- `printf` fills in each placeholder with the next argument.
+- Unlike `echo`, it adds no newline unless you put `\n` in the format.
 
 | Placeholder | Prints | Example | Output |
 | --- | --- | --- | --- |
@@ -270,7 +307,9 @@ web-02         4096   1.25
 db-01         16384   3.14
 ```
 
-Left-align text and right-align numbers, so the digits line up. Unlike `$(( ))`, `printf` handles decimals itself, so `%6.2f` rounds `3.141` to `3.14`. `%d` does not: `printf "%d" 3.5` gives `invalid number`.
+- Left-align text and right-align numbers, so the digits line up.
+- Unlike `$(( ))`, `printf` handles decimals itself, so `%6.2f` rounds `3.141` to `3.14`.
+- `%d` does not: `printf "%d" 3.5` gives `invalid number`.
 
 If there are more arguments than placeholders, `printf` reuses the format, which makes printing a list easy:
 

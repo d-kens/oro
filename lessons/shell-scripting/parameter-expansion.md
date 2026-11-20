@@ -1,6 +1,14 @@
-So far you have read variables with `$name` and `${name}`. Inside the braces, Bash can do more than read the value: it can fill in a default, stop when a value is missing, cut a path into folder and file name, swap one word for another, and change case. This is **parameter expansion**, and it replaces many small calls to `basename`, `dirname`, `sed` and `tr`.
+## What parameter expansion is
 
-Because it all happens inside Bash, it is fast, and it keeps a value as one piece when you quote it. By the end you can give settings sensible defaults, take paths and file names apart, rename files in bulk, and read the dense `${...}` lines you will meet in other people's scripts.
+**Parameter expansion** is everything Bash can do inside `${...}` when it reads a variable. So far you have used it to read a value with `${name}`. Inside the braces, Bash can also:
+
+- fill in a default, or stop when a value is missing
+- give the length of a value
+- cut a path into its folder and file name
+- swap one piece of text for another
+- change case
+
+It replaces many small calls to `basename`, `dirname`, `sed` and `tr`. Because it all happens inside Bash, it is fast, and it keeps a value as one piece when you quote it.
 
 ## Defaults and required values
 
@@ -26,7 +34,9 @@ Environment: staging
 Port: 9000
 ```
 
-`${var:-default}` does not change `var` itself. **`${var:=default}`** does: if `var` is unset or empty, it sets it to the default and then gives the value. It is often written on a line of its own after `:`, a command that does nothing, so the only effect is the assignment:
+`${var:-default}` does not change `var` itself. **`${var:=default}`** does: if `var` is unset or empty, it sets it to the default and then gives the value.
+
+It is often written on a line of its own after `:`, a command that does nothing, so the only effect is the assignment:
 
 ```bash
 #!/bin/bash
@@ -59,9 +69,12 @@ root@lab:~/scripts# BUILD_DIR=/srv/build ./clean-build.sh
 Cleaning /srv/build
 ```
 
-This matters most before anything destructive. If `BUILD_DIR` were empty, `rm -rf "$BUILD_DIR"/*` would become `rm -rf /*`. `rm -rf "${BUILD_DIR:?}"/*` refuses to run instead.
+This matters most before anything destructive:
 
-Each of these also has a form without the colon, such as `${var-default}`, which only applies when `var` is unset, not when it is set but empty. The colon forms are what you want almost every time.
+- If `BUILD_DIR` were empty, `rm -rf "$BUILD_DIR"/*` would become `rm -rf /*`.
+- `rm -rf "${BUILD_DIR:?}"/*` refuses to run instead.
+
+Each of these also has a form without the colon, such as `${var-default}`. It only applies when `var` is unset, not when it is set but empty. The colon forms are what you want almost every time.
 
 ## String length with ${#var}
 
@@ -77,7 +90,7 @@ It is handy for simple checks, such as `[[ ${#password} -lt 12 ]]` to reject a s
 
 ## Trimming the start and end
 
-Four expansions remove a pattern from the start or end of a value. The patterns use the same `*` and `?` as file names.
+Four expansions remove a **pattern**, a piece of text with wildcards in it, from the start or end of a value. The patterns use the same `*` and `?` as file names.
 
 | Expansion | Removes | Match |
 | --- | --- | --- |
@@ -86,7 +99,12 @@ Four expansions remove a pattern from the start or end of a value. The patterns 
 | `${var%pattern}` | From the end | Shortest |
 | `${var%%pattern}` | From the end | Longest |
 
-To remember which is which: on most keyboards `#` is to the left of `%`, so `#` trims the left and `%` the right. One symbol removes as little as possible, two as much as possible. Here they are on one path:
+To remember which is which:
+
+- On most keyboards `#` is to the left of `%`, so `#` trims the left and `%` the right.
+- One symbol removes as little as possible, two as much as possible.
+
+Here they are on one path:
 
 ```bash
 #!/bin/bash
@@ -110,7 +128,7 @@ access.log.gz
 - `%.*` removed the shortest "`.` then anything" from the end, the last extension.
 - `%%.*` removed the longest, from the first `.` onwards.
 
-### Splitting a path
+## Splitting a path
 
 Put together, these take a path apart without running `dirname` or `basename`:
 
@@ -136,9 +154,13 @@ Name:      build-42
 Extension: tar.gz
 ```
 
-Choose one or two symbols on purpose. For `build-42.tar.gz`, `${file%.*}` gives `build-42.tar` and `${file##*.}` gives `gz`, which may be what you want if you only care about the last extension. A name with dots in it, such as `release.v2.zip`, shows the difference too. Also note that `${path%/*}` on a path with no `/`, such as `app.log`, gives back `app.log` unchanged, where `dirname` would give `.`.
+Choose one or two symbols on purpose:
 
-### Renaming files
+- For `build-42.tar.gz`, `${file%.*}` gives `build-42.tar` and `${file##*.}` gives `gz`. That may be what you want if you only care about the last extension.
+- A name with dots in it, such as `release.v2.zip`, shows the difference too.
+- `${path%/*}` on a path with no `/`, such as `app.log`, gives back `app.log` unchanged, where `dirname` would give `.`.
+
+## Renaming files
 
 A common use is changing a file's extension in a loop:
 
@@ -159,7 +181,9 @@ beach day.jpeg -> beach day.jpg
 cat.jpeg -> cat.jpg
 ```
 
-`${file%.jpeg}` removes the exact text `.jpeg` from the end, and `.jpg` is added back. The `--` tells `mv` that no options follow, so a file name starting with `-` is not mistaken for one. As always, `"$file"` and `"$new"` are quoted, so `beach day.jpeg` stays one name.
+- `${file%.jpeg}` removes the exact text `.jpeg` from the end, and `.jpg` is added back.
+- The `--` tells `mv` that no options follow, so a file name starting with `-` is not mistaken for one.
+- As always, `"$file"` and `"$new"` are quoted, so `beach day.jpeg` stays one name.
 
 ## Replacing text
 
@@ -182,7 +206,9 @@ disk_full_on_web-01,_disk_check_failed
  full on web-01,  check failed
 ```
 
-`${msg// /_}` turning spaces into underscores is a quick way to make a value safe to use as a file name. `old` can be a pattern, so `${version//[^0-9.]}` deletes everything that is not a digit or a dot. For anything more involved, such as replacing across many lines of a file, `sed` from the Linux skill's *Pipes and text processing* topic is the better tool.
+- `${msg// /_}` turns spaces into underscores, a quick way to make a value safe to use as a file name.
+- `old` can be a pattern, so `${version//[^0-9.]}` deletes everything that is not a digit or a dot.
+- For anything more involved, such as replacing across many lines of a file, `sed` from the Linux skill's *Pipes and text processing* topic is the better tool.
 
 ## Changing case
 
@@ -204,11 +230,12 @@ staging
 Priya
 ```
 
-Lower-casing a value before you compare it saves listing every spelling. `case "${answer,,}" in yes|y) ...` accepts `Yes`, `YES` and `y` alike. These forms are Bash 4 and later; macOS still ships Bash 3.2 as `/bin/bash`, so they fail there, but they work on any current Linux server.
+- Lower-casing a value before you compare it saves listing every spelling. `case "${answer,,}" in yes|y) ...` accepts `Yes`, `YES` and `y` alike.
+- These forms need Bash 4 or later. macOS still ships Bash 3.2 as `/bin/bash`, so they fail there, but they work on any current Linux server.
 
 ## Substrings with ${var:offset:length}
 
-**`${var:offset:length}`** gives `length` characters starting at `offset`, counting from 0. Leave out `:length` to take everything to the end:
+A **substring** is a part of a string. **`${var:offset:length}`** gives `length` characters starting at `offset`, counting from 0. Leave out `:length` to take everything to the end:
 
 ```bash
 #!/bin/bash
@@ -229,7 +256,8 @@ Last 2: 05
 Wrong: 20261025-143005
 ```
 
-A negative offset counts from the end, but it needs a space after the colon. Without it, `${stamp:-2}` is the default-value form from the start of this topic: `stamp` is set, so you get the whole value.
+- A negative offset counts from the end, but it needs a space after the colon.
+- Without the space, `${stamp:-2}` is the default-value form from the start of this topic. `stamp` is set, so you get the whole value.
 
 ## Parameter expansion summary
 

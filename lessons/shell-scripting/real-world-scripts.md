@@ -1,6 +1,13 @@
-A script you run by hand can be rough: you watch it, read its output and fix things as they come up. A script that runs every night on a server has nobody watching. It needs to leave a record of what it did, take its settings from somewhere other than its own code, let you see what it would do before it does it, and tell someone when it fails.
+## Scripts that run unattended
 
-This topic builds one such script, section by section: a clean-up job that deletes old files from an upload folder. By the end you can add logging, a config file, environment overrides, `--dry-run` and `--help` to a script, run it safely from cron, and raise an alert when it fails.
+An **unattended** script is one that runs with nobody watching, such as a job that runs every night on a server. A script you run by hand can be rough: you watch it, read its output and fix things as they come up. An unattended script needs to:
+
+- leave a record of what it did
+- take its settings from somewhere other than its own code
+- let you see what it would do before it does it
+- tell someone when it fails
+
+This topic builds one such script, section by section: a clean-up job that deletes old files from an upload folder.
 
 ## The script to improve
 
@@ -13,7 +20,12 @@ set -euo pipefail
 find /var/tmp/uploads -type f -mtime +14 -delete
 ```
 
-It works, but it has the problems this topic fixes. Nothing records which files were deleted. Changing the folder or the age means editing the script. There is no way to check what it would delete before it deletes it. And when it runs from cron and fails, nobody hears about it.
+It works, but it has the problems this topic fixes:
+
+- Nothing records which files were deleted.
+- Changing the folder or the age means editing the script.
+- There is no way to check what it would delete before it deletes it.
+- When it runs from cron and fails, nobody hears about it.
 
 To follow along, make some test files with old dates:
 
@@ -26,7 +38,7 @@ root@lab:/var/tmp/uploads# cd ~/scripts
 
 ## Adding logging
 
-A log line needs three things: **when** it happened, **how serious** it is, and **what** happened. A small function gives every line the same shape:
+**Logging** is writing a line to a file for each thing a script does, so you can read later what happened. A log line needs three things: **when** it happened, **how serious** it is, and **what** happened. A small function gives every line the same shape:
 
 ```bash
 log_file=/var/log/clean-old.log
@@ -50,15 +62,17 @@ log INFO "Cleaning files in /var/tmp/uploads older than 14 days"
 - `date '+%F %T'` gives a timestamp that sorts correctly as text.
 - The **level** is a word such as INFO, WARN or ERROR, so you can `grep ERROR` the log later.
 - Every line is appended to the log file with `>>`.
-- `[ -t 2 ]` is true when stderr is a terminal. When you run the script by hand, you see each line as it is written; under cron, where nobody is watching, the line only goes to the file. Log lines go to stderr, as the *Exit codes and errors* topic recommends for anything that is not the script's result.
+- `[ -t 2 ]` is true when stderr is a terminal. When you run the script by hand, you see each line as it is written; under cron, where nobody is watching, the line only goes to the file.
+- Log lines go to stderr, as the *Exit codes and errors* topic recommends for anything that is not the script's result.
 
-The simpler version is `echo "$line" | tee -a "$log_file" >&2`, which always writes to both. That is fine for scripts you run by hand, but under cron, where the cron line also sends output to the log file, every line would be written twice.
+Two things to avoid here:
 
-Write `if ...; then ...; fi` rather than `[ -t 2 ] && echo "$line" >&2` here. With `set -e`, the short form as the last line of a function makes the function return 1 whenever stderr is not a terminal, and the script stops under cron for no visible reason.
+- The simpler version, `echo "$line" | tee -a "$log_file" >&2`, always writes to both. That is fine for scripts you run by hand, but under cron, where the cron line also sends output to the log file, every line would be written twice.
+- Write `if ...; then ...; fi` instead of `[ -t 2 ] && echo "$line" >&2`. With `set -e`, the short form as the last line of a function makes the function return 1 whenever stderr is not a terminal, and the script stops under cron for no visible reason.
 
 ## Settings from a config file
 
-Values that change between servers, such as the folder and the age, belong in a config file, not in the script. A simple `key=value` file is enough:
+A **config file** is a file that holds a program's settings. Values that change between servers, such as the folder and the age, belong in a config file, not in the script. A simple `key=value` file is enough:
 
 ```
 # /etc/clean-old.conf
@@ -67,7 +81,11 @@ days=7
 alert_cmd=/usr/local/bin/notify-admin
 ```
 
-The quick way to read it is `source /etc/clean-old.conf`, which runs the file as Bash and sets each variable. That is the danger: anything in the file runs, with the script's permissions, usually root. A line such as `dir=/var/tmp/$(touch /tmp/oops; echo uploads)` sets `dir` and also runs `touch`. Only `source` a config file when it is owned by root and only root can write to it.
+The quick way to read it is `source /etc/clean-old.conf`, which runs the file as Bash and sets each variable. That is the danger:
+
+- Anything in the file runs, with the script's permissions, usually root.
+- A line such as `dir=/var/tmp/$(touch /tmp/oops; echo uploads)` sets `dir` and also runs `touch`.
+- Only `source` a config file when it is owned by root and only root can write to it.
 
 The safer way is to read the file as data, line by line, and accept only the keys you expect:
 
@@ -92,11 +110,14 @@ load_config() {
 }
 ```
 
-`IFS='='` splits each line at the first `=`, and anything after it, even another `=`, stays in `value`. Blank lines and comments are skipped. An unknown key stops the script, so a typo such as `dyas=7` is reported instead of being ignored while the default quietly applies. Nothing in the file is ever run.
+- `IFS='='` splits each line at the first `=`, and anything after it, even another `=`, stays in `value`.
+- Blank lines and comments are skipped.
+- An unknown key stops the script, so a typo such as `dyas=7` is reported instead of being ignored while the default quietly applies.
+- Nothing in the file is ever run.
 
 Set defaults in the script before calling `load_config`, so the script still works with no config file at all.
 
-### Environment variable overrides
+## Overriding settings with environment variables
 
 Sometimes you want a different value for one run without editing the file, for a test or a one-off. Let environment variables win over the file:
 
@@ -110,7 +131,14 @@ days=${CLEAN_DAYS:-$days}
 root@lab:~/scripts# CLEAN_DAYS=2 ./clean-old.sh --dry-run
 ```
 
-The usual order, from weakest to strongest, is: defaults in the script, then the config file, then environment variables, then command-line options. Give the variables a prefix such as `CLEAN_`, so they cannot clash with common names like `DIR` or `DAYS` that something else may have set.
+The usual order, from weakest to strongest:
+
+1. defaults in the script
+2. the config file
+3. environment variables
+4. command-line options
+
+Give the variables a prefix such as `CLEAN_`, so they cannot clash with common names like `DIR` or `DAYS` that something else may have set.
 
 Whatever the source, check the values before using them. A `days` of `two` would make `find` fail halfway through:
 
@@ -120,9 +148,11 @@ if [[ ! $days =~ ^[0-9]+$ ]]; then
 fi
 ```
 
-## A dry run and a help message
+## A dry run
 
-A **dry run** shows what the script would do and does nothing. For anything that deletes or changes things, it is the most useful option a script can have: you run it first, read the list, and only then run it for real. Read the options with a `while` and `case` loop, as in the *Arguments and input* topic; `getopts` cannot read long options like `--dry-run`, so a loop over `$1` is the usual approach when you want both forms:
+A **dry run** shows what the script would do and does nothing. For anything that deletes or changes things, it is the most useful option a script can have: you run it first, read the list, and only then run it for real.
+
+Read the options with a `while` and `case` loop, as in the *Arguments and input* topic. `getopts` cannot read long options like `--dry-run`, so a loop over `$1` is the usual approach when you want both forms:
 
 ```bash
 dry_run=0
@@ -152,7 +182,8 @@ while IFS= read -r -d '' file; do
 done < <(find "$target_dir" -type f -mtime "+$days" -print0)
 ```
 
-`< <(find ...)` feeds the loop from `find` without a pipe. With `find ... | while`, the loop would run in a subshell and `count` would be back to 0 after it. `rm -f --` makes sure a file whose name starts with `-` is not read as an option.
+- `< <(find ...)` feeds the loop from `find` without a pipe. With `find ... | while`, the loop would run in a subshell and `count` would be back to 0 after it.
+- `rm -f --` makes sure a file whose name starts with `-` is not read as an option.
 
 The common mistake is to put the dry-run check in many places, or to forget one. Keep every change behind a single check, and keep the reading and deciding the same in both modes, so the dry run shows exactly what the real run will do.
 
@@ -164,7 +195,14 @@ Would delete /var/tmp/uploads/report-1.csv
 2026-10-25 08:51:31 [INFO] Finished: 2 files
 ```
 
-A **help** message is the script's manual. Print it for `-h` and `--help` to stdout with exit 0, and to stderr with exit 2 after an unknown option. A here-document keeps it readable, and showing the defaults from variables keeps the help correct when they change:
+## A help message
+
+A **help message** is the script's manual.
+
+- Print it for `-h` and `--help` to stdout, with exit 0.
+- Print it to stderr, with exit 2, after an unknown option.
+- A **here-document**, the text between `cat <<END` and `END`, keeps it readable.
+- Showing the defaults from variables keeps the help correct when they change.
 
 ```bash
 usage() {
@@ -190,15 +228,24 @@ END
 
 The Linux skill's *Scheduling jobs with cron* topic showed how to write a crontab line. Scripts that work by hand and fail under cron almost always fail for one of three reasons.
 
-**A different environment.** Cron starts jobs with almost nothing set: no aliases, none of your shell settings, and a short `PATH`, often just `/usr/bin:/bin`. A command in `/usr/local/bin` or `/usr/sbin` is then "not found". Set `PATH` near the top of the script, so it no longer depends on who started it:
+1. **A different environment**
+   - Cron starts jobs with almost nothing set: no aliases, none of your shell settings, and a short `PATH`, often just `/usr/bin:/bin`.
+   - A command in `/usr/local/bin` or `/usr/sbin` is then "not found".
+   - Set `PATH` near the top of the script, so it no longer depends on who started it:
 
-```bash
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-```
+   ```bash
+   PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+   ```
 
-**Relative paths.** Cron starts jobs in the user's home directory, not the script's directory. Use full paths for the script in the crontab, and for every file the script reads or writes.
+2. **Relative paths**
+   - Cron starts jobs in the user's home directory, not the script's directory.
+   - Use full paths for the script in the crontab, and for every file the script reads or writes.
 
-**Lost output.** Anything a cron job prints is mailed to the user if the server can send mail, and otherwise thrown away. Redirect it to a file so error messages from commands inside the script are kept.
+3. **Lost output**
+   - Anything a cron job prints is mailed to the user if the server can send mail, and otherwise thrown away.
+   - Redirect it to a file, so error messages from commands inside the script are kept.
+
+## Installing the cron job
 
 Install the script and give it a crontab line that runs it at 02:30 every night:
 
@@ -211,7 +258,8 @@ root@lab:~/scripts# crontab -e
 30 2 * * * /usr/bin/flock -n /tmp/clean-old.lock /usr/local/bin/clean-old.sh >> /var/log/clean-old.log 2>&1
 ```
 
-`flock -n` with a lock file and a command, the short form of the lock from the *Robust scripts* topic, skips the run if last night's is somehow still going. `>> ... 2>&1` appends both stdout and stderr to the log.
+- `flock -n` with a lock file and a command, the short form of the lock from the *Robust scripts* topic, skips the run if last night's is somehow still going.
+- `>> ... 2>&1` appends both stdout and stderr to the log.
 
 You can test the cron conditions without waiting for 02:30. `env -i` runs a command with an empty environment, close to what cron gives a job:
 
@@ -228,15 +276,15 @@ The run's `Would delete` lines went into the log too, since stdout was redirecte
 
 ## Telling someone when it fails
 
-A cron job that fails quietly is barely better than no job. The exit status is the signal: a script that exits non-zero on every failure, as this one does, can drive an alert. Two places can act on it.
+A cron job that fails quietly is barely better than no job. An **alert** is a message that tells a person something has gone wrong. The exit status is the signal: a script that exits non-zero on every failure, as this one does, can drive an alert. Two places can act on it.
 
-The crontab line can run a command when the script fails:
+1. The crontab line can run a command when the script fails:
 
 ```
 30 2 * * * /usr/local/bin/clean-old.sh >> /var/log/clean-old.log 2>&1 || /usr/local/bin/notify-admin "clean-old failed"
 ```
 
-Or the script can do it itself, with an EXIT trap that checks its own status, which keeps the behaviour the same however the script is started:
+2. The script can do it itself, with an EXIT trap that checks its own status. That keeps the behaviour the same however the script is started:
 
 ```bash
 alert_cmd=

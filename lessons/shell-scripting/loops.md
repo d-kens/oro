@@ -1,6 +1,13 @@
-Most of the work scripts save is repetition: the same check on ten servers, the same command on every log file, the same line of processing for each row of a file. **Loops** run a block of commands many times, once per item or until a condition changes.
+## What a loop is
 
-This topic covers Bash's three loops, `for`, `while` and `until`, and the two commands that steer them, `break` and `continue`. By the end you can loop over a list, over files and over the lines of a file or a command's output, retry a command until it works, and avoid the loops that break on file names with spaces.
+A **loop** runs a block of commands many times: once for each item in a list, or until a condition changes. Most of the work scripts save is repetition, such as the same check on ten servers, the same command on every log file, or the same processing for each row of a file.
+
+Bash has three loops, and two commands that steer them:
+
+- `for` runs once for each item in a list.
+- `while` runs as long as a command succeeds.
+- `until` runs as long as a command fails.
+- `break` and `continue` leave a loop early or skip to the next pass.
 
 ## for over a list
 
@@ -27,7 +34,10 @@ Done
 - The body runs once per word, with `$host` set to that word.
 - `done` ends the loop.
 
-Bash can also make the list for you. `{1..5}` expands to `1 2 3 4 5`, so `for n in {1..3}` runs three times, and `web-0{1..3}` gives `web-01 web-02 web-03`.
+Bash can also make the list for you with **brace expansion**:
+
+- `{1..5}` expands to `1 2 3 4 5`, so `for n in {1..3}` runs three times.
+- `web-0{1..3}` gives `web-01 web-02 web-03`.
 
 A common mistake is putting the list in a variable and quoting it:
 
@@ -44,11 +54,13 @@ root@lab:~/scripts# ./check-list.sh
 Checking web-01 web-02
 ```
 
-The quotes stop word splitting, so the loop ran once with the whole string. Leaving `$hosts` unquoted would work here, but it breaks as soon as an item contains a space or a `*`. The right way to keep a list in a variable is an array, which the *Arrays* topic covers.
+- The quotes stop word splitting, so the loop ran once with the whole string.
+- Leaving `$hosts` unquoted would work here, but it breaks as soon as an item contains a space or a `*`.
+- The right way to keep a list in a variable is an array, which the *Arrays* topic covers.
 
 ## for over files
 
-A glob such as `*.log` in a `for` list expands to the matching file names, each as one item, spaces and all:
+A **glob** is a file name pattern such as `*.log`. In a `for` list it expands to the matching file names, each as one item, spaces and all:
 
 ```bash
 #!/bin/bash
@@ -66,33 +78,37 @@ error log.log: 12 bytes
 
 `error log.log` came through as one name. Inside the loop it must still be quoted, `"$file"`, or the space splits it again.
 
+## When a glob matches nothing
+
 There is a catch when nothing matches. Bash then leaves the pattern as it is, and the loop runs once with the text `*.log`:
 
-```bash
-root@lab:~/scripts# cd /tmp && ~/scripts/log-sizes.sh
-/root/scripts/log-sizes.sh: line 4: *.log: No such file or directory
-*.log:  bytes
-```
+   ```bash
+   root@lab:~/scripts# cd /tmp && ~/scripts/log-sizes.sh
+   /root/scripts/log-sizes.sh: line 4: *.log: No such file or directory
+   *.log:  bytes
+   ```
 
-There are two usual fixes. Skip any item that does not exist:
+There are two usual fixes.
 
-```bash
-for file in *.log; do
-    [[ -e $file ]] || continue
-    echo "$file: $(wc -c < "$file") bytes"
-done
-```
+1. Skip any item that does not exist:
 
-Or turn on the `nullglob` option near the top of the script, so a pattern that matches nothing expands to nothing and the loop does not run at all:
+   ```bash
+   for file in *.log; do
+       [[ -e $file ]] || continue
+       echo "$file: $(wc -c < "$file") bytes"
+   done
+   ```
 
-```bash
-shopt -s nullglob
-for file in *.log; do
-    echo "$file: $(wc -c < "$file") bytes"
-done
-```
+2. Turn on the `nullglob` option near the top of the script, so a pattern that matches nothing expands to nothing and the loop does not run at all:
 
-### Why not loop over $(ls)
+   ```bash
+   shopt -s nullglob
+   for file in *.log; do
+       echo "$file: $(wc -c < "$file") bytes"
+   done
+   ```
+
+## Why not loop over $(ls)
 
 You will see loops like this in older scripts:
 
@@ -110,7 +126,9 @@ Found: sales
 Found: report.csv
 ```
 
-The folder holds `notes.txt` and `sales report.csv`. `$(ls)` turns the names into one block of text, and the unquoted `$( )` splits it at every space, so one file became two. A glob never has this problem, because the shell builds the list of names itself:
+- The folder holds `notes.txt` and `sales report.csv`.
+- `$(ls)` turns the names into one block of text, and the unquoted `$( )` splits it at every space, so one file became two.
+- A glob never has this problem, because the shell builds the list of names itself:
 
 ```bash
 for file in *; do
@@ -126,9 +144,9 @@ Found: sales report.csv
 
 The same goes for `for line in $(cat file)`: it loops over words, not lines. Use `while read`, below.
 
-## C-style for, while and until
+## Counting with a C-style for loop
 
-When you need a counter, Bash has a second form of `for` borrowed from C:
+When you need a counter, Bash has a second form of `for`, borrowed from the C programming language:
 
 ```bash
 #!/bin/bash
@@ -144,7 +162,10 @@ Attempt 2
 Attempt 3
 ```
 
-The three parts are the start, the condition to keep going, and the step. The double parentheses are Bash's arithmetic syntax, which the *Arithmetic and strings* topic covers.
+- The three parts are the start, the condition to keep going, and the step.
+- The double parentheses are Bash's arithmetic syntax, which the *Arithmetic and strings* topic covers.
+
+## while and until
 
 A **`while`** loop runs as long as its command succeeds, using the same tests as `if`:
 
@@ -167,7 +188,7 @@ root@lab:~/scripts# ./countdown.sh
 Go
 ```
 
-If nothing inside the loop changes the condition, it never ends. Press Ctrl+C to stop a script that is stuck.
+If nothing inside the loop changes the condition, it never ends. This is an **infinite loop**. Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop a script that is stuck.
 
 An **`until`** loop is the opposite: it runs as long as its command *fails*, which reads naturally for waiting:
 
@@ -193,7 +214,7 @@ Found it
 
 ## Reading lines with while read
 
-To go through a file one line at a time, combine `while` with `read`, which reads one line from its input into a variable and fails at the end of the input:
+To go through a file one line at a time, combine `while` with `read`. `read` reads one line from its input into a variable, and fails at the end of the input, which ends the loop:
 
 ```bash
 #!/bin/bash
@@ -216,7 +237,7 @@ root@lab:~/scripts# ./read-lines.sh
 ```
 
 - Without **`-r`**, `read` treats backslashes as escape characters and removes them.
-- Without **`IFS=`**, `read` strips spaces and tabs from the start and end of the line. `IFS` is the list of characters the shell splits on; setting it to nothing for the `read` command keeps the line exactly.
+- Without **`IFS=`**, `read` strips spaces and tabs from the start and end of the line. **`IFS`** (*internal field separator*) is the list of characters the shell splits on. Setting it to nothing for the `read` command keeps the line exactly.
 
 With `IFS= read -r line`, every line comes through intact:
 
@@ -227,9 +248,13 @@ root@lab:~/scripts# ./read-lines.sh
 [C:\backups\db]
 ```
 
-`read` can also split a line into fields. Give it more than one variable and the last one gets the rest of the line. Set `IFS` to a character to split on that instead of spaces, which suits files like `/etc/passwd`, whose fields are separated by `:`. A `_` is the usual name for fields you don't need.
+`read` can also split a line into fields:
 
-### Reading from a command
+- Give it more than one variable, and the last one gets the rest of the line.
+- Set `IFS` to a character to split on that instead of spaces. This suits files like `/etc/passwd`, whose fields are separated by `:`.
+- A `_` is the usual name for fields you don't need.
+
+## Reading lines from a command
 
 To read a command's output, you might pipe it into the loop. That works for printing, but a variable changed inside the loop is lost:
 
@@ -253,7 +278,7 @@ ubuntu uses bash
 0 accounts use bash
 ```
 
-Each side of a pipe runs in its own process, so the loop counted in a copy of `count` that vanished when the pipe finished. Feed the loop with `< <(command)` instead, which keeps the loop in the script's own shell:
+Each side of a pipe runs in its own process, so the loop counted in a copy of `count` that vanished when the pipe finished. Feed the loop with `< <(command)` instead. That keeps the loop in the script's own shell:
 
 ```bash
 while IFS=: read -r user _ _ _ _ _ shell; do
@@ -272,7 +297,7 @@ ubuntu uses bash
 2 accounts use bash
 ```
 
-`<(command)` is **process substitution**: it makes the command's output look like a file, and the first `<` reads from it as it would from `hosts.txt`.
+**Process substitution**, written `<(command)`, makes a command's output look like a file. The first `<` then reads from it as it would from `hosts.txt`.
 
 ## break, continue and retrying
 
@@ -281,7 +306,9 @@ Two commands change the flow of a loop:
 - **`continue`** skips the rest of this pass and moves to the next item.
 - **`break`** leaves the loop completely, and the script carries on after `done`.
 
-You have already used `continue` to skip names that do not exist. `break` is what makes a **retry loop** work: try something a fixed number of times and stop as soon as it succeeds. This is common in deploy scripts, where a service takes a few seconds to come up:
+You have already used `continue` to skip names that do not exist.
+
+A **retry loop** tries something a fixed number of times and stops as soon as it succeeds. `break` is what makes it work. Retry loops are common in deploy scripts, where a service takes a few seconds to come up:
 
 ```bash
 #!/bin/bash
@@ -312,7 +339,9 @@ Attempt 2 failed, retrying in 2 seconds
 Service is ready
 ```
 
-`2>/dev/null` hides the error `grep` prints while the file does not exist yet. The `ready` variable records why the loop ended, because after `done` the script cannot otherwise tell whether it stopped from `break` or from running out of attempts. In a real script, the command inside the `if` would be something like `curl -fs http://localhost:8080/health`, and the failure branch would stop the deploy; the *Exit codes and errors* topic covers how.
+- `2>/dev/null` hides the error `grep` prints while the file does not exist yet.
+- The `ready` variable records why the loop ended. After `done`, the script cannot otherwise tell whether it stopped from `break` or from running out of attempts.
+- In a real script, the command inside the `if` would be something like `curl -fs http://localhost:8080/health`, and the failure branch would stop the deploy. The *Exit codes and errors* topic covers how.
 
 ## Tasks
 
