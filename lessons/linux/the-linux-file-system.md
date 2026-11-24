@@ -95,7 +95,9 @@ $ pwd
 /root
 ```
 
-When you log in, your working directory is your home directory (`/home/<your name>`, or `/root` for `root`, as in points 6 and 7 above). The Docker container from the first topic is an exception: it starts you in `/`.
+When you log in, your working directory is your home directory (`/home/<your name>`, or `/root` for `root`, as in points 6 and 7 above).
+
+The Docker container from the first topic is an exception: it starts you in `/`, because `docker run` starts the shell without logging you in. Run `cd` to go to `/root`.
 
 The prompt shows your home directory as `~`, and usually shows where you are, so you rarely need `pwd`. It is still useful when the prompt is short or when a script needs to know.
 
